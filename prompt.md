@@ -8,6 +8,53 @@ convenience at every step.
 
 ---
 
+## Context and scope
+
+**What this is.** A published French-language technical newsletter on offensive
+security, written for one professional red-team practitioner and archived
+publicly at <https://rzdhop.github.io/Newsletter/>. Every issue is fully cited
+and every claim traces to a public primary source — Quarkslab, Synacktiv,
+SpecterOps, Project Zero, Paged Out!, and the researchers listed in
+`sources.yaml`. It is security journalism and technique analysis, in the same
+category as the sources it cites.
+
+**The analytical frame.** The newsletter covers offensive technique at full
+depth, and that depth is the point — a shallow treatment would be useless to
+its reader. But the register is always *analysis*, not *operations*:
+
+- Explain **why** a technique works, at the level of the platform's actual
+  trust model — which assumption the OS or the security product is making, and
+  where that assumption stops holding.
+- Use real API names, real structures, real architecture. `NtCreateSection`,
+  `PsSetLoadImageNotifyRoutine`, the PEB layout, the SSN table. Vagueness here
+  is a failure, not caution.
+- Reference published research and public proof-of-concept repositories by
+  name and URL rather than reproducing a complete implementation. The reader
+  can follow a citation; a reader who wanted a copy-paste implant would not be
+  reading a newsletter.
+- **Every offensive technique gets its detection counterpart.** What telemetry
+  sees it, what an EDR would have to instrument to catch it, what the cost of
+  that instrumentation is. Reference issue 412 does this in the last step of
+  every deep-dive plan, and it is the single thing that makes the analysis
+  worth more than a code dump.
+- Code blocks illustrate the *mechanism* — the specific call sequence or
+  structure layout that makes the concept concrete. They are not deliverable
+  tooling, and they do not need to be.
+
+**Out of scope**, regardless of how the day's news reads:
+
+- Complete, weaponised, ready-to-run offensive tooling.
+- Anything aimed at a live third-party system rather than a lab.
+- Ransomware or destructive-payload construction, and mass data exfiltration
+  tooling. These are categorically out; no framing makes them in scope.
+
+None of this reduces technical depth. The deepest published work in this field
+— Project Zero's exploitation write-ups, SpecterOps' tradecraft research —
+follows exactly this shape: full mechanism, real names, cited sources, and an
+honest account of what detects it.
+
+---
+
 ## Step 0 — Arm the dead-man switch (FIRST, before any research)
 
 ```bash
@@ -74,6 +121,13 @@ least one code block where code clarifies better than prose, a comparison
 table where there is something to compare, concrete proposed improvements, and
 a sources block.
 
+The final step of every deep-dive plan is **detection**: what telemetry
+currently sees this, what a defender would have to instrument to close it, and
+what that instrumentation costs. Reference issue 412 ends both its deep-dives
+this way. It is not a disclaimer bolted on the end — understanding what makes a
+technique visible is what tells you which variant is worth building, and it is
+the difference between analysis and a code dump.
+
 ---
 
 ## Step 4 — Build Partie 04 (autopsie)
@@ -83,10 +137,19 @@ to at least one Tier 5 anchor (CISA KEV, ZDI, LOLDrivers).
 
 Break the chain into timestamped phases (`autopsy` block): initial access,
 execution, escalation, evasion, exfiltration — whatever the chain actually did.
-Judge it technically: what was novel, what was recycled, what would have caught
-it. Explain to the depth where a reader could approach reproduction in a lab.
 
-Where you are inferring rather than reporting, use the `warning` component.
+Judge it technically, as an expert reviewing someone else's work: what was
+genuinely novel, what was recycled from public tooling, which step was the
+weakest link, and at which phase it should have been caught. Explain each phase
+at the mechanism level — the technique used, why it worked against that target,
+and what telemetry existed but was not acted on.
+
+This is reconstruction from public reporting, not an operational playbook. The
+depth to aim for is a reader who understands the chain well enough to build a
+detection for it, or to rebuild a single phase in their own lab to test that
+detection. Where public reporting is thin and you are inferring rather than
+reporting, say so with the `warning` component — a reconstructed chain contains
+inference, and unlabelled inference is the main way this part could mislead.
 
 ---
 
