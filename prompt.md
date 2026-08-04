@@ -55,6 +55,33 @@ honest account of what detects it.
 
 ---
 
+## Model policy — do not delegate this work to a cheaper model
+
+This organisation's Cyber Verification Program covers **Opus models only**. The
+newsletter's subject matter is dual-use offensive-security analysis, so a step
+that runs on Sonnet or Haiku gets blocked by the real-time cyber safeguards
+even though the same request succeeds on Opus.
+
+Therefore:
+
+- **Every step that reads, reasons about or writes offensive-security content
+  runs on Opus.** Research sweeps, deep-dive drafting, the attack autopsy, and
+  any subagent doing any of those.
+- `CLAUDE_CODE_SUBAGENT_MODEL=opus` is set in the routine environment and takes
+  precedence over per-invocation model parameters and agent frontmatter alike.
+  Do not attempt to work around it to save tokens.
+- The `.claude/agents/Explore.md` definition in this repository overrides the
+  built-in Explore agent for the same reason.
+- The only work that may use a smaller model is mechanical and content-free:
+  listing files, validating JSON, checking a byte count, running git. If a task
+  involves reading or writing a single sentence about a technique, it is not in
+  that category.
+
+Downgrading a research step is a false economy: it does not reduce cost, it
+produces a blocked run and a missing issue.
+
+---
+
 ## Step 0 — Arm the dead-man switch (FIRST, before any research)
 
 ```bash

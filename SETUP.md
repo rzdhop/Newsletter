@@ -77,15 +77,32 @@ only see connectors attached to your claude.ai account.
 | Trigger | Schedule → Daily → **02:00** (your local time) |
 | Environment | new environment, **Network access: Full** |
 | Connectors | Google Drive only — remove every other one |
-| Model | your choice; it applies to every run |
+| Model | **Opus** — required, see below |
 
 Environment variables:
 
 ```
-RESEND_API_KEY   = re_xxxxxxxxxxxx
-NEWSLETTER_FROM  = OffSec Quotidien <newsletter@rzdhop.com>
-NEWSLETTER_TO    = verdu.rida@gmail.com
+RESEND_API_KEY             = re_xxxxxxxxxxxx
+NEWSLETTER_FROM            = OffSec Quotidien <newsletter@rzdhop.com>
+NEWSLETTER_TO              = verdu.rida@gmail.com
+CLAUDE_CODE_SUBAGENT_MODEL = opus
 ```
+
+**Why the model must be Opus.** The Cyber Verification Program covers **Opus
+models only**. This newsletter is dual-use offensive-security analysis, so the
+same request that succeeds on Opus is blocked by the real-time cyber safeguards
+on Sonnet — regardless of CVP approval.
+
+`CLAUDE_CODE_SUBAGENT_MODEL` closes the remaining gap. Subagent model
+resolution order is: environment variable → per-invocation parameter →
+frontmatter → main conversation model. Setting the variable means a subagent
+cannot end up on a cheaper model, even if Claude spawns one with an explicit
+model parameter mid-run. Without it, a single delegated research sweep on
+Haiku is enough to lose CVP coverage and fail the run.
+
+To pin a *specific* Opus variant rather than whatever `opus` currently
+resolves to, use the full model ID (for example `claude-opus-5`) in both the
+model selector and this variable.
 
 Prompt — paste exactly this and nothing more:
 
