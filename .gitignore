@@ -1,0 +1,12 @@
+# Handle to a pending Resend send, written by `deliver.py arm` and consumed by
+# `deliver.py send`. Run-local state, never project state.
+.resend-alert-id
+
+# Working file for the day's issue; the rendered output in issues/ is the
+# artefact worth versioning, not the intermediate.
+content.json
+
+__pycache__/
+*.pyc
+.DS_Store
+.env

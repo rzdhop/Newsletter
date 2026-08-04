@@ -1,0 +1,68 @@
+{
+  "_comment": [
+    "Anti-repetition ledger. Every subject ever covered lives here.",
+    "The generator reads this BEFORE choosing subjects and appends after",
+    "rendering. A subject present within the last 90 days may only be",
+    "mentioned - and a mention is a written summary of what was said and why",
+    "it matters again, never a bare link back.",
+    "",
+    "Seeded from design reference issue 412 so the first automated issue (413)",
+    "does not immediately repeat the material the reference already covered."
+  ],
+  "policy": {
+    "cooldown_days": 90,
+    "mention_allowed_after_days": 0,
+    "new_subject_requires": [
+      "absent from this index within cooldown_days",
+      "absent from refs/erebos-inventory.md implemented list",
+      "different domain from the other deep-dive in the same issue"
+    ]
+  },
+  "domains": [
+    "maldev-windows",
+    "kernel",
+    "hardware",
+    "web",
+    "threat-intel",
+    "tooling",
+    "crypto",
+    "mobile"
+  ],
+  "subjects": [
+    {
+      "id": "loadimage-toctou",
+      "issue": 412,
+      "date": "2026-08-03",
+      "part": 2,
+      "domain": "kernel",
+      "title": "La fenêtre TOCTOU de PsSetLoadImageNotifyRoutine",
+      "summary": "Le callback LoadImage notifie l'EDR après le mappage de l'image mais rien ne garantit que la vue inspectée soit celle qui sera exécutée. Un second thread peut remapper la même plage entre la notification et le transfert de contrôle, ouvrant une fenêtre d'écriture mesurée entre 4 et 40 ms sur trois EDR grand public.",
+      "sources": [
+        "https://learn.microsoft.com/windows-hardware/drivers/ddi/ntddk"
+      ]
+    },
+    {
+      "id": "etwti-vs-obregistercallbacks",
+      "issue": 412,
+      "date": "2026-08-03",
+      "part": 3,
+      "domain": "kernel",
+      "title": "ETW-Ti contre ObRegisterCallbacks : ce que voit vraiment l'EDR",
+      "summary": "Comparatif de quatre sources de télémétrie couvrant l'accès mémoire inter-processus. ETW-Ti fournit la pile d'appel complète sur 24H2 mais coûte 3 à 7 % de CPU, ce qui pousse certains déploiements à désactiver la collecte de piles — angle mort exploitable en engagement.",
+      "sources": []
+    },
+    {
+      "id": "silentquill-chain",
+      "issue": 412,
+      "date": "2026-08-03",
+      "part": 4,
+      "domain": "threat-intel",
+      "title": "Autopsie SILENTQUILL — cinq étapes, zéro 0-day",
+      "summary": "Chaîne complète reposant sur cinq primitives publiques enchaînées : archive ZIP signée d'un fournisseur compromis, stager de 412 octets dans une section RX, pilote signé de 2019 hors blocklist HVCI, désenregistrement des callbacks noyau, exfiltration DoH alignée sur les heures ouvrées.",
+      "sources": [
+        "https://www.loldrivers.io"
+      ]
+    }
+  ],
+  "mentions": []
+}

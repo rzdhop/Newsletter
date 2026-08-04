@@ -1,0 +1,292 @@
+# OffSec Quotidien - source registry
+#
+# Tiered by editorial weight, not by popularity. Tier 1 and 2 carry the
+# technical depth Parties 02/03 need; Tier 4 supplies the week's news for
+# Partie 01; Tier 5 anchors Partie 04 in verifiable fact.
+#
+# `confidence` records whether the URL was verified when this file was written.
+# scripts/check_sources.py re-validates every entry and writes the result to
+# state/source-health.json, so a source going dark is visible instead of
+# silently shrinking the newsletter.
+#
+# RULE: no item ever ships without a citation. A source that cannot be reached
+# is a source that cannot be cited.
+
+meta:
+  version: 1
+  maintained_by: rzdhop
+  revalidate_every_days: 7
+
+tiers:
+
+  # --------------------------------------------------------------------------
+  tier_1_vendor_research:
+    weight: highest
+    use_for: [partie_02, partie_03, partie_04]
+    note: >
+      Primary research from labs that publish reproducible technical detail.
+      Prefer these over any aggregator: they are the origin of the claim, so
+      citing them avoids the telephone-game distortion of secondary coverage.
+    sources:
+      - name: Quarkslab
+        url: https://blog.quarkslab.com/
+        feed: https://blog.quarkslab.com/feeds/all.atom.xml
+        topics: [reverse-engineering, crypto, firmware, mobile]
+        lang: en/fr
+        confidence: verified
+      - name: Synacktiv
+        url: https://www.synacktiv.com/publications
+        feed: https://www.synacktiv.com/feed/publications.xml
+        topics: [pentest, exploitation, AD, pwn2own]
+        lang: en/fr
+        confidence: verified
+      - name: Google Project Zero
+        url: https://googleprojectzero.blogspot.com/
+        feed: https://googleprojectzero.blogspot.com/feeds/posts/default
+        topics: [0-day, exploitation, browser, kernel]
+        confidence: verified
+      - name: SpecterOps
+        url: https://posts.specterops.io/
+        topics: [AD, red-team, BOF, tradecraft]
+        confidence: verified
+      - name: Outflank
+        url: https://www.outflank.nl/blog/
+        topics: [EDR-evasion, C2, BOF, maldev]
+        confidence: verified
+      - name: MDSec
+        url: https://www.mdsec.co.uk/knowledge-centre/research/
+        topics: [red-team, EDR-evasion, implants]
+        confidence: verified
+      - name: Trail of Bits
+        url: https://blog.trailofbits.com/
+        topics: [appsec, crypto, fuzzing, compilers]
+        confidence: verified
+      - name: NCC Group Research
+        url: https://research.nccgroup.com/
+        topics: [hardware, exploitation, protocol]
+        confidence: verified
+      - name: Elastic Security Labs
+        url: https://www.elastic.co/security-labs
+        topics: [malware-analysis, detection-engineering]
+        confidence: verified
+      - name: Sekoia.io
+        url: https://blog.sekoia.io/
+        topics: [threat-intel, infrastructure-tracking]
+        lang: en/fr
+        confidence: verified
+      - name: Volexity
+        url: https://www.volexity.com/blog/
+        topics: [APT, memory-forensics]
+        confidence: verified
+      - name: Binarly
+        url: https://www.binarly.io/blog
+        topics: [firmware, UEFI, supply-chain]
+        confidence: probable
+      - name: Check Point Research
+        url: https://research.checkpoint.com/
+        topics: [malware, threat-intel]
+        confidence: verified
+      - name: Unit 42
+        url: https://unit42.paloaltonetworks.com/
+        topics: [threat-intel, malware]
+        confidence: verified
+      - name: CrowdStrike
+        url: https://www.crowdstrike.com/blog/category/threat-intel-research/
+        topics: [threat-intel, adversary-tracking]
+        confidence: probable
+
+  # --------------------------------------------------------------------------
+  tier_2_researchers_maldev:
+    weight: highest
+    use_for: [partie_02, partie_03]
+    note: >
+      Individual researchers. This is where implementable maldev technique
+      actually lives, and it maps most directly onto Erebos-Zero. Named by the
+      operator as priority reading.
+    sources:
+      - name: VX-Underground
+        url: https://vx-underground.org/
+        topics: [malware-corpus, papers, samples]
+        confidence: verified
+        note: paper archive is the useful part, not the sample dumps
+      - name: Maldev Academy
+        url: https://maldevacademy.com/
+        topics: [maldev, injection, evasion]
+        confidence: verified
+        note: mostly paid course material; public posts are the citable part
+      - name: 0xflux (fluxsec)
+        url: https://fluxsec.red/
+        topics: [rust-maldev, EDR-internals, windows-drivers]
+        confidence: verified
+        note: >
+          Ian G. Sanctum EDR series is a strong Partie 03 seam - writing an EDR
+          to understand evasion inverts the usual angle.
+      - name: Smukx (5mukx)
+        url: https://5mukx.site/blog
+        extra: https://maldev.5mukx.site/
+        topics: [rust-maldev, injection, sideloading]
+        confidence: verified
+        note: operator wrote this as "smuk5"; canonical handle is 5mukx / Smukx
+      - name: ired.team
+        url: https://www.ired.team/
+        topics: [offensive-tradecraft, AD, injection]
+        confidence: verified
+      - name: cocomelonc
+        url: https://cocomelonc.github.io/
+        topics: [maldev, injection, persistence]
+        confidence: verified
+      - name: modexp
+        url: https://modexp.wordpress.com/
+        topics: [shellcode, injection, windows-internals]
+        confidence: verified
+      - name: hasherezade
+        url: https://hshrzd.wordpress.com/
+        topics: [malware-analysis, PE-format, tooling]
+        confidence: verified
+      - name: Connor McGarr
+        url: https://connormcgarr.github.io/
+        topics: [kernel-exploitation, windows-internals]
+        confidence: verified
+      - name: James Forshaw
+        url: https://www.tiraniddo.dev/
+        topics: [windows-security, COM, sandbox-escape]
+        confidence: verified
+      - name: Dirk-jan Mollema
+        url: https://dirkjanm.io/
+        topics: [AD, entra-id, kerberos]
+        confidence: verified
+
+  # --------------------------------------------------------------------------
+  tier_3_magazines:
+    weight: medium
+    use_for: [partie_02, partie_03]
+    note: Slow cadence. Check weekly, not daily; ideal weekend material.
+    sources:
+      - name: Paged Out!
+        url: https://pagedout.institute/
+        topics: [programming, hacking, retro, demoscene]
+        cadence: irregular
+        confidence: verified
+        note: one-page articles, free PDF, excellent for weekend light items
+      - name: MISC Magazine
+        url: https://connect.ed-diamond.com/misc
+        topics: [securite-offensive, forensics]
+        lang: fr
+        cadence: bimonthly
+        confidence: probable
+        note: paywalled; cite summaries and tables of contents only
+      - name: Phrack
+        url: http://phrack.org/
+        topics: [exploitation, philosophy, archive]
+        cadence: rare
+        confidence: verified
+      - name: tmp.0ut
+        url: https://tmpout.sh/
+        topics: [ELF, unix-maldev, demoscene]
+        cadence: irregular
+        confidence: probable
+
+  # --------------------------------------------------------------------------
+  tier_4_news:
+    weight: medium
+    use_for: [partie_01]
+    note: >
+      Speed over depth. Use to DISCOVER a story, then follow the citation up to
+      a Tier 1/2 primary source before writing about it.
+    sources:
+      - name: BleepingComputer
+        url: https://www.bleepingcomputer.com/
+        feed: https://www.bleepingcomputer.com/feed/
+        confidence: verified
+      - name: The Hacker News
+        url: https://thehackernews.com/
+        feed: https://feeds.feedburner.com/TheHackersNews
+        confidence: verified
+      - name: The Record
+        url: https://therecord.media/
+        confidence: verified
+      - name: KrebsOnSecurity
+        url: https://krebsonsecurity.com/
+        feed: https://krebsonsecurity.com/feed/
+        confidence: verified
+      - name: Risky Business
+        url: https://risky.biz/
+        confidence: verified
+      - name: r/netsec
+        url: https://www.reddit.com/r/netsec/
+        feed: https://www.reddit.com/r/netsec/.rss
+        confidence: verified
+      - name: Hacker News
+        url: https://news.ycombinator.com/
+        confidence: verified
+        note: filter for security submissions; comments often beat the article
+      - name: CERT-FR
+        url: https://www.cert.ssi.gouv.fr/
+        feed: https://www.cert.ssi.gouv.fr/feed/
+        lang: fr
+        confidence: verified
+        note: authoritative for French-context advisories
+
+  # --------------------------------------------------------------------------
+  tier_5_vulns_exploits:
+    weight: high
+    use_for: [partie_01, partie_04]
+    note: Factual anchors. Partie 04 must tie to at least one of these.
+    sources:
+      - name: CISA KEV
+        url: https://www.cisa.gov/known-exploited-vulnerabilities-catalog
+        confidence: verified
+        note: exploited-in-the-wild ground truth
+      - name: ZDI advisories
+        url: https://www.zerodayinitiative.com/advisories/published/
+        confidence: verified
+      - name: GitHub Security Advisories
+        url: https://github.com/advisories
+        confidence: verified
+      - name: LOLDrivers
+        url: https://www.loldrivers.io/
+        topics: [vulnerable-drivers, BYOVD]
+        confidence: verified
+      - name: LOLBAS
+        url: https://lolbas-project.github.io/
+        confidence: verified
+      - name: GitHub trending (security)
+        url: https://github.com/trending?since=daily
+        confidence: verified
+        note: filter by the security/maldev/redteam topics
+
+  # --------------------------------------------------------------------------
+  tier_6_social:
+    weight: low
+    use_for: [partie_01]
+    note: >
+      X/Twitter is NOT usable: there is no free API tier, and scraping it is
+      both fragile and against its terms. Do not engineer around this. The
+      researchers worth following there mirror to their own blogs (Tier 2),
+      which is where they should be cited from anyway - a blog post is a
+      stable, citable artefact and a tweet is not.
+    sources:
+      - name: infosec.exchange (Mastodon)
+        url: https://infosec.exchange/
+        confidence: verified
+        note: per-user RSS available by appending .rss to a profile URL
+      - name: Bluesky
+        url: https://bsky.app/
+        confidence: verified
+        note: free public API; many Tier 2 researchers now cross-post here
+
+# ----------------------------------------------------------------------------
+# Sources deliberately excluded, with reasons. Recorded so the decision is not
+# silently revisited every few weeks.
+excluded:
+  - name: X / Twitter
+    reason: no free API tier; scraping is fragile and against terms
+    mitigation: follow the same researchers via Tier 2 blogs and Tier 6
+  - name: LinkedIn
+    reason: >
+      no usable feed, aggressive anti-automation, and the security content
+      there is overwhelmingly recycled from sources already in Tier 1 and 4
+    mitigation: none needed; nothing original is lost
+  - name: Telegram / Discord leak channels
+    reason: unverifiable provenance; cannot satisfy the citation rule
+    mitigation: wait for a Tier 1 lab to publish an analysis, then cite that
