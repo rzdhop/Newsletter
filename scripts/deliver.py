@@ -33,6 +33,7 @@ import zoneinfo
 
 RESEND_ENDPOINT = "https://api.resend.com/emails"
 PARIS = zoneinfo.ZoneInfo("Europe/Paris")
+USER_AGENT = "OffSecQuotidien-pipeline/1.0"
 
 # Written by arm(), consumed by send(). Lives in the run workspace and is
 # gitignored: it is a handle to a pending send, not project state.
@@ -59,6 +60,11 @@ def _request(method, url, payload=None):
     request = urllib.request.Request(url, data=data, method=method)
     request.add_header("Authorization", f"Bearer {_env('RESEND_API_KEY')}")
     request.add_header("Content-Type", "application/json")
+    # Resend sits behind Cloudflare, which rejects the stock "Python-urllib/3.x"
+    # agent with a 403 (error code 1010) before the request ever reaches the API.
+    # Any explicit User-Agent clears it; name the pipeline so the calls are
+    # identifiable in Resend's logs.
+    request.add_header("User-Agent", USER_AGENT)
 
     try:
         with urllib.request.urlopen(request, timeout=30) as response:

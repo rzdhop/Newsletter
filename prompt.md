@@ -256,7 +256,10 @@ punctuation automatically. Write natural French.
 | `empty` | `headline`, `detail` | a section with nothing solid to say |
 
 `tag` must be exactly one of `quick`, `deep-dive`, `PoC/lab`, `archive`.
-`url_label` should contain `&#8203;` after the domain so long URLs wrap.
+`url_label` should contain a literal U+200B ZERO WIDTH SPACE character after the
+domain so long URLs wrap. Write the character itself, not the entity: this field
+is escaped like every other plain-text field, so a hand-written `&#8203;` ships
+as visible text. The renderer turns the character into `&#8203;` for you.
 Set `"last": true` on the final `item` of a part.
 
 ---

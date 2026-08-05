@@ -62,6 +62,48 @@
       "sources": [
         "https://www.loldrivers.io"
       ]
+    },
+    {
+      "id": "wsfc-cno-vco-secrets",
+      "issue": 413,
+      "date": "2026-08-06",
+      "part": 2,
+      "domain": "maldev-windows",
+      "title": "Le cluster comme identite unique : extraire les secrets CNO/VCO de WSFC",
+      "summary": "Windows Server Failover Cluster replique le mot de passe du Cluster Name Object sur chaque noeud via la base CLUSDB et les checkpoints registre, et en conserve deux generations, ce qui neutralise la rotation horaire par defaut. La chaine exploitable va de WriteAccountRestrictions delegue a Domain Computers vers un ticket de service forge par RBCD, puis vers une execution repetee sur chaque noeud en migrant le role CNO avec fustercluck ; l'absence d'ADMIN$ sur un CNO casse wmiexec.py et atexec.py sans -silentcommand.",
+      "sources": [
+        "https://specterops.io/blog/2026/07/29/clustered-points-of-failure/",
+        "https://github.com/garrettfoster13/fustercluck",
+        "https://github.com/SpecterOps/WSFCHound"
+      ]
+    },
+    {
+      "id": "uboot-fit-signature-parsing",
+      "issue": 413,
+      "date": "2026-08-06",
+      "part": 3,
+      "domain": "hardware",
+      "title": "Parser avant de verifier : six failles dans la signature FIT d'U-Boot",
+      "summary": "Six advisories Binarly (BRLY-2026-037 a 042) portent toutes sur des corruptions memoire dans le code qui prepare la verification de signature FIT, aucune sur la cryptographie elle-meme : U-Boot ne lit pas hashed-nodes et reconstruit la liste des regions a hacher en parcourant un arbre non verifie. BRLY-2026-038 est la seule a 6.8 avec execution de code, via end += len qui recule le curseur sur la pile ; les cinq autres sont a 4.6 AV:P avec impact de disponibilite, et les chemins concernes existent depuis v2013.07.",
+      "sources": [
+        "https://www.binarly.io/blog/unfit-to-boot-breaking-u-boots-fit-signature-verification",
+        "https://www.binarly.io/advisories/brly-2026-038",
+        "https://docs.u-boot.org/en/latest/usage/fit/signature.html"
+      ]
+    },
+    {
+      "id": "sonicwall-sma1000-uta0533",
+      "issue": 413,
+      "date": "2026-08-06",
+      "part": 4,
+      "domain": "threat-intel",
+      "title": "Autopsie SonicWall SMA1000 : la SSRF qui ouvrait un tunnel vers localhost",
+      "summary": "UTA0533 chaine une SSRF non authentifiee sur /wsproxy (CVE-2026-15409) donnant un tunnel WebSocket vers CouchDB en admin:admin sur 127.0.0.1, puis un path traversal dans sysCtrl.execRemoveHotfix (CVE-2026-15410) pour executer en root. La persistance repose sur ROOTRUN (xzfind, setuid) et KNUCKLEBALL (deploy_new.py) qui injecte les agents Java SOU5 et ORANGETAIL dans la JVM via l'API Java Attach, reecrivant des classes JSP compilees en memoire sans jamais deposer de fichier JSP sur disque.",
+      "sources": [
+        "https://www.volexity.com/blog/2026/07/17/proxying-to-compromise-sonicwall-secure-mobile-access-0-day-exploitation/",
+        "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+        "https://github.com/volexity/threat-intel"
+      ]
     }
   ],
   "mentions": []
