@@ -88,6 +88,17 @@ NEWSLETTER_TO              = verdu.rida@gmail.com
 CLAUDE_CODE_SUBAGENT_MODEL = opus
 ```
 
+**The Resend key must not be a "sending access" restricted key.** Such a key can
+`POST /emails`, so both `deliver.py arm` and the issue itself go out normally —
+and then `deliver.py send` cannot cancel the alert it armed, so the "aucun
+numero ce matin" mail lands next to every successful issue. Give the key full
+access, or at minimum send plus cancel.
+
+**`CLAUDE_CODE_SUBAGENT_MODEL` must be exactly `opus`.** `opus5` is not a valid
+alias: it is rejected at spawn time and every subagent dies immediately with
+"There's an issue with the selected model". The run can still complete — the
+main loop does the sweep inline — but it loses all parallelism.
+
 **Why Opus.** Issue quality tracks model capability closely here. The research
 sweep reads a week of dense primary sources and has to tell a paper from a
 press release; the deep-dives are long-context technical writing against a
