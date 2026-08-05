@@ -15,14 +15,17 @@ archives it.
 
 ```
 02:00 Paris   Claude Code Routine (Anthropic cloud)
-              ├─ clone this repo: brief, prompt, template, sources, state
-              ├─ arm the dead-man alert for 06:00        ← before anything else
+              ├─ clone this repo: brief, prompt, sources, state, refs
+              ├─ preflight the environment, then arm the dead-man alert
+              │                                          ← before anything else
               ├─ research → write 4 parts in French
               ├─ emit content.json → render → split
-              ├─ git commit issues/ + state/
-              ├─ mirror to Google Drive
+              ├─ update state/topics-index.json          ← before the commit
+              ├─ git commit issues/ + state/ + permalinks
+              ├─ git push origin HEAD:main, then verify  ← Pages serves main only
               ├─ queue with Resend, scheduled_at 06:00:00+02:00
-              └─ cancel the dead-man alert
+              ├─ cancel the dead-man alert
+              └─ write the SHA-256 archive manifest to Google Drive
 
 06:00:00      Resend delivers. Your laptop was never involved.
 ```
@@ -51,6 +54,7 @@ the byte budget is predictable.
 | `refs/design-tokens.md` | colours, type scale, component reference |
 | `state/topics-index.json` | anti-repetition ledger |
 | `state/source-health.json` | written by `check_sources.py` |
+| `scripts/preflight.py` | environment validation, runs before anything is armed |
 | `scripts/render.py` | `content.json` → email HTML (13 components) |
 | `scripts/split.py` | digest / full split against the 90 KB budget |
 | `scripts/deliver.py` | Resend send + dead-man switch |
@@ -68,9 +72,14 @@ the byte budget is predictable.
 | Raw UTF-8 inflates 20–30% under quoted-printable | renderer emits pure ASCII entities → measured +3.7% |
 | Scheduler drift | Resend `scheduled_at` owns the clock, not the scheduler |
 | A silent run failure | dead-man alert armed before work, cancelled after success |
-| Repeating a subject | `state/topics-index.json`, checked before writing |
+| An environment that is not version-controlled | `preflight.py` aborts loudly before any work is spent |
+| Cloudflare rejecting the stock urllib agent | explicit `User-Agent` on every Resend call |
+| A cancel right the sending key does not have | `RESEND_MGMT_KEY`, used for nothing else; failure to cancel is non-fatal |
+| Pages serving only the default branch | Step 8 pushes `HEAD:main` explicitly and verifies the hash before delivering |
+| Repeating a subject | `state/topics-index.json`, updated before the commit, checked before writing |
 | Covering ground already built | `refs/erebos-inventory.md`, reconciled with the live repo each run |
 | A source going dark | `check_sources.py` makes decay measurable instead of invisible |
+| No path-based upload on the Drive connector | Drive carries a SHA-256 manifest; the repo, Pages and the attachment carry the bytes |
 
 ---
 

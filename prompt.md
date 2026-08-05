@@ -73,18 +73,29 @@ work inherits the same default.
 
 ---
 
-## Step 0 — Arm the dead-man switch (FIRST, before any research)
+## Step 0 — Preflight, then arm the dead-man switch (FIRST, before any research)
 
 ```bash
+python3 scripts/preflight.py        # exits 1 on a broken environment
 python3 scripts/deliver.py arm
 ```
 
-This queues a "no issue this morning" alert for the next 06:00 Europe/Paris.
-If this run dies at any later point, that alert still fires and the operator
-learns about it at 06:00 instead of by noticing an absence. Step 8 cancels it.
+`preflight.py` validates the routine environment before a single token of
+research is spent. It exists because the environment is configured through a
+web UI and is therefore not version-controlled, so it drifts silently. Each of
+its checks corresponds to a failure that has already cost a run:
+`CLAUDE_CODE_SUBAGENT_MODEL` holding an invalid alias (every subagent dies at
+spawn), Cloudflare rejecting our User-Agent (`arm` fails, switch disarmed),
+`RESEND_MGMT_KEY` missing (the alert cannot be cancelled). **If it exits
+non-zero, stop.** Report the failed checks and do not arm.
 
-**Do not skip this and do not move it later.** Its entire value is that it
-happens before anything that can fail.
+`arm` then queues a "no issue this morning" alert for the next 06:00
+Europe/Paris. If this run dies at any later point, that alert still fires and
+the operator learns about it at 06:00 instead of by noticing an absence.
+Step 8 cancels it.
+
+**Do not skip either command and do not move them later.** Their entire value
+is that they happen before anything that can fail.
 
 ---
 
@@ -256,8 +267,14 @@ punctuation automatically. Write natural French.
 | `empty` | `headline`, `detail` | a section with nothing solid to say |
 
 `tag` must be exactly one of `quick`, `deep-dive`, `PoC/lab`, `archive`.
-`url_label` should contain `&#8203;` after the domain so long URLs wrap.
 Set `"last": true` on the final `item` of a part.
+
+`url_label` should contain a **literal U+200B zero-width space** after the
+domain so long URLs wrap. Write the actual character, never the `&#8203;`
+entity: `url_label` is a plain-text field, so the renderer escapes it and the
+entity ships as six visible characters in the middle of the link. The renderer
+converts the literal character to an entity for you, as it does every other
+non-ASCII character.
 
 ---
 
@@ -284,25 +301,87 @@ Verify before continuing:
 
 ## Step 8 — Publish, archive, deliver
 
-```bash
-# 1. commit — this is the archive AND it resets GitHub's 60-day
-#    scheduled-workflow inactivity timer
-git add issues/ state/
-git commit -m "issue <NNN> — <subject of the day>"
-git push
+The order below is load-bearing. Two of these steps are in the position they
+are because the alternative has already failed in production.
 
-# 2. deliver: queue for exactly 06:00 Europe/Paris and cancel the alert
+### 8.1 — Update the ledger BEFORE committing
+
+Write every subject covered today into `state/topics-index.json`. Per subject:
+issue number, date, part, domain, a two-sentence summary, and the source URLs.
+This is what makes rule 3 work tomorrow.
+
+Do it **now**, not after the commit. A ledger update written afterwards needs a
+second commit that a run ending early will never make — which is how issue
+413's subjects nearly went unrecorded, leaving the next run free to repeat them.
+
+### 8.2 — Build permalinks, then commit everything together
+
+```bash
+python3 scripts/build_index.py
+git add issues/ state/ index.html <NNN>/
+git commit -m "issue <NNN> - <subject of the day>"
+```
+
+`build_index.py` publishes `/<NNN>/index.html` and regenerates the archive
+index; both are part of the same artefact as the issue and belong in the same
+commit. This commit is also what resets GitHub's 60-day scheduled-workflow
+inactivity timer.
+
+### 8.3 — Push to `main`, explicitly
+
+```bash
+git push origin HEAD:main
+```
+
+A cloud routine starts on an auto-created feature branch. GitHub Pages serves
+**only the default branch**, so an issue committed and left on the feature
+branch produces a permalink that 404s — in a mail that has already been sent.
+A bare `git push` is not sufficient and was the single largest defect of the
+2026-08-05 run.
+
+### 8.4 — Verify the push landed, before delivering
+
+```bash
+git fetch origin main
+git rev-parse HEAD origin/main    # the two hashes MUST match
+```
+
+The mail embeds the permalink, so delivery must not happen until the content
+behind that permalink exists. If the hashes differ, stop: leave the dead-man
+alert armed and report the failure. If the push was rejected by branch
+protection, that is a configuration problem for the operator, not something to
+work around by delivering anyway.
+
+### 8.5 — Deliver
+
+```bash
 python3 scripts/deliver.py send issues/<YYYY>/<MM>/<NNN>/ <NNN>
 ```
 
-Then update `state/topics-index.json` with every subject covered — this is what
-makes rule 3 work tomorrow. Include, per subject: issue number, date, part,
-domain, a two-sentence summary, and the source URLs.
+Queues the issue for exactly 06:00 Europe/Paris and then attempts to cancel the
+dead-man alert. Cancellation needs `RESEND_MGMT_KEY`; if it is absent or the
+call fails, the script warns and exits 0 on purpose — the issue is already
+queued, and reporting a delivered issue as a failed run costs more than a
+spurious alert mail.
 
-Finally, mirror `full.html` into Google Drive under
-`/Newsletter/archive/<YYYY>/<MM>/` using the Drive connector. If that fails,
-**log it and carry on** — the mail is already queued and the repo already has
-the archive. A Drive hiccup must never cost the operator a morning.
+### 8.6 — Write the archive manifest to Google Drive
+
+Write `archive/<YYYY>/<MM>/offsec-quotidien-<NNN>.MANIFEST.md` to Google Drive
+via the connector, containing: issue number and date, theme, part titles, word
+and source counts, the Resend queue id, the commit hash on `main`, the Pages
+permalink, and the **SHA-256 sum and byte size of both `full.html` and
+`digest.html`**.
+
+The manifest is the specified deliverable here — not a degraded substitute for
+the HTML. The Drive connector only accepts content passed as a parameter, with
+no path-based upload, so mirroring a 157 KB document would mean retranscribing
+it through the model: expensive, and one altered byte produces a silently
+corrupt archive, which is worse than no archive. The issue already exists in
+three real copies (the repo, the Pages permalink, the mail attachment), so
+Drive's job is to be the index that lets any of the three be verified.
+
+If the connector fails, **log it and carry on** — the mail is already queued.
+A Drive hiccup must never cost the operator a morning.
 
 ---
 

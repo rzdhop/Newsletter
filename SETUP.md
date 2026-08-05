@@ -42,9 +42,22 @@ curl -X POST https://api.resend.com/emails \
        "html":"<p>ok</p>"}'
 ```
 
-If that lands in your inbox, delivery is solved. Grab an API key from
-**resend.com → API Keys** with *Sending access* only — the pipeline never needs
-to read anything.
+If that lands in your inbox, delivery is solved.
+
+You need **two** keys from **resend.com → API Keys**:
+
+| Key | Rights | Used by |
+|---|---|---|
+| `RESEND_API_KEY` | *Sending access* | every send: the dead-man alert and the issue |
+| `RESEND_MGMT_KEY` | *Full access* | one call only — cancelling the dead-man alert |
+
+The split is deliberate. `POST /emails/:id/cancel` is not a sending operation,
+so a restricted key cannot make it: on the 2026-08-05 run the issue queued
+correctly, the cancel returned 401, and the alert survived to fire alongside a
+perfectly good issue. Rather than widening the key that does all the work, the
+cancel right lives in a second key that touches nothing else. If `RESEND_MGMT_KEY`
+is absent the pipeline still delivers — it just warns and leaves the alert
+standing.
 
 ## 4. Give Claude Code access to GitHub
 
@@ -82,11 +95,20 @@ only see connectors attached to your claude.ai account.
 Environment variables:
 
 ```
-RESEND_API_KEY             = re_xxxxxxxxxxxx
+RESEND_API_KEY             = re_xxxxxxxxxxxx      (sending access)
+RESEND_MGMT_KEY            = re_yyyyyyyyyyyy      (full access, cancel only)
 NEWSLETTER_FROM            = OffSec Quotidien <newsletter@rzdhop.com>
 NEWSLETTER_TO              = verdu.rida@gmail.com
 CLAUDE_CODE_SUBAGENT_MODEL = opus
 ```
+
+**The subagent model value is exact.** `opus` and `claude-opus-5` are both
+valid; `opus5` is neither, and an invalid value does not fall back — every
+subagent dies at spawn and the research sweep silently loses all parallelism.
+This happened on 2026-08-05 and cost the run its parallel sweep. `preflight.py`
+now rejects the run outright rather than letting it degrade quietly, but the
+value still has to be typed correctly here, because this UI is the only place
+it lives — the routine environment is not version-controlled.
 
 **Why Opus.** Issue quality tracks model capability closely here. The research
 sweep reads a week of dense primary sources and has to tell a paper from a
@@ -155,10 +177,12 @@ removes the one remaining way a morning goes missing.
 ## Running it by hand
 
 ```bash
-python3 scripts/check_sources.py                       # registry health
-python3 scripts/split.py content.json issues/2026/08/413/
+python3 scripts/preflight.py                            # environment validation
+python3 scripts/check_sources.py                        # registry health
+python3 scripts/split.py content.json issues/2026/08/414/
 python3 scripts/build_index.py                          # permalinks + archive index
-python3 scripts/deliver.py send issues/2026/08/413/ 413
+git push origin HEAD:main                               # Pages serves main only
+python3 scripts/deliver.py send issues/2026/08/414/ 414
 ```
 
 ## If a morning goes missing

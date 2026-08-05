@@ -93,6 +93,33 @@ Component 12 is the one that matters editorially: it exists so a section with
 nothing solid to say can stay empty rather than be filled with hollow text.
 Using it is correct behaviour, not a failure.
 
+### Two numbering systems — do not confuse them
+
+The table above is the **canonical** 13-component scheme, and it is the one
+`render.py`, `prompt.md` and the handoff README all use. The reference file
+`offsec-quotidien-412.html` carries only **11** `<!-- COMPOSANT N -->` markers,
+numbered differently, because the sommaire is folded into its header marker and
+several components appear out of order in the source. Map when reading the
+reference:
+
+| Marker in `412.html` | Canonical component |
+|---|---|
+| COMPOSANT 1 — en-tête *(includes the sommaire)* | 1 **and** 2 |
+| COMPOSANT 2 — TL;DR | 3 |
+| COMPOSANT 3 — titre de partie | 4 |
+| COMPOSANT 4 — item de veille | 5 |
+| COMPOSANT 5 — bloc de code | 6 |
+| COMPOSANT 6 — encart d'avertissement | 7 |
+| COMPOSANT 7 — étapes numérotées | 8 |
+| COMPOSANT 8 — tableau comparatif | 9 |
+| *(no marker — autopsy steps)* | 10 |
+| COMPOSANT 9 — bloc de sources | 11 |
+| COMPOSANT 10 — surface à vide | 12 |
+| COMPOSANT 11 — pied de page | 13 |
+
+Cite canonical numbers in prose. The marker numbers exist only to navigate the
+reference file.
+
 ## Measured budget
 
 | Metric | Value |

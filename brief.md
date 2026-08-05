@@ -63,6 +63,19 @@ Every part ends with a sources block. Numbering is continuous across the whole
 issue: Partie 01 might end at [4], so Partie 02 starts at [5]. A claim you
 cannot cite is a claim you do not make.
 
+**2b. A source you have not read is not a source.**
+Never ship a citation marked "non consulté", and never characterise a body of
+work you have only seen summarised. Either open the advisory, the paper or the
+repository and let what it actually says change the text, or drop the claim
+that depended on it.
+
+This rule was written after issue 413. Four Binarly advisories went out marked
+unread, and reading them forced a correction: BRLY-2026-038 scores 6.8 and does
+claim code execution, which made the line "aucun contournement de secure boot
+revendiqué" too strong. The correction was only possible because the advisories
+were opened before publication. An unread citation is not a weaker source — it
+is an unverified claim wearing a source's clothes, and rule 2 already forbids it.
+
 **3. Never repeat a subject.**
 `state/topics-index.json` records everything ever covered. A subject already
 there may only be **mentioned** — and a mention is a written summary of what
