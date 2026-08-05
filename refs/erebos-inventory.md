@@ -1,24 +1,28 @@
-# Erebos-Zero — technique inventory
+# Erebos-Zero — coverage filter
 
 Source of truth: <https://github.com/rzdhop/Erebos-Zero> (public, 98 commits).
 
-This file drives topic selection for Parties 02 and 03. The generator reads it
-before choosing a subject and applies the rule in `brief.md`:
+**What this file is for.** It is a deduplication filter, and nothing else. The
+reader has already built the techniques listed below, so an issue that explains
+one of them to him is wasted words. Writing 2 600 words on Hell's Gate for
+someone who has implemented Hell's Gate is the exact "hollow content" failure
+the design handoff forbids.
 
-> A technique already implemented in Erebos-Zero is **not** a valid deep-dive
-> subject. It may be referenced as prior work, in one sentence, with a link.
-> Deep-dives go to techniques the operator has *not* built yet.
-
-The point is not novelty for its own sake. Writing 2 600 words explaining
-Hell's Gate to someone who has already implemented Hell's Gate is the exact
-"hollow content" failure the design handoff forbids.
+**What this file is not for.** It does not select subjects. It never did a good
+job of it: choosing a topic because the reader has not built it yet turns the
+newsletter into a build queue for one codebase, which is both a narrower
+publication and a worse one. Subjects come from the field — see the procedure
+at the bottom.
 
 Re-read the repository README at the start of every run: it changes, and a
-stale inventory would send the newsletter back over ground already covered.
+stale list would send the newsletter back over ground already covered.
 
 ---
 
 ## Implemented — reference only, never a deep-dive subject
+
+A technique in this table may be **mentioned** — one sentence, with a link, as
+prior work or as context for something else. It is never the subject.
 
 ### Loaders
 | Technique | Note |
@@ -68,38 +72,40 @@ stale inventory would send the newsletter back over ground already covered.
 
 ---
 
-## Not implemented — priority deep-dive candidates
+## Domains in scope
 
-Ordered roughly by adjacency to what already exists, so each subject builds on
-the operator's current codebase rather than starting from nothing.
+The newsletter is offensive security, full stop. No defensive reframing is
+required and no detection section is mandatory. These are the domains a
+deep-dive can come from:
 
-| Candidate | Why it fits | Adjacent to |
-|---|---|---|
-| **BOF loader / COFF loading** | explicitly flagged by the operator as the gap. Natural next step after a PE loader — parse relocations, resolve `__imp_` symbols, execute in-place | C2 V.2 PE loader |
-| Sleep obfuscation (Ekko, Foliage, Cronos) | encrypts the beacon at rest; the missing half of a stealthy C2 | C2 V.2 |
-| Module stomping / DLL hollowing | writes into a legitimately-loaded module's `.text` | function stomping |
-| Hardware-breakpoint hooking (Dr0-Dr3) | generalises the VEH trick already used for AMSI | VEH AMSI bypass |
-| ETW patching and ETW-Ti evasion | the telemetry channel that survives user-mode unhooking | direct/indirect syscall |
-| Kernel callback removal | `PsSetCreateProcessNotifyRoutine`, `ObRegisterCallbacks` | KASLR leak work |
-| Fresh `ntdll` mapping for unhooking | reload a clean copy from disk or KnownDlls | Halo's/Hell's Gate |
-| TLS callback abuse | pre-`main` execution, defeats naive entry-point breakpoints | loaders |
-| Syscall stack spoofing refinements | synthetic frames that survive `RtlWalkFrameChain` | StealthCall |
-| Windows Filtering Platform callouts | traffic interception without a hooking driver | stagers |
-| Hardware: PCILeech / DMA attacks | the operator asked for hardware topics | — |
-| Hardware: SPI flash dumping, UART/JTAG | entry-level hardware, good weekend material | — |
-| Web: HTTP request smuggling (CL.0, TE.CL) | operator asked for advanced web only | — |
-| Web: SSRF to cloud-metadata chains | advanced, reproducible in a lab | — |
-| Web: prototype pollution to RCE | advanced JS exploitation | — |
+- **Windows maldev** — loaders, injection, evasion, C2 internals, kernel.
+- **Hardware** — DMA and PCILeech, SPI flash, UART/JTAG, side-channel, glitching.
+- **Web** — advanced only: request smuggling, SSRF chains, prototype pollution,
+  deserialisation, cache poisoning.
+- **Platform and kernel research** — Windows/Linux/macOS internals, hypervisor,
+  firmware, mobile.
+
+Parties 02 and 03 must come from different domains. Two Windows-maldev
+deep-dives in one issue is a weaker edition than one maldev plus one hardware
+or web subject.
 
 ---
 
 ## Topic-selection procedure
 
-1. Fetch the Erebos-Zero README; refresh the implemented list above if it moved.
-2. Read `state/topics-index.json` — anything covered in the last 90 days is out.
-3. Prefer a candidate from the table above whose prerequisite is already
-   implemented: the deep-dive then reads as the operator's next commit, not as
-   a disconnected tutorial.
-4. Alternate domains between Partie 02 and Partie 03. Two Windows maldev
-   deep-dives in one issue is a weaker edition than one maldev plus one
-   hardware or web subject.
+1. **Start from what the field published.** The candidate pool is the research
+   surfaced in Step 2 of the runbook — this week's papers, talks, advisories
+   and write-ups from the labs in `sources.yaml`, plus the archive when the
+   week is thin. The subject is chosen because the published work is
+   technically interesting, not because of any gap in any codebase.
+2. **Drop anything covered in the last 90 days** — `state/topics-index.json`.
+3. **Drop anything in the implemented table above.** This is the filter's whole
+   job: no rehashing what the reader already knows.
+4. **Prefer the subject with the better primary source.** A technique with a
+   detailed public write-up, a paper, or a documented PoC repository supports a
+   deeper issue than one known only from a vendor summary. Depth is bounded by
+   what the source actually establishes — where you go past it, you are
+   inferring, and inference gets the `warning` component.
+5. **Alternate domains** between Partie 02 and Partie 03.
+6. Fetch the Erebos-Zero README at the start of the run and refresh the
+   implemented table above if it moved.

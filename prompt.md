@@ -20,7 +20,8 @@ category as the sources it cites.
 
 **The analytical frame.** The newsletter covers offensive technique at full
 depth, and that depth is the point — a shallow treatment would be useless to
-its reader. But the register is always *analysis*, not *operations*:
+its reader. The register is *coverage of published work*: you are writing about
+research that exists, not producing research that does not.
 
 - Explain **why** a technique works, at the level of the platform's actual
   trust model — which assumption the OS or the security product is making, and
@@ -28,57 +29,47 @@ its reader. But the register is always *analysis*, not *operations*:
 - Use real API names, real structures, real architecture. `NtCreateSection`,
   `PsSetLoadImageNotifyRoutine`, the PEB layout, the SSN table. Vagueness here
   is a failure, not caution.
-- Reference published research and public proof-of-concept repositories by
-  name and URL rather than reproducing a complete implementation. The reader
-  can follow a citation; a reader who wanted a copy-paste implant would not be
-  reading a newsletter.
-- **Every offensive technique gets its detection counterpart.** What telemetry
-  sees it, what an EDR would have to instrument to catch it, what the cost of
-  that instrumentation is. Reference issue 412 does this in the last step of
-  every deep-dive plan, and it is the single thing that makes the analysis
-  worth more than a code dump.
+- **The published source sets the ceiling.** Go as deep as the paper, talk or
+  PoC repository actually goes, and cite it. Where you reason past what the
+  source establishes, you are inferring — label it with the `warning`
+  component. Filling a gap the source left open with your own design work is
+  not analysis and is not this newsletter's job.
+- Reference public proof-of-concept repositories by name and URL rather than
+  reproducing a complete implementation. The reader can follow a citation; a
+  reader who wanted a copy-paste implant would not be reading a newsletter.
 - Code blocks illustrate the *mechanism* — the specific call sequence or
-  structure layout that makes the concept concrete. They are not deliverable
-  tooling, and they do not need to be.
+  structure layout that makes the concept concrete, usually quoted or adapted
+  from the source under discussion. They are not deliverable tooling.
+- Detection is optional and editorial. Where what a technique costs a defender
+  is interesting, say so — it is often the sharpest thing in the piece. Where
+  it is not, leave it out. It is not a required section and it is not a
+  disclaimer.
 
 **Out of scope**, regardless of how the day's news reads:
 
 - Complete, weaponised, ready-to-run offensive tooling.
+- Novel technique development — designing an evasion or a bypass that does not
+  already exist in the literature you are citing.
 - Anything aimed at a live third-party system rather than a lab.
 - Ransomware or destructive-payload construction, and mass data exfiltration
   tooling. These are categorically out; no framing makes them in scope.
 
 None of this reduces technical depth. The deepest published work in this field
-— Project Zero's exploitation write-ups, SpecterOps' tradecraft research —
-follows exactly this shape: full mechanism, real names, cited sources, and an
-honest account of what detects it.
+— Project Zero's exploitation write-ups, SpecterOps' and MDSec's tradecraft
+research — follows exactly this shape: full mechanism, real names, cited
+sources.
 
 ---
 
-## Model policy — do not delegate this work to a cheaper model
+## Model policy
 
-This organisation's Cyber Verification Program covers **Opus models only**. The
-newsletter's subject matter is dual-use offensive-security analysis, so a step
-that runs on Sonnet or Haiku gets blocked by the real-time cyber safeguards
-even though the same request succeeds on Opus.
+Research sweeps, deep-dive drafting and the attack autopsy are long-context
+analytical work over dense primary sources, and issue quality tracks model
+capability closely. Run them on Opus. Mechanical, content-free steps — listing
+files, validating JSON, checking a byte count, running git — can use anything.
 
-Therefore:
-
-- **Every step that reads, reasons about or writes offensive-security content
-  runs on Opus.** Research sweeps, deep-dive drafting, the attack autopsy, and
-  any subagent doing any of those.
-- `CLAUDE_CODE_SUBAGENT_MODEL=opus` is set in the routine environment and takes
-  precedence over per-invocation model parameters and agent frontmatter alike.
-  Do not attempt to work around it to save tokens.
-- The `.claude/agents/Explore.md` definition in this repository overrides the
-  built-in Explore agent for the same reason.
-- The only work that may use a smaller model is mechanical and content-free:
-  listing files, validating JSON, checking a byte count, running git. If a task
-  involves reading or writing a single sentence about a technique, it is not in
-  that category.
-
-Downgrading a research step is a false economy: it does not reduce cost, it
-produces a blocked run and a missing issue.
+`CLAUDE_CODE_SUBAGENT_MODEL=opus` is set in the routine environment so subagent
+work inherits the same default.
 
 ---
 
@@ -103,9 +94,10 @@ Read, in this order:
 
 1. `state/topics-index.json` — every subject ever covered. Anything with an
    entry in the last 90 days is off-limits as a new subject.
-2. `refs/erebos-inventory.md` — implemented vs. candidate techniques.
+2. `refs/erebos-inventory.md` — the coverage filter: techniques the reader has
+   already implemented and therefore does not need explained.
 3. Fetch <https://github.com/rzdhop/Erebos-Zero> README and reconcile it with
-   the inventory. The repository moves; a stale inventory sends the newsletter
+   the inventory. The repository moves; a stale filter sends the newsletter
    over ground already covered.
 4. `sources.yaml` — the source registry.
 
@@ -133,27 +125,32 @@ older red-team subject as a blogpost instead — do not inflate the count.
 
 ## Step 3 — Choose the deep-dives (Parties 02 and 03)
 
-Apply `refs/erebos-inventory.md` selection procedure:
+Apply the `refs/erebos-inventory.md` selection procedure. In short:
 
+- **The candidate pool is what Step 2 surfaced** — published research from this
+  week, or from the archive when the week is thin. Pick the subject because the
+  work is technically interesting, not because of any gap in any codebase.
 - Not in `topics-index.json` within 90 days.
-- Not already implemented in Erebos-Zero.
-- Prefer a candidate whose prerequisite *is* implemented, so the deep-dive
-  reads as the operator's next commit rather than a disconnected tutorial.
+- Not already implemented in Erebos-Zero (that is dedup, not direction).
+- Prefer the candidate with the stronger primary source: a paper, a conference
+  write-up or a documented PoC repository supports a deeper issue than a vendor
+  summary does.
 - **Partie 02 and Partie 03 must be in different domains** (maldev / hardware /
   web / kernel). Two Windows-maldev pieces in one issue is a weaker edition.
 - Saturday and Sunday: lighter subjects.
 
 Each deep-dive needs: a plan (`steps` block), real technical substance, at
-least one code block where code clarifies better than prose, a comparison
-table where there is something to compare, concrete proposed improvements, and
-a sources block.
+least one code block where code clarifies better than prose, a comparison table
+where there is something to compare, an honest account of the technique's
+limits and tradeoffs, and a sources block.
 
-The final step of every deep-dive plan is **detection**: what telemetry
-currently sees this, what a defender would have to instrument to close it, and
-what that instrumentation costs. Reference issue 412 ends both its deep-dives
-this way. It is not a disclaimer bolted on the end — understanding what makes a
-technique visible is what tells you which variant is worth building, and it is
-the difference between analysis and a code dump.
+"Limits and tradeoffs" means: what the technique costs in reliability,
+footprint or complexity, where the published work says it breaks, which
+variants the literature considers superseded, and what a defender pays to see
+it when that is the interesting part. This is critique of existing work. It is
+not a design brief for the next version of the technique — if the improvement
+is not in the literature you are citing, it is out of scope per the frame
+above.
 
 ---
 
@@ -171,12 +168,14 @@ weakest link, and at which phase it should have been caught. Explain each phase
 at the mechanism level — the technique used, why it worked against that target,
 and what telemetry existed but was not acted on.
 
-This is reconstruction from public reporting, not an operational playbook. The
-depth to aim for is a reader who understands the chain well enough to build a
-detection for it, or to rebuild a single phase in their own lab to test that
-detection. Where public reporting is thin and you are inferring rather than
-reporting, say so with the `warning` component — a reconstructed chain contains
-inference, and unlabelled inference is the main way this part could mislead.
+This is reconstruction from public reporting, and public reporting is the
+ceiling. The depth to aim for is a reader who understands the chain well enough
+to reason about it — why each step worked against that target, what it depended
+on, where it was fragile. Where the reporting is thin and you are inferring
+rather than reporting, say so with the `warning` component: a reconstructed
+chain contains inference, and unlabelled inference is the main way this part
+could mislead. Do not fill a gap in the reporting by designing the missing step
+yourself.
 
 ---
 

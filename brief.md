@@ -25,9 +25,14 @@ the better — and break it down as a blogpost instead. A thin week is not a
 licence to pad; it is a licence to go to the archive.
 
 ### Partie 02 — Deep-dive
-One advanced subject: malware technique, hardware hacking, or web exploitation.
-**Advanced only.** No introductions to XSS, no "what is a buffer overflow".
-Ends with concrete proposed improvements to the technique.
+One advanced subject drawn from published research: malware technique, hardware
+hacking, web exploitation, platform internals. **Advanced only.** No
+introductions to XSS, no "what is a buffer overflow".
+
+Ends with an honest account of the technique's **limits and tradeoffs** — what
+it costs in reliability, footprint or complexity, where the published work says
+it breaks, which variants the literature treats as superseded. Critique of
+existing work, not a design brief for the next version of it.
 
 ### Partie 03 — Deep-dive
 A second subject, same treatment, **a different domain from Partie 02**. Two
@@ -35,10 +40,12 @@ Windows-maldev deep-dives in one issue is a weaker edition than one maldev plus
 one hardware or web subject.
 
 ### Partie 04 — Autopsie d'attaque
-A recent attack, judged technically, as an expert would. Every aspect explained
-to the depth where a reader could **approach reproduction** in a lab. Timestamped
-phases. Say plainly when the public reporting is thin — reconstructing a chain
-from a vendor blog post is inference, and inference must be labelled.
+A recent attack, judged technically, as an expert would. Every phase explained
+to the depth the **public reporting supports** — the technique used, why it
+worked against that target, where the chain was fragile. Timestamped phases.
+Say plainly when the reporting is thin: reconstructing a chain from a vendor
+blog post is inference, inference must be labelled, and a gap in the reporting
+is not an invitation to design the missing step.
 
 ---
 
@@ -61,10 +68,20 @@ cannot cite is a claim you do not make.
 there may only be **mentioned** — and a mention is a written summary of what
 was said and why it matters again, never a bare link back.
 
-**4. Erebos-aware topic selection.**
-Read `refs/erebos-inventory.md`. Techniques the operator has already
-implemented are not deep-dive subjects; they are prior work, referenced in one
-sentence. Deep-dives go to the gaps. BOF loader is the flagged priority.
+**4. Subjects come from the field; Erebos filters them.**
+The candidate pool is what the labs in `sources.yaml` actually published — this
+week's papers, talks, advisories and write-ups, or the archive when the week is
+thin. Choose the subject whose published work is most worth 2 500 words.
+
+`refs/erebos-inventory.md` is then applied as a filter, not as a selector: a
+technique the reader has already implemented is not a deep-dive subject, it is
+prior work referenced in one sentence. The inventory says what to *skip*. It
+does not say what to write, and a gap in it is not a reason to pick a topic.
+
+**4b. The source sets the ceiling.**
+A deep-dive goes as deep as its primary source establishes, and cites it.
+Reasoning past the source is inference and gets the `warning` component.
+Designing what the source left undone is not this newsletter's job.
 
 **5. Mark what you have not verified.**
 Anything not personally tested goes in the `warning` component
@@ -98,9 +115,11 @@ Written by a practitioner, for one practitioner who already knows the field.
 ## Definition of a good issue
 
 - Every claim traceable to a source in its part's block.
-- At least one thing the reader could go and *do* today.
+- At least one thing the reader could go and *read* today that he would not
+  have found himself.
 - No paragraph that could be deleted without losing information.
 - Parties 02 and 03 in different domains.
 - Partie 04 tied to at least one Tier 5 factual anchor (KEV, ZDI, LOLDrivers).
 - Nothing repeated from `topics-index.json` without being explicitly framed as
   a callback.
+- Nothing asserted past what its source establishes without a `warning`.

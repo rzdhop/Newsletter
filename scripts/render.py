@@ -443,6 +443,21 @@ def empty_note(headline, detail):
 
 # --- Component 13 : footer ----------------------------------------------------
 
+# Standing colophon, identical on every issue.
+#
+# Hardcoded here rather than exposed as a content.json field on purpose: it
+# describes what the publication *is*, which does not vary per issue, and a
+# generation run has no business rewording or dropping it. If the statement
+# below ever stops being true of an issue, the issue is wrong - not this text.
+COLOPHON = (
+    "Bulletin d&rsquo;analyse technique en s&eacute;curit&eacute; offensive. "
+    "Chaque sujet porte sur des travaux publics et cit&eacute;s&nbsp;: le "
+    "bulletin commente la recherche existante et n&rsquo;en produit pas. "
+    "Destin&eacute; &agrave; un lectorat professionnel, pour usage en "
+    "laboratoire ou dans le cadre d&rsquo;engagements autoris&eacute;s."
+)
+
+
 def footer(meta):
     archive = meta.get("archive_url", "")
     label = archive.replace("https://", "")
@@ -451,7 +466,8 @@ def footer(meta):
   <tr><td style="font-family:{MONO}; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">G&eacute;n&eacute;r&eacute; le {esc(meta['generated_at'])} &nbsp;&middot;&nbsp; pipeline {esc(meta.get('pipeline', 'v1.0'))}</td></tr>
   <tr><td style="font-family:{MONO}; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">Fen&ecirc;tre couverte&nbsp;: {esc(meta['window'])} &nbsp;&middot;&nbsp; {meta['sources_scanned']} sources scann&eacute;es, {meta['sources_kept']} retenues</td></tr>
   <tr><td style="font-family:{MONO}; font-size:12px; line-height:19px; padding-bottom:10px;"><a href="{esc(archive)}" style="color:#c9b79a; text-decoration:underline;">{esc(label)}</a> &nbsp;&middot;&nbsp; <span style="color:#8f8b82;">&eacute;ditions n&deg;1 &agrave; {meta['issue']}</span></td></tr>
-  <tr><td style="border-top:1px solid #3a3733; padding-top:10px; font-family:{MONO}; font-size:11px; line-height:17px; color:{INK_FAINT};">Fond clair assum&eacute;&nbsp;: aucune variante sombre n&rsquo;est fournie. Diffusion&nbsp;: {meta.get('recipients', 1)} destinataire(s).</td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:10px; padding-bottom:8px; font-family:{MONO}; font-size:11px; line-height:17px; color:{INK_FAINT};">Fond clair assum&eacute;&nbsp;: aucune variante sombre n&rsquo;est fournie. Diffusion&nbsp;: {meta.get('recipients', 1)} destinataire(s).</td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:8px; font-family:{MONO}; font-size:11px; line-height:17px; color:#8f8b82;">{COLOPHON}</td></tr>
   </table>
 </td>""")
 

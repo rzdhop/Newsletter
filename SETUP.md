@@ -88,17 +88,17 @@ NEWSLETTER_TO              = verdu.rida@gmail.com
 CLAUDE_CODE_SUBAGENT_MODEL = opus
 ```
 
-**Why the model must be Opus.** The Cyber Verification Program covers **Opus
-models only**. This newsletter is dual-use offensive-security analysis, so the
-same request that succeeds on Opus is blocked by the real-time cyber safeguards
-on Sonnet — regardless of CVP approval.
+**Why Opus.** Issue quality tracks model capability closely here. The research
+sweep reads a week of dense primary sources and has to tell a paper from a
+press release; the deep-dives are long-context technical writing against a
+citation standard. Smaller models produce thinner issues, miss the primary
+source behind a news item, and pad when the week is quiet.
 
-`CLAUDE_CODE_SUBAGENT_MODEL` closes the remaining gap. Subagent model
-resolution order is: environment variable → per-invocation parameter →
-frontmatter → main conversation model. Setting the variable means a subagent
-cannot end up on a cheaper model, even if Claude spawns one with an explicit
-model parameter mid-run. Without it, a single delegated research sweep on
-Haiku is enough to lose CVP coverage and fail the run.
+`CLAUDE_CODE_SUBAGENT_MODEL` applies the same default to delegated work.
+Subagent model resolution order is: environment variable → per-invocation
+parameter → frontmatter → main conversation model, so setting the variable
+means a research sweep spawned mid-run inherits Opus rather than defaulting
+to something cheaper.
 
 To pin a *specific* Opus variant rather than whatever `opus` currently
 resolves to, use the full model ID (for example `claude-opus-5`) in both the
