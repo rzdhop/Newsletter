@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<title>OffSec Quotidien n&deg;414</title>
+<!-- No <meta viewport>: its width=device-width is mangled by quoted-printable
+     encoding in transit. No stylesheet, no JS: every style is inline below. -->
+</head>
+<body style="margin:0; padding:0; background-color:#e6e4df; -webkit-text-size-adjust:100%;">
+
+<div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; color:#e6e4df;">Un timer STP qui survit &agrave; son device. Hiawatha se trompe d'en-t&ecirc;te. Hugging Face publie 17 600 actions d'un agent autonome.</div>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#e6e4df; margin:0; padding:0;">
+<tr>
+<td align="center" style="padding:24px 12px 40px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" style="width:100%; max-width:680px; border-collapse:collapse; background-color:#fbfaf8; border:1px solid #cfccc4;">
+
+<tr>
+<td style="padding:26px 30px 20px 30px; background-color:#1e1d1b; border-bottom:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#a8a49b; padding-bottom:8px;">Bulletin interne &nbsp;/&nbsp; s&eacute;curit&eacute; offensive &nbsp;/&nbsp; diffusion 1</td>
+  </tr>
+  <tr>
+    <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:27px; line-height:32px; font-weight:700; color:#f5f3ef; letter-spacing:-0.4px; padding-bottom:10px;">OffSec Quotidien &mdash; n&deg;414</td>
+  </tr>
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#c8c3b9;">jeudi 6 ao&ucirc;t 2026 &nbsp;&middot;&nbsp; 06:00 CEST &nbsp;&middot;&nbsp; 6&nbsp;399 mots &nbsp;&middot;&nbsp; ~32 min</td>
+  </tr>
+  <tr>
+    <td style="padding-top:14px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-left:3px solid #7a4a2e;">
+      <tr>
+        <td style="padding:2px 0 2px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#e8e4dc;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#a8a49b;">Th&egrave;me de la semaine</span><br><span style="font-weight:600; color:#f5f3ef;">Fronti&egrave;res mal tenues</span> &mdash; Un timer STP qui survit au net_device qui le porte, deux serveurs HTTP qui ne s'accordent pas sur la fin d'une requ&ecirc;te, un data loader qu'on fait lire en local plut&ocirc;t qu'aller chercher au loin.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px; background-color:#2a2825;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:16px 0 8px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#8f8b82;">Sommaire</td>
+  </tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-1" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">01</span> &nbsp; Le fil de la semaine <span style="color:#8f8b82;">&mdash; 8 items</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-2" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">02</span> &nbsp; Le timer qui survit &agrave; son device <span style="color:#8f8b82;">&mdash; deep-dive &middot; kernel</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-3" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">03</span> &nbsp; Deux bugs, un d&eacute;saccord de framing <span style="color:#8f8b82;">&mdash; deep-dive &middot; web</span></a></td></tr>
+  <tr><td style="padding:5px 0 16px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-4" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">04</span> &nbsp; Autopsie &mdash; l'intrusion Hugging Face <span style="color:#8f8b82;">&mdash; autopsie &middot; 4,5 jours</span></a></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:24px 20px 4px 20px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f2ecdd; border:2px solid #1e1d1b;">
+  <tr>
+    <td style="padding:16px 18px 6px 18px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; letter-spacing:2px; text-transform:uppercase; font-weight:700; color:#1e1d1b; border-bottom:1px solid #cfc4a8;">TL;DR &mdash; 30 secondes</td>
+  </tr>
+  <tr>
+    <td style="padding:14px 18px 18px 18px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">SSD publie ce matin un use-after-free dans le bridge STP de Linux&nbsp;: les timers sont arm&eacute;s sans test IFF_UP, et le chemin de suppression de lien ne les annule jamais. Le noyau tire lui-m&ecirc;me sur la m&eacute;moire lib&eacute;r&eacute;e quelques secondes plus tard.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">Hiawatha 12.1 d&eacute;coupe les requ&ecirc;tes sur Content-Length quand le RFC impose Transfer-Encoding, et relaie les deux en-t&ecirc;tes sans nettoyer. En front-end, il suffit d'un back-end conforme en face pour d&eacute;synchroniser &mdash; le mainteneur avait refus&eacute; le rapport avant de corriger en silence (CVE-2026-51785).</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">Hugging Face a publi&eacute; 17&nbsp;600 actions reconstruites d'une intrusion de quatre jours et demi men&eacute;e par un agent autonome. Z&eacute;ro CVE dans toute la cha&icirc;ne&nbsp;: un identifiant de connecteur partag&eacute; li&eacute; &agrave; system:masters a donn&eacute; cluster-admin sur deux clusters en moins d'une seconde.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b;"><span style="font-weight:700;">&Agrave; faire aujourd'hui&nbsp;:</span> v&eacute;rifier vos ClusterRole de drivers CSI et vos identifiants de connecteurs multi-clusters &mdash; c'est l'&eacute;tape 11 de la partie 04, et c'est celle qui a transform&eacute; un incident born&eacute; en compromission g&eacute;n&eacute;rale.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-1" style="padding:34px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 01</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Le fil de la semaine</td></tr>
+  <tr><td style="padding:0 0 4px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Huit items retenus sur 114 candidats parcourus. Le premier partage sa primitive avec l'autopsie de la partie 04.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Semaine dense et curieusement coh&eacute;rente. Deux travaux publi&eacute;s &agrave; quatre jours d'intervalle, sans rapport l'un avec l'autre, reposent sur la m&ecirc;me fonctionnalit&eacute; HDF5&nbsp;: un dataset peut d&eacute;clarer que ses octets bruts vivent dans un <strong>autre</strong> fichier, &agrave; un chemin arbitraire. Un chercheur s'en sert pour transformer un upload d'avatar Rails en lecture de fichier arbitraire&nbsp;; un agent autonome s'en est servi pour vider l'environnement d'un pod de production chez Hugging Face. C'est la partie 04. Le reste de la semaine tient dans du tooling red team, deux ajouts au KEV sans d&eacute;tail technique, et un bug de RNG qui co&ucirc;te des bitcoins.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#2f5474; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #1f3d57;">[deep-dive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">KindaRails2Shell&nbsp;: un fichier MATLAB lit vos secrets sur Rails (CVE-2026-66066)</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Depuis Rails 7, le variant processor par d&eacute;faut d'ActiveStorage est libvips, et libvips choisit son loader en reniflant les octets, pas l'extension ni le type MIME d&eacute;clar&eacute;. Un fichier MATLAB v7.3 n'est pas un format&nbsp;: c'est un conteneur HDF5. Or HDF5 propose <strong>external storage</strong> (H5Pset_external)&nbsp;: la creation property list d'un dataset porte une liste de triplets (fichier, offset, taille), et la lecture ouvre ces fichiers de fa&ccedil;on transparente. libmatio, utilis&eacute;e par libvips pour lire les MAT v7.3, ne valide que le chunking&nbsp;; elle n'appelle jamais H5Pget_external_count(), donc H5Dread ouvre le chemin d&eacute;clar&eacute; et recopie ses octets dans la variable. libvips marque plusieurs de ces loaders comme untrusted&nbsp;; ActiveStorage n'utilisait pas ce drapeau par d&eacute;faut. Ethiack publie la cha&icirc;ne compl&egrave;te maintenant que Rails a sorti son d&eacute;p&ocirc;t de d&eacute;tails techniques et d'outillage forensique, et que des PoC circulent.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://ethiack.com/info-hub/research/kindarails2shell-how-a-matlab-file-reads-your-secrets-and-pops-a-shell-on-ruby-on-rails" style="color:#2f5474; text-decoration:underline;">ethiack.com&#8203;/info-hub/research/kindarails2shell</a> <span style="color:#7d7a73;">&middot; 31 juillet 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Du carton au shell root&nbsp;: overflow pre-auth sur un routeur Mercusys MB115-4G</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Chemin complet et reproductible sur un bo&icirc;tier &agrave; moins de cinquante euros, best-seller Amazon Espagne. L'auteur commence par le firmware du site support&nbsp;: extraction du SquashFS avec binwalk, lecture de /etc/inittab qui donne la console s&eacute;rie sur ttyS1 &agrave; 115200 bauds, puis rcS qui r&eacute;v&egrave;le un MediaTek MT7628, des permissions maximales sur plusieurs r&eacute;pertoires de /var, un telnet lanc&eacute; sans argument et un fichier passwd.bak restaur&eacute; &agrave; chaque d&eacute;marrage. UART, shell root, puis analyse statique jusqu'&agrave; un stack buffer overflow pre-auth (CVE-2026-12495). D&eacute;tail &agrave; noter&nbsp;: le routeur n'est pas index&eacute; dans la base FCC ID, donc sa distribution aux &Eacute;tats-Unis est ill&eacute;gale. Le bug est publi&eacute; apr&egrave;s correctif et 90 jours.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://rotcee.github.io/posts/analyzing-the-mersusys-mb115-4g-router/" style="color:#2f5474; text-decoration:underline;">rotcee.github.io&#8203;/posts/analyzing-the-mersusys-mb115-4g-router</a> <span style="color:#7d7a73;">&middot; 4 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Ex&eacute;cution de code via les provisioning packages Windows (.ppkg)</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Un .ppkg est un conteneur WIM produit par ICD.exe, l'outil du Windows ADK. Il embarque un customizations.xml qui d&eacute;crit les comptes &agrave; cr&eacute;er, les profils Wi-Fi, les politiques &mdash; et un bloc ProvisioningCommands dont le CommandLine est ex&eacute;cut&eacute; tel quel. Le fichier contient les mots de passe en clair. iPurple montre aussi que l'Advanced Editor permet de vider l'avertissement affich&eacute; &agrave; l'utilisateur de sa substance. La limite est r&eacute;elle&nbsp;: UAC d&eacute;clenche, et l'utilisateur doit confirmer deux fois, ce qui en fait une technique de post-compromission ou d'ing&eacute;nierie sociale ciblant des comptes d&eacute;j&agrave; &eacute;lev&eacute;s, pas un acc&egrave;s initial. Le billet donne les emplacements&nbsp;: C:\ProgramData\Microsoft\Provisioning, la cl&eacute; HKLM\SOFTWARE\Microsoft\Provisioning\Results, et l'event ID 20 du Provisioning Diagnostics Provider.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://ipurple.team/2026/08/04/provisioning-packages/" style="color:#2f5474; text-decoration:underline;">ipurple.team&#8203;/2026/08/04/provisioning-packages</a> <span style="color:#7d7a73;">&middot; 4 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">N-able N-central&nbsp;: deux contournements d'authentification au KEV, z&eacute;ro d&eacute;tail technique</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le catalogue KEV de la CISA (version 2026.08.04) ajoute CVE-2026-18577 le 3 ao&ucirc;t puis CVE-2026-18556 le 4&nbsp;; le second est le bug d'origine, le premier est la cons&eacute;quence d'un correctif incomplet, tous deux qualifi&eacute;s d'authentication bypass using an alternate path or channel. N-central est une plateforme RMM utilis&eacute;e par des MSP&nbsp;: la compromission du serveur porte au-del&agrave; des clients directs de l'&eacute;diteur, ce qui est exactement le sch&eacute;ma Kaseya VSA et ScreenConnect. N-able n'a publi&eacute; aucun d&eacute;tail technique&nbsp;; les seuls indicateurs sont quatre adresses IP, un service nomm&eacute; Cloudflared et un svchost.exe dans le dossier Documents. &Agrave; noter, la presse &eacute;crit CVE-2026-18576 pour le bug d'origine&nbsp;; le KEV, lui, r&eacute;f&eacute;rence 18556, et c'est le KEV qui porte l'entr&eacute;e.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474; text-decoration:underline;">cisa.gov&#8203;/known-exploited-vulnerabilities-catalog</a> <span style="color:#7d7a73;">&middot; 3-4 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Mythic 4 entre en beta publique</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le changement qui compte pour un op&eacute;rateur n'est pas le chat&nbsp;: ce sont les scopes fins sur les API tokens. En Mythic 3, brancher une automatisation sur l'API GraphQL revenait &agrave; lui donner le contr&ocirc;le d'un compte complet, avec pour seul garde-fou des listes de commandes bloqu&eacute;es. Mythic 4 permet de d&eacute;livrer un token qui ne peut que lire les callbacks ou chercher dans la sortie de t&acirc;ches. Le corollaire est le nouveau chat container&nbsp;: un service enfichable qui expose un mod&egrave;le &agrave; l'op&eacute;ration, avec son propre token scop&eacute; et la possibilit&eacute; de verrouiller la conversation &agrave; son cr&eacute;ateur. Beta&nbsp;: breaking changes sur presque toutes les int&eacute;grations, &agrave; ne pas d&eacute;ployer en engagement sans test.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://specterops.io/blog/2026/08/04/mythic-4-public-beta/" style="color:#2f5474; text-decoration:underline;">specterops.io&#8203;/blog/2026/08/04/mythic-4-public-beta</a> <span style="color:#7d7a73;">&middot; 4 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">ConfigManBearPig 2.0&nbsp;: le collecteur SCCM r&eacute;&eacute;crit en Python</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> R&eacute;&eacute;criture du collecteur PowerShell, qui ne terminait pas dans les grands parcs. Couverture annonc&eacute;e contre la base Misconfiguration Manager&nbsp;: RECON 6/7, TAKEOVER 9/9 en le couplant &agrave; SharpHound et MSSQLHound, EXEC 2/2, mais seulement CRED 1/8 et COERCE 0/2. Le point &agrave; retenir&nbsp;: la grande majorit&eacute; de ces techniques, dont huit des neuf TAKEOVER qui donnent le contr&ocirc;le complet de la hi&eacute;rarchie SCCM, s'&eacute;num&egrave;re depuis un simple compte de domaine. C&ocirc;t&eacute; OPSEC l'auteur est franc &mdash; l'outil n'est pas discret, il &eacute;crit une base DuckDB sur disque&nbsp;; il recommande --dc-only, ou -x pour tout faire passer par un proxy SOCKS et ne rien d&eacute;poser.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://specterops.io/blog/2026/08/03/configmanbearpig-2-0/" style="color:#2f5474; text-decoration:underline;">specterops.io&#8203;/blog/2026/08/03/configmanbearpig-2-0</a> <span style="color:#7d7a73;">&middot; 3 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Module stomping&nbsp;: &eacute;craser l'entry point d'un module cartographi&eacute;</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Voisin du function stomping d&eacute;j&agrave; impl&eacute;ment&eacute; dans Erebos-Zero, mais la cible change&nbsp;: au lieu d'&eacute;craser le corps d'une fonction export&eacute;e, on &eacute;crase l'entry point du module et on d&eacute;marre le thread dessus. La cha&icirc;ne est NtCreateSection avec SEC_IMAGE sur un DLL sacrificiel (combase.dll dans le PoC), NtMapViewOfSection, v&eacute;rification que le payload tient entre l'entry point et la fin de .text, changement de protection, copie, restauration, NtCreateThreadEx. L'int&eacute;r&ecirc;t reste le m&ecirc;me&nbsp;: la r&eacute;gion ex&eacute;cutable est image-backed et non priv&eacute;e. L'auteur ne survend pas &mdash; un scanner m&eacute;moire qui compare l'image en m&eacute;moire au fichier d'origine voit la diff&eacute;rence.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://cocomelonc.github.io/malware/2026/07/29/malware-tricks-61.html" style="color:#2f5474; text-decoration:underline;">cocomelonc.github.io&#8203;/malware/2026/07/29/malware-tricks-61.html</a> <span style="color:#7d7a73;">&middot; 29 juillet 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">COLDCARD&nbsp;: un #ifdef mal &eacute;crit ram&egrave;ne la g&eacute;n&eacute;ration de cl&eacute;s &agrave; 2^32</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Cas d'&eacute;cole de bug d'int&eacute;gration, pas de cryptographie. La configuration de la carte d&eacute;finit MICROPY_HW_ENABLE_RNG &agrave; z&eacute;ro, parce que COLDCARD fournit son propre wrapper de RNG mat&eacute;riel. libngu teste si la macro est <strong>d&eacute;finie</strong> au lieu de tester si elle est <strong>activ&eacute;e</strong>&nbsp;: la compilation r&eacute;ussit et ngu.random se lie au rng_get() de MicroPython, c'est-&agrave;-dire au g&eacute;n&eacute;rateur logiciel d&eacute;terministe Yasmarang initialis&eacute; depuis l'UID du MCU et des registres de timer. Sur Mk2/Mk3 v4, aucune entropie cryptographique n'entre. Sur Mk4/Q/Mk5, le boot ajoute de l'entropie de l'&eacute;l&eacute;ment s&eacute;curis&eacute; mais la hache et n'en garde que quatre octets, et reseed() ne remplace qu'un mot d'&eacute;tat de 32 bits&nbsp;: au plus 2^32 flux distincts, environ 2^31 essais en moyenne. Block publie t&ocirc;t parce que l'exploitation est en cours.</td></tr>
+  <tr><td style="padding:6px 0 18px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://engineering.block.xyz/blog/predictable-rng-fallback-and-32-bit-reseed-in-coldcard-firmware" style="color:#2f5474; text-decoration:underline;">engineering.block.xyz&#8203;/blog/predictable-rng-fallback-and-32-bit-reseed-in-coldcard-firmware</a> <span style="color:#7d7a73;">&middot; 31 juillet 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 01</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[1]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-31</span> &nbsp;&middot;&nbsp; Ethiack &mdash; <a href="https://ethiack.com/info-hub/research/kindarails2shell-how-a-matlab-file-reads-your-secrets-and-pops-a-shell-on-ruby-on-rails" style="color:#2f5474;">KindaRails2Shell: How a MATLAB file reads your secrets and pops a shell on Rails (CVE-2026-66066)</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[2]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-04</span> &nbsp;&middot;&nbsp; Rotce &mdash; <a href="https://rotcee.github.io/posts/analyzing-the-mersusys-mb115-4g-router/" style="color:#2f5474;">Hardware Hacking: From zero to a Pre-Auth Stack Buffer Overflow on Amazon's best-selling router</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[3]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-04</span> &nbsp;&middot;&nbsp; iPurple Team &mdash; <a href="https://ipurple.team/2026/08/04/provisioning-packages/" style="color:#2f5474;">Provisioning Packages</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[4]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-04</span> &nbsp;&middot;&nbsp; CISA &mdash; <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474;">Known Exploited Vulnerabilities Catalog (catalogVersion 2026.08.04)</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[5]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-03</span> &nbsp;&middot;&nbsp; Bill Toulas, BleepingComputer &mdash; <a href="https://www.bleepingcomputer.com/news/security/n-able-warns-of-n-central-auth-bypass-flaw-exploited-in-attacks/" style="color:#2f5474;">N-able warns of N-central auth bypass flaw exploited in attacks</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[6]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-04</span> &nbsp;&middot;&nbsp; SpecterOps &mdash; <a href="https://specterops.io/blog/2026/08/04/mythic-4-public-beta/" style="color:#2f5474;">Mythic 4 Public Beta: More Than a New Coat of Paint</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[7]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-03</span> &nbsp;&middot;&nbsp; Chris Thompson, SpecterOps &mdash; <a href="https://specterops.io/blog/2026/08/03/configmanbearpig-2-0/" style="color:#2f5474;">ConfigManBearPig 2.0 - Things Are Getting Cereal</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[8]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-29</span> &nbsp;&middot;&nbsp; cocomelonc &mdash; <a href="https://cocomelonc.github.io/malware/2026/07/29/malware-tricks-61.html" style="color:#2f5474;">Malware development trick 61: Module stomping. Simple C example</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[9]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-31</span> &nbsp;&middot;&nbsp; Block Bitcoin Engineering and Security &mdash; <a href="https://engineering.block.xyz/blog/predictable-rng-fallback-and-32-bit-reseed-in-coldcard-firmware" style="color:#2f5474;">Predictable RNG Fallback and 32-Bit Reseed in COLDCARD Firmware</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-2" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 02 &nbsp;&middot;&nbsp; Deep-dive</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Le timer qui survit &agrave; son device&nbsp;: UAF dans le bridge STP de Linux</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Deux chemins de destruction, un seul annule les timers. SSD Secure Disclosure, TyphoonPWN 2026.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  SSD Secure Disclosure a publi&eacute; ce matin, 5 ao&ucirc;t &agrave; 08:33 UTC, l'analyse d'un use-after-free dans l'impl&eacute;mentation Spanning Tree Protocol du bridge logiciel de Linux. Le bug a &eacute;t&eacute; soumis par deux chercheurs ind&eacute;pendants, n132 et sven sze, et a pris la deuxi&egrave;me place de la cat&eacute;gorie Linux PE au TyphoonPWN 2026. L'avis r&eacute;f&eacute;rence le commit correctif 2a00517db8de4be7df3d483b215c5544fb30a191 dans l'arbre de Torvalds. Le texte de l'analyse fait 530 mots&nbsp;; le reste de la publication est le code de l'exploit. C'est peu, et c'est pourtant l'un des bugs les plus proprement expliqu&eacute;s de la semaine, parce que la faute tient enti&egrave;rement dans une asym&eacute;trie entre deux fonctions.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  L'int&eacute;r&ecirc;t pour un op&eacute;rateur n'est pas la cible &mdash; peu de gens attaquent un bridge Linux depuis l'ext&eacute;rieur. C'est que toute la cha&icirc;ne se pilote depuis un espace de noms r&eacute;seau non privil&eacute;gi&eacute; via netlink&nbsp;: cr&eacute;er un bridge, activer STP, forcer l'&eacute;tat d'un port, supprimer le lien. Aucune de ces op&eacute;rations ne ressemble &agrave; une attaque prise isol&eacute;ment.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:0 0 10px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700;">Le chemin exploit&eacute;</td>
+  </tr>
+  <tr>
+    <td>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">1</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Cr&eacute;er un bridge et le laisser <strong>administrativement DOWN</strong>. C'est la condition non intuitive&nbsp;: tout le monde teste le chemin UP.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">2</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Activer STP c&ocirc;t&eacute; noyau (BR_KERNEL_STP), via l'attribut netlink IFLA_BR_STP_STATE.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">3</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Rattacher un port et le pousser dans l'&eacute;tat LEARNING. Le chemin d'armement ne v&eacute;rifie jamais IFF_UP&nbsp;: les timers partent alors que le bridge est &eacute;teint.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">4</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Supprimer le lien avec RTM_DELLINK. Le net_device est lib&eacute;r&eacute;, mais les timers restent cha&icirc;n&eacute;s sur une timer base per-CPU.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">5</td></tr></table></td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Attendre quelques secondes. __run_timers() fait feu sur un timer_list qui pointe dans un slab lib&eacute;r&eacute;.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La dur&eacute;e de vie des timers STP est celle du net_device, et pas parce que quelqu'un l'a d&eacute;cid&eacute;&nbsp;: c'est structurel. Les timers sont des champs de struct net_bridge, et struct net_bridge vit dans la zone de donn&eacute;es priv&eacute;es du net_device du bridge. On retrouve dans net/bridge/br_private.h hello_timer, tcn_timer et topology_change_timer c&ocirc;t&eacute; bridge, plus forward_delay_timer, hold_timer et message_age_timer par port. Lib&eacute;rer le device sans avoir supprim&eacute; ces timers est donc, m&eacute;caniquement, un use-after-free. Toute la question est de savoir quel chemin de destruction fait le m&eacute;nage.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Un seul le fait. br_stp_disable_bridge() est la seule fonction qui supprime les timers de fa&ccedil;on synchrone, et elle n'est atteinte que depuis br_dev_stop(), c'est-&agrave;-dire depuis ndo_stop, c'est-&agrave;-dire lors d'une transition UP vers DOWN&nbsp;:
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">net/bridge/br_stp_if.c</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">void br_stp_disable_bridge(struct net_bridge *br)
+{
+	struct net_bridge_port *p;
+
+	spin_lock_bh(&amp;br-&gt;lock);
+	list_for_each_entry(p, &amp;br-&gt;port_list, list) {
+		if (p-&gt;state != BR_STATE_DISABLED)
+			br_stp_disable_port(p);
+	}
+	__br_set_topology_change(br, 0);
+	br-&gt;topology_change_detected = 0;
+	spin_unlock_bh(&amp;br-&gt;lock);
+
+	timer_delete_sync(&amp;br-&gt;hello_timer);
+	timer_delete_sync(&amp;br-&gt;topology_change_timer);
+	timer_delete_sync(&amp;br-&gt;tcn_timer);
+	cancel_delayed_work_sync(&amp;br-&gt;gc_work);
+}</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Les quatre annulations synchrones qui rendent la destruction s&ucirc;re. Elles ne sont ex&eacute;cut&eacute;es que sur le chemin ndo_stop.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  L'autre chemin ne passe pas par l&agrave;. Supprimer directement le lien conduit &agrave; br_dev_delete(), qui n'appelle jamais br_stp_disable_bridge(). Et unregister_netdevice_many() saute purement et simplement ndo_stop pour un device d&eacute;j&agrave; DOWN &mdash; ce qui est logique&nbsp;: &agrave; quoi bon arr&ecirc;ter ce qui est d&eacute;j&agrave; arr&ecirc;t&eacute;. L'hypoth&egrave;se implicite est qu'un device DOWN n'a rien d'arm&eacute;. C'est cette hypoth&egrave;se qui ne tient pas.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Elle ne tient pas parce que le chemin d'armement ne regarde pas l'&eacute;tat administratif du bridge. br_stp_enable_bridge() est prudent&nbsp;: il ne r&eacute;active un port que si netif_running(p->dev) et netif_oper_up(p->dev). Mais ce test porte sur le device du <strong>port</strong>, pas sur celui du bridge. Plus bas, dans br_make_forwarding(), l'armement est inconditionnel&nbsp;:
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">net/bridge/br_stp.c</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">static void br_make_forwarding(struct net_bridge_port *p)
+{
+	struct net_bridge *br = p-&gt;br;
+
+	if (p-&gt;state != BR_STATE_BLOCKING)
+		return;
+
+	if (br-&gt;stp_enabled == BR_NO_STP || br-&gt;forward_delay == 0) {
+		br_set_state(p, BR_STATE_FORWARDING);
+		br_topology_change_detection(br);
+		timer_delete(&amp;p-&gt;forward_delay_timer);
+	} else if (br-&gt;stp_enabled == BR_KERNEL_STP)
+		br_set_state(p, BR_STATE_LISTENING);
+	else
+		br_set_state(p, BR_STATE_LEARNING);
+
+	br_ifinfo_notify(RTM_NEWLINK, NULL, p);
+
+	if (br-&gt;forward_delay != 0)
+		mod_timer(&amp;p-&gt;forward_delay_timer, jiffies + br-&gt;forward_delay);
+}</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Le mod_timer final ne d&eacute;pend que de forward_delay. Ni IFF_UP ni netif_running n'apparaissent dans cette fonction.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La fonction qui appelle br_make_forwarding() vaut aussi le coup d'&oelig;il, parce qu'elle montre que le sous-syst&egrave;me entier raisonne sur l'&eacute;tat <strong>STP</strong> des ports et jamais sur l'&eacute;tat administratif du bridge. br_port_state_selection() ignore les ports DISABLED, s'abstient si l'espace utilisateur pilote STP (BR_USER_STP), puis r&eacute;partit les autres entre forwarding et blocking selon qu'ils sont root port ou designated port. Et elle se termine par ceci&nbsp;:
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">net/bridge/br_stp.c &mdash; fin de br_port_state_selection()</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">		if (p-&gt;state == BR_STATE_FORWARDING)
+			++liveports;
+	}
+
+	if (liveports == 0)
+		netif_carrier_off(br-&gt;dev);
+	else
+		netif_carrier_on(br-&gt;dev);
+}</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Un bridge administrativement DOWN se voit ici manipuler son carrier. Le code ne se demande jamais s'il a le droit d'agir sur ce device.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="22%" style="width:22%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Chemin</td>
+    <td width="30%" style="width:30%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">D&eacute;clencheur</td>
+    <td width="22%" style="width:22%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Passe par ndo_stop</td>
+    <td width="26%" style="width:26%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Timers annul&eacute;s</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">ndo_stop</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">transition UP vers DOWN (ip link set down)</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">oui, par d&eacute;finition</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">oui &mdash; br_dev_stop() appelle br_stp_disable_bridge()</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">dellink, device UP</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">RTM_DELLINK sur un bridge actif</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">oui, arr&ecirc;t implicite avant unregister</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">oui, par le m&ecirc;me chemin</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">dellink, device DOWN</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">RTM_DELLINK sur un bridge jamais mont&eacute;</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">non &mdash; unregister_netdevice_many() le saute</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">non &mdash; br_dev_delete() ne touche pas au STP</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Trois fa&ccedil;ons de d&eacute;truire un bridge, une seule laisse des timers arm&eacute;s. La troisi&egrave;me ligne est le bug.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Reste la primitive. Un timer_list expir&eacute; est trait&eacute; par __run_timers() en contexte softirq, qui finit dans call_timer_fn()&nbsp;: le champ function est appel&eacute; avec, en premier argument, l'adresse du timer_list lui-m&ecirc;me. Autrement dit, si l'on parvient &agrave; r&eacute;occuper le slot lib&eacute;r&eacute; avec un contenu ma&icirc;tris&eacute;, on obtient &agrave; la fois le pointeur de code et le contenu point&eacute; par RDI. L'avis situe l'objet lib&eacute;r&eacute; dans le cache kmalloc-cg-8k, et souligne la propri&eacute;t&eacute; qui rend l'ensemble praticable&nbsp;: les timers <strong>vont s'ex&eacute;cuter tout seuls</strong> quelques secondes plus tard. Il n'y a pas de primitive de d&eacute;clenchement &agrave; trouver, pas d'appel syst&egrave;me &agrave; rejouer pour atteindre l'objet mort. Le noyau le fait &agrave; la place de l'attaquant.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le code publi&eacute; avec l'avis m&eacute;rite qu'on s'y arr&ecirc;te, parce qu'il documente le pilotage. La mise en &eacute;tat d'un port ne passe pas par la machine &agrave; &eacute;tats STP&nbsp;: bridgePortStateSet() envoie un RTM_SETLINK avec ifi_family &agrave; AF_BRIDGE et un attribut IFLA_PROTINFO <strong>non imbriqu&eacute;</strong>, ce que le commentaire du code d&eacute;crit comme frappant br_set_port_state() directement. C'est ce qui permet de placer un port en BR_STATE_LEARNING (valeur 2) sans n&eacute;gocier quoi que ce soit avec un vrai r&eacute;seau STP.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">exploit publi&eacute; par SSD &mdash; bridge.c</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">char * bridgePortStateSet(const char *iface, __u8 state)
+{
+	struct newlink_req *req = calloc(1, sizeof(struct newlink_req));
+
+	req-&gt;nlh.nlmsg_type  = RTM_SETLINK;
+	req-&gt;nlh.nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
+	req-&gt;nlh.nlmsg_len   = NLMSG_LENGTH(sizeof(struct ifinfomsg));
+
+	req-&gt;ifi.ifi_family = AF_BRIDGE;
+	req-&gt;ifi.ifi_index  = if_nametoindex(iface);
+
+	/* IFLA_PROTINFO (not nested) - hits br_set_port_state() directly */
+	req-&gt;nlh.nlmsg_len += NLMSG_ALIGN(add_rtattr(
+		(size_t)req + NLMSG_ALIGN(req-&gt;nlh.nlmsg_len),
+		IFLA_PROTINFO, sizeof(__u8), (char *)&amp;state));
+
+	return (char *)req;
+}</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">BR_STATE_LEARNING vaut 2. Le reste de la biblioth&egrave;que publi&eacute;e est du netlink de confort : bridgeAdd, bridgeStpSet, linkDel.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Mises bout &agrave; bout, les primitives publi&eacute;es donnent la s&eacute;quence de mise en condition. Elle tient en cinq messages netlink, dont aucun n'est privil&eacute;gi&eacute; dans un espace de noms r&eacute;seau o&ugrave; l'appelant d&eacute;tient CAP_NET_ADMIN&nbsp;:
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">s&eacute;quence reconstitu&eacute;e depuis les helpers publi&eacute;s par SSD</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">bridgeAdd("br0")                        /* RTM_NEWLINK, kind = "bridge" */
+bridgeStpSet("br0", 1)                  /* IFLA_BR_STP_STATE = BR_KERNEL_STP */
+bridgePortAdd("br0", "dummy0")          /* IFLA_MASTER */
+bridgePortStateSet("dummy0", 2)         /* BR_STATE_LEARNING */
+/* br0 n'a jamais ete monte : pas de IFF_UP, donc pas de ndo_stop */
+linkDel("br0")                          /* RTM_DELLINK -&gt; free_netdev() */</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Aucun de ces cinq appels ne ressemble a une attaque pris isolement. C'est l'ordre, et l'absence du IFF_UP, qui font le bug.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f7ecd6; border:2px dashed #8a5a12;">
+  <tr>
+    <td style="padding:12px 16px 6px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:#6b4409;">&#9888;&#65039; Hypoth&egrave;se non test&eacute;e</td>
+  </tr>
+  <tr>
+    <td style="padding:0 16px 14px 16px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#3b2c11;">L'avis ne dit pas avec quel objet le slot de 8&nbsp;Ko est r&eacute;occup&eacute;. La biblioth&egrave;que publi&eacute;e contient loopbackSend2(priority, len), qui ouvre un socket UDP sur la loopback, positionne SO_PRIORITY, puis &eacute;crit une longueur choisie corrig&eacute;e de 0x2a octets d'en-t&ecirc;tes &mdash; la forme canonique d'un spray par sk_buff avec contr&ocirc;le simultan&eacute; de la taille et du bucket. Que ce soit <strong>l&agrave;</strong> la primitive de refill est une lecture de ma part, coh&eacute;rente avec le suffixe -cg du cache (allocations comptabilis&eacute;es par cgroup) mais que le texte de SSD n'&eacute;tablit pas. Je n'ai pas reproduit l'exploit.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le reste de la biblioth&egrave;que publi&eacute;e dit quelque chose sur la mani&egrave;re dont le bug a &eacute;t&eacute; trouv&eacute;. On y trouve une fonction syz_net_reset() qui descend l'interface lo, supprime sa qdisc racine par un RTM_DELQDISC avec tcm_parent &agrave; 0xFFFFFFFF, puis la remonte &mdash; l'idiome de remise &agrave; z&eacute;ro d'&eacute;tat de syzkaller, sous son nom d'origine. La forme du bug va dans le m&ecirc;me sens&nbsp;: une combinaison d'&eacute;tats que personne ne compose &agrave; la main (bridge jamais mont&eacute;, STP noyau actif, port en LEARNING, suppression du lien) mais qu'un fuzzer netlink atteint m&eacute;caniquement. Ce qui reste au cr&eacute;dit des chercheurs, et que le fuzzer ne donne pas, c'est la remont&eacute;e du crash jusqu'&agrave; l'asym&eacute;trie entre les deux chemins de destruction, puis jusqu'&agrave; une primitive de d&eacute;tournement de flot.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Limites et compromis, maintenant. La premi&egrave;re est la fen&ecirc;tre temporelle&nbsp;: entre le free et le tir du timer il y a quelques secondes, ce qui est confortable pour pulv&eacute;riser le tas mais laisse aussi le noyau r&eacute;utiliser le slot pour n'importe quoi d'autre. Un &eacute;chec ne donne pas un second essai propre&nbsp;: il donne un appel indirect vers une adresse arbitraire en contexte softirq, c'est-&agrave;-dire une panique. La deuxi&egrave;me est le cache vis&eacute;. kmalloc-cg-8k est un bucket peu fr&eacute;quent&eacute; compar&eacute; aux caches g&eacute;n&eacute;riques, ce qui aide au d&eacute;terminisme, mais impose que l'objet de remplissage soit lui aussi comptabilis&eacute; cgroup &mdash; cela exclut une partie du catalogue habituel de spray.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La troisi&egrave;me limite est celle qui d&eacute;cide de la port&eacute;e r&eacute;elle. Toute la s&eacute;quence est du netlink sur un bridge que l'attaquant cr&eacute;e lui-m&ecirc;me&nbsp;: si l'environnement autorise les user namespaces non privil&eacute;gi&eacute;s avec CAP_NET_ADMIN dans le namespace, c'est une &eacute;l&eacute;vation locale depuis un compte quelconque, ce qui est le cadre d'un TyphoonPWN Linux PE. Si la distribution restreint unprivileged_userns_clone, ou si l'on est d&eacute;j&agrave; dans un conteneur sans NET_ADMIN, la primitive n'est pas atteignable du tout. C'est la diff&eacute;rence habituelle entre un bug de sous-syst&egrave;me r&eacute;seau et un bug exploitable&nbsp;: la surface est configurable, et elle est souvent d&eacute;j&agrave; ferm&eacute;e sur un serveur durci.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Dernier point, &eacute;ditorial. La forme de ce bug &mdash; deux chemins de destruction dont un seul fait le m&eacute;nage, parce qu'un test d'&eacute;tat a &eacute;t&eacute; plac&eacute; sur le chemin nominal et pas sur l'autre &mdash; est exactement celle de la fen&ecirc;tre TOCTOU de PsSetLoadImageNotifyRoutine trait&eacute;e dans le num&eacute;ro 412. Ce ne sont pas les m&ecirc;mes syst&egrave;mes d'exploitation ni la m&ecirc;me classe de bug, mais c'est la m&ecirc;me faute de raisonnement&nbsp;: un invariant v&eacute;rifi&eacute; &agrave; un endroit, suppos&eacute; partout ailleurs.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 02</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[10]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; SSD Secure Disclosure technical team &mdash; <a href="https://ssd-disclosure.com/linux-bridge-stp-timer-use-after-free/" style="color:#2f5474;">Linux Bridge STP Timer Use-After-Free (n132, sven sze - TyphoonPWN 2026)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[11]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Linux kernel &mdash; <a href="https://github.com/torvalds/linux/blob/master/net/bridge/br_stp.c" style="color:#2f5474;">net/bridge/br_stp.c - br_make_forwarding(), br_port_state_selection()</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[12]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Linux kernel &mdash; <a href="https://github.com/torvalds/linux/blob/master/net/bridge/br_stp_if.c" style="color:#2f5474;">net/bridge/br_stp_if.c - br_stp_enable_bridge(), br_stp_disable_bridge()</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[13]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Linux kernel &mdash; <a href="https://github.com/torvalds/linux/blob/master/net/bridge/br_private.h" style="color:#2f5474;">net/bridge/br_private.h - timers de struct net_bridge et struct net_bridge_port</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[14]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Linux kernel &mdash; <a href="https://github.com/torvalds/linux/blob/master/net/bridge/br_device.c" style="color:#2f5474;">net/bridge/br_device.c - br_dev_stop()</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 24px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;">
+  Les parties 03 et 04 de ce num&eacute;ro ne tiennent pas dans le corps du mail (limite de 90&nbsp;Ko impos&eacute;e par Gmail). Elles sont <strong>compl&egrave;tes dans la pi&egrave;ce jointe</strong> <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">offsec-quotidien-414.html</span> et en ligne&nbsp;: <a href="https://rzdhop.github.io/Newsletter/414" style="color:#2f5474; text-decoration:underline;">rzdhop.github.io/Newsletter/414</a>.
+</td>
+</tr>
+<tr>
+<td style="padding:22px 30px 26px 30px; background-color:#1e1d1b; border-top:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">G&eacute;n&eacute;r&eacute; le 2026-08-05 &agrave; 13:35 UTC &nbsp;&middot;&nbsp; pipeline v1.0</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">Fen&ecirc;tre couverte&nbsp;: 2026-07-29 06:00 &rarr; 2026-08-05 12:00 UTC &nbsp;&middot;&nbsp; 114 sources scann&eacute;es, 19 retenues</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; padding-bottom:10px;"><a href="https://rzdhop.github.io/Newsletter" style="color:#c9b79a; text-decoration:underline;">rzdhop.github.io/Newsletter</a> &nbsp;&middot;&nbsp; <span style="color:#8f8b82;">&eacute;ditions n&deg;1 &agrave; 414</span></td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:10px; padding-bottom:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Fond clair assum&eacute;&nbsp;: aucune variante sombre n&rsquo;est fournie. Diffusion&nbsp;: 1 destinataire(s).</td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#8f8b82;">Bulletin d&rsquo;analyse technique en s&eacute;curit&eacute; offensive. Chaque sujet porte sur des travaux publics et cit&eacute;s&nbsp;: le bulletin commente la recherche existante et n&rsquo;en produit pas. Destin&eacute; &agrave; un lectorat professionnel, pour usage en laboratoire ou dans le cadre d&rsquo;engagements autoris&eacute;s.</td></tr>
+  </table>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

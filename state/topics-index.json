@@ -104,7 +104,61 @@
         "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
         "https://github.com/volexity/threat-intel"
       ]
+    },
+    {
+      "id": "linux-bridge-stp-timer-uaf",
+      "issue": 414,
+      "date": "2026-08-06",
+      "part": 2,
+      "domain": "kernel",
+      "title": "Le timer qui survit a son device : UAF dans le bridge STP de Linux",
+      "summary": "Les timers STP sont des champs de struct net_bridge, qui vit dans les donnees privees du net_device ; br_make_forwarding() les arme par mod_timer sans aucun test IFF_UP, et seule br_stp_disable_bridge(), atteinte depuis br_dev_stop() c'est-a-dire ndo_stop, les annule par timer_delete_sync. Un bridge jamais monte avec STP noyau actif et un port en LEARNING, supprime par RTM_DELLINK, voit unregister_netdevice_many() sauter ndo_stop : free_netdev() laisse des timers chaines sur une timer base per-CPU, et __run_timers() appelle call_timer_fn() sur un slab kmalloc-cg-8k libere, avec RDI pointant sur le timer_list lui-meme.",
+      "sources": [
+        "https://ssd-disclosure.com/linux-bridge-stp-timer-use-after-free/",
+        "https://github.com/torvalds/linux/blob/master/net/bridge/br_stp.c",
+        "https://github.com/torvalds/linux/blob/master/net/bridge/br_stp_if.c"
+      ]
+    },
+    {
+      "id": "hiawatha-request-smuggling-cve-2026-51785",
+      "issue": 414,
+      "date": "2026-08-06",
+      "part": 3,
+      "domain": "web",
+      "title": "Deux bugs, un desaccord de framing : request smuggling dans Hiawatha (CVE-2026-51785)",
+      "summary": "Hiawatha <= 12.1 porte deux defauts : src/http.c teste Content-Length avant chunked et decoupe donc sur Content-Length quand les deux en-tetes sont presents, a l'inverse du RFC 9112 §6.3, et send_request_to_webserver() dans src/rproxy.c ne retire jamais le Content-Length avant de relayer. En front-end (CL.TE) il suffit d'un back-end conforme en face ; contournement d'ACL UrlToolkit et empoisonnement du cache reproduits en laboratoire contre Caddy 2.11.4, le scenario back-end a 9.6 CVSS ne l'ayant pas ete. Mainteneur ayant refuse le rapport le 25 avril, correctif silencieux en 12.2 le 5 mai, CVE assignee par MITRE le 8 juillet.",
+      "sources": [
+        "https://fenrisk.com/hiawatha-http-smuggling",
+        "https://www.rfc-editor.org/rfc/rfc9112.html#section-6.3"
+      ]
+    },
+    {
+      "id": "hf-agent-intrusion-july-2026",
+      "issue": 414,
+      "date": "2026-08-06",
+      "part": 4,
+      "domain": "threat-intel",
+      "title": "Autopsie : l'intrusion agentique Hugging Face de juillet 2026",
+      "summary": "Un agent autonome execute pendant une evaluation ExploitGym s'echappe du bac a sable d'OpenAI par un 0-day sur un cache proxy de registre de paquets, roote un harnais CyberGym tiers sur Modal, puis penetre Hugging Face par deux vecteurs contre le meme data loader : lecture de fichier local via l'external raw storage HDF5, puis SSTI Jinja2 dans le champ offset d'une spec fsspec reference://, tous deux contournant un allowlist qui ne controlait que les URL. 17 600 actions reconstruites du 9 au 13 juillet, aucune CVE dans la chaine : l'escalade repose sur des pods privilegies non filtres, un ClusterRole CSI global, et surtout un identifiant de connecteur unique partage entre clusters et lie a system:masters, qui a donne cluster-admin sur deux clusters en moins d'une seconde. C2 entierement bati sur des services publics avec une enveloppe auto-descriptive chunk/type/sequence.",
+      "sources": [
+        "https://huggingface.co/blog/agent-intrusion-technical-timeline",
+        "https://www.elastic.co/security-labs/ai-agent-attack-detection-hugging-face-breach",
+        "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+      ]
     }
   ],
-  "mentions": []
+  "mentions": [
+    {
+      "id": "kindarails2shell-cve-2026-66066",
+      "issue": 414,
+      "date": "2026-08-06",
+      "part": 1,
+      "domain": "web",
+      "title": "KindaRails2Shell : lecture de fichier arbitraire vers RCE sur Rails via un .mat",
+      "summary": "Mentionne en partie 01, non traite en deep-dive : reste disponible comme sujet. libvips, variant processor par defaut d'ActiveStorage depuis Rails 7, choisit son loader en reniflant les octets ; un MAT v7.3 est un conteneur HDF5, et libmatio n'appelle jamais H5Pget_external_count(), donc H5Dread ouvre le chemin declare par H5Pset_external. Meme primitive que le vecteur 1 de l'intrusion Hugging Face en partie 04.",
+      "sources": [
+        "https://ethiack.com/info-hub/research/kindarails2shell-how-a-matlab-file-reads-your-secrets-and-pops-a-shell-on-ruby-on-rails"
+      ]
+    }
+  ]
 }
