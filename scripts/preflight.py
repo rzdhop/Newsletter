@@ -41,16 +41,32 @@ failures = []
 warnings = []
 
 
-def blocking(label, ok, detail=""):
+def _report(tag, label, ok, detail, detail_ok):
+    """
+    Print one check line, using the note that matches the outcome.
+
+    `detail` explains a failure and is shown only when the check fails;
+    `detail_ok` is the rarer case of a note worth printing on success. Keeping
+    them apart is not cosmetic: every call site writes `detail` as a statement
+    about what went wrong, so printing it unconditionally made a passing check
+    assert its own failure. That is how the 2026-08-05 preflight reported
+    "[PASS] env RESEND_MGMT_KEY - unset" while the key was present and the
+    dead-man alert cancelled correctly.
+    """
+    note = detail_ok if ok else detail
+    print(f"[{tag[ok]}] {label}{(' - ' + note) if note else ''}")
+
+
+def blocking(label, ok, detail="", detail_ok=""):
     """Record a check whose failure must abort the run before any work starts."""
-    print(f"[{'PASS' if ok else 'FAIL'}] {label}{(' - ' + detail) if detail else ''}")
+    _report({True: "PASS", False: "FAIL"}, label, ok, detail, detail_ok)
     if not ok:
         failures.append(label)
 
 
-def advisory(label, ok, detail=""):
+def advisory(label, ok, detail="", detail_ok=""):
     """Record a check whose failure degrades the run but does not invalidate it."""
-    print(f"[{'PASS' if ok else 'WARN'}] {label}{(' - ' + detail) if detail else ''}")
+    _report({True: "PASS", False: "WARN"}, label, ok, detail, detail_ok)
     if not ok:
         warnings.append(label)
 
@@ -68,7 +84,7 @@ def check_subagent_model():
                  "unset - subagents inherit the main model instead of being pinned")
         return
     blocking("env CLAUDE_CODE_SUBAGENT_MODEL", bool(SUBAGENT_MODEL_RE.match(value)),
-             f"'{value}' is not a valid alias or model id")
+             f"'{value}' is not a valid alias or model id", detail_ok=f"'{value}'")
 
 
 def check_resend_reachable():
@@ -88,13 +104,13 @@ def check_resend_reachable():
     request.add_header("User-Agent", USER_AGENT)
     try:
         urllib.request.urlopen(request, timeout=15)
-        blocking("resend.com reachable", True)
+        blocking("resend.com reachable", True, detail_ok="API answered 200")
     except urllib.error.HTTPError as error:
         body = error.read().decode("utf-8", errors="replace")
         blocked = "1010" in body or "Cloudflare" in body
         blocking("resend.com reachable", not blocked,
-                 "Cloudflare is rejecting our User-Agent" if blocked
-                 else f"API answered {error.code}, transport healthy")
+                 "Cloudflare is rejecting our User-Agent",
+                 detail_ok=f"API answered {error.code}, transport healthy")
     except urllib.error.URLError as error:
         blocking("resend.com reachable", False, f"unreachable: {error.reason}")
 
@@ -102,28 +118,34 @@ def check_resend_reachable():
 def check_cancel_rights():
     advisory("env RESEND_MGMT_KEY", bool(os.environ.get("RESEND_MGMT_KEY")),
              "unset - the dead-man alert cannot be cancelled and will fire "
-             "at 06:00 even on a fully successful run")
+             "at 06:00 even on a fully successful run",
+             detail_ok="set - the dead-man alert can be cancelled")
 
 
 def check_git_target():
     """
-    Report the branch this run started on.
+    Require that the run is on `main`.
 
-    A cloud routine begins on an auto-created feature branch. GitHub Pages only
-    serves the default branch, so an issue committed and left there produces a
-    permalink that 404s in a mail that has already been sent - which is exactly
-    what happened to issue 413. Advisory rather than blocking: the branch is
-    legitimate, what matters is that Step 8 pushes to main explicitly, and this
-    line exists to remind the run to do it.
+    This project works on main and only on main. GitHub Pages serves the default
+    branch, so an issue committed and left on a side branch produces a permalink
+    that 404s in a mail that has already been sent - which is what happened to
+    issue 413.
+
+    Blocking rather than advisory, and deliberately so. The previous version only
+    warned, on the theory that a feature branch was legitimate as long as Step 8
+    remembered to push elsewhere. That put the correctness of the permalink in
+    the hands of a step that runs hours later, after the expensive work. Failing
+    here costs one `git checkout main`; failing at Step 8 costs the issue.
     """
     try:
         branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
                                 capture_output=True, text=True, timeout=10).stdout.strip()
     except Exception as error:  # noqa: BLE001 - a preflight must never crash the run
-        advisory("git branch", False, f"{type(error).__name__}: {error}")
+        blocking("git branch", False, f"{type(error).__name__}: {error}")
         return
-    advisory("git branch", branch == "main",
-             f"on '{branch}' - Step 8 MUST use 'git push origin HEAD:main'")
+    blocking("git branch", branch == "main",
+             f"on '{branch}' - run `git checkout main`; this project never uses branches",
+             detail_ok="main")
 
 
 def main():

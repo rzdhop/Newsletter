@@ -181,7 +181,7 @@ python3 scripts/preflight.py                            # environment validation
 python3 scripts/check_sources.py                        # registry health
 python3 scripts/split.py content.json issues/2026/08/414/
 python3 scripts/build_index.py                          # permalinks + archive index
-git push origin HEAD:main                               # Pages serves main only
+git push origin main                                    # main only, never a branch
 python3 scripts/deliver.py send issues/2026/08/414/ 414
 ```
 

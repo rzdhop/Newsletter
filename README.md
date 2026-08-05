@@ -22,7 +22,7 @@ archives it.
               ├─ emit content.json → render → split
               ├─ update state/topics-index.json          ← before the commit
               ├─ git commit issues/ + state/ + permalinks
-              ├─ git push origin HEAD:main, then verify  ← Pages serves main only
+              ├─ git push origin main, then verify      ← Pages serves main only
               ├─ queue with Resend, scheduled_at 06:00:00+02:00
               ├─ cancel the dead-man alert
               └─ write the SHA-256 archive manifest to Google Drive
@@ -75,7 +75,7 @@ the byte budget is predictable.
 | An environment that is not version-controlled | `preflight.py` aborts loudly before any work is spent |
 | Cloudflare rejecting the stock urllib agent | explicit `User-Agent` on every Resend call |
 | A cancel right the sending key does not have | `RESEND_MGMT_KEY`, used for nothing else; failure to cancel is non-fatal |
-| Pages serving only the default branch | Step 8 pushes `HEAD:main` explicitly and verifies the hash before delivering |
+| Pages serving only the default branch | the project works on `main` only — `preflight.py` fails on any other branch, before work is spent |
 | Repeating a subject | `state/topics-index.json`, updated before the commit, checked before writing |
 | Covering ground already built | `refs/erebos-inventory.md`, reconciled with the live repo each run |
 | A source going dark | `check_sources.py` makes decay measurable instead of invisible |
