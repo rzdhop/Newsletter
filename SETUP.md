@@ -185,6 +185,12 @@ git push origin HEAD:main                               # Pages serves main only
 python3 scripts/deliver.py send issues/2026/08/414/ 414
 ```
 
+**On Windows, use `python`, not `python3`.** The routine runs on Linux, where
+`python3` is the correct name and the one `prompt.md` uses. Windows ships no
+`python3` alias — the command silently resolves to the Microsoft Store shim and
+prints an install prompt instead of running anything, so a step appears to
+"work" while doing nothing. Only local invocations are affected.
+
 ## If a morning goes missing
 
 You will get the dead-man alert at 06:00 instead of silence. Then:
