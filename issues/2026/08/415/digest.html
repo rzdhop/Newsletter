@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<title>OffSec Quotidien n&deg;415</title>
+<!-- No <meta viewport>: its width=device-width is mangled by quoted-printable
+     encoding in transit. No stylesheet, no JS: every style is inline below. -->
+</head>
+<body style="margin:0; padding:0; background-color:#e6e4df; -webkit-text-size-adjust:100%;">
+
+<div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; color:#e6e4df;">Deux r&eacute;gressions o&ugrave; le correctif &eacute;tait la faille : le fail-open de Tomcat et le patch incomplet de N-central.</div>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#e6e4df; margin:0; padding:0;">
+<tr>
+<td align="center" style="padding:24px 12px 40px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" style="width:100%; max-width:680px; border-collapse:collapse; background-color:#fbfaf8; border:1px solid #cfccc4;">
+
+<tr>
+<td style="padding:26px 30px 20px 30px; background-color:#1e1d1b; border-bottom:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#a8a49b; padding-bottom:8px;">Bulletin interne &nbsp;/&nbsp; s&eacute;curit&eacute; offensive &nbsp;/&nbsp; diffusion 1</td>
+  </tr>
+  <tr>
+    <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:27px; line-height:32px; font-weight:700; color:#f5f3ef; letter-spacing:-0.4px; padding-bottom:10px;">OffSec Quotidien &mdash; n&deg;415</td>
+  </tr>
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#c8c3b9;">jeudi 6 ao&ucirc;t 2026 &nbsp;&middot;&nbsp; 06:00 CEST &nbsp;&middot;&nbsp; 4&nbsp;178 mots &nbsp;&middot;&nbsp; ~21 min</td>
+  </tr>
+  <tr>
+    <td style="padding-top:14px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-left:3px solid #7a4a2e;">
+      <tr>
+        <td style="padding:2px 0 2px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#e8e4dc;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#a8a49b;">Th&egrave;me de la semaine</span><br><span style="font-weight:600; color:#f5f3ef;">Le correctif comme surface d'attaque</span> &mdash; Fail-open et patch incomplet : quand la r&eacute;gression vient du fix lui-m&ecirc;me.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px; background-color:#2a2825;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:16px 0 8px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#8f8b82;">Sommaire</td>
+  </tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-1" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">01</span> &nbsp; Le fil de la semaine <span style="color:#8f8b82;">&mdash; 8 items</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-2" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">02</span> &nbsp; Fail-open par accolade : le RCE non authentifi&eacute; de Tomcat Tribes <span style="color:#8f8b82;">&mdash; Deep-dive &middot; web / appsec</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-3" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">03</span> &nbsp; De la .map au ROP : exploitation heap de Titan Quest <span style="color:#8f8b82;">&mdash; Deep-dive &middot; exploitation native</span></a></td></tr>
+  <tr><td style="padding:5px 0 16px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-4" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">04</span> &nbsp; Autopsie N-central : le patch incomplet qui a livr&eacute; les endpoints <span style="color:#8f8b82;">&mdash; Autopsie d'attaque</span></a></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:24px 20px 4px 20px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f2ecdd; border:2px solid #1e1d1b;">
+  <tr>
+    <td style="padding:16px 18px 6px 18px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; letter-spacing:2px; text-transform:uppercase; font-weight:700; color:#1e1d1b; border-bottom:1px solid #cfc4a8;">TL;DR &mdash; 30 secondes</td>
+  </tr>
+  <tr>
+    <td style="padding:14px 18px 18px 18px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;"><strong>Tomcat</strong>&nbsp;: le fix de CVE-2026-29146 a d&eacute;plac&eacute; une accolade et transform&eacute; l'EncryptInterceptor en fail-open. Un paquet non chiffr&eacute; envoy&eacute; au port 4000 atteint <span style="font-family:Consolas,monospace;">ObjectInputStream.readObject()</span> sans filtre &mdash; RCE non authentifi&eacute; (CVE-2026-34486), d&eacute;j&agrave; exploit&eacute;.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;"><strong>N-central</strong>&nbsp;: CVE-2026-18577 n'est pas un nouveau bug, c'est le correctif incomplet de CVE-2026-18556. Contournement d'auth exploit&eacute; d&egrave;s le 1er ao&ucirc;t, puis Take Control vers les endpoints manag&eacute;s et tunnel Cloudflare pour la persistance.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;"><strong>Titan Quest</strong>&nbsp;: Synacktiv d&eacute;rive un integer overflow 32-bit dans un loader de niveau vers du ROP, en groomant le Segment Heap avec 128 Mo d'eau et 128 WaterLayers &agrave; adresses pr&eacute;visibles.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b;"><span style="font-weight:700;">&Agrave; faire aujourd'hui&nbsp;:</span> inventorier les clusters Tomcat avec EncryptInterceptor actif, v&eacute;rifier &ge; 9.0.117 / 10.1.54 / 11.0.21 et fermer le port 4000 au r&eacute;seau. &Eacute;ch&eacute;ance KEV f&eacute;d&eacute;rale&nbsp;: 7 ao&ucirc;t.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-1" style="padding:34px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 01</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Le fil de la semaine</td></tr>
+  <tr><td style="padding:0 0 4px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Huit items retenus. La semaine tourne autour de correctifs qui rouvrent la faille, et d'une vague KEV de quatre CVE en trois jours.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Deux des histoires les plus nettes de la semaine ont la m&ecirc;me forme&nbsp;: le correctif <em>est</em> la vuln&eacute;rabilit&eacute;. Tomcat a rouvert son <span style="font-family:Consolas,monospace;">EncryptInterceptor</span> en d&eacute;pla&ccedil;ant une accolade&nbsp;; N-able a livr&eacute; un contournement d'authentification parce que son premier patch ne fermait qu'une des deux portes. Le reste du fil&nbsp;: une vague KEV, un RCE TeamCity non authentifi&eacute;, une &eacute;chapp&eacute;e de VM VMXNET3, et un agent autonome qui s'est surtout auto-compromis.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Vague KEV&nbsp;: quatre CVE ajout&eacute;es en trois jours</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Entre le 3 et le 5 ao&ucirc;t, CISA a inscrit N-central (CVE-2026-18577 puis 18556), Tomcat (CVE-2026-34486), Langflow (CVE-2026-9198) et TeamCity (CVE-2026-63077) &mdash; toutes avec preuve d'exploitation ou &agrave; risque imm&eacute;diat. &Eacute;ch&eacute;ances f&eacute;d&eacute;rales group&eacute;es au 6&ndash;8 ao&ucirc;t. Deux de ces CVE sont trait&eacute;es en d&eacute;tail plus bas (parties 02 et 04).</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474; text-decoration:underline;">cisa.gov/&#8203;known-exploited-vulnerabilities-catalog</a> <span style="color:#7d7a73;">&middot; 2026-08-05</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#2f5474; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #1f3d57;">[deep-dive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">TeamCity On-Premises&nbsp;: RCE non authentifi&eacute; via l'agent polling protocol (CVE-2026-63077)</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> CVSS 9.8, CWE-502&nbsp;: un attaquant sans compte atteint la d&eacute;s&eacute;rialisation du protocole de polling des agents et ex&eacute;cute des commandes OS avec les privil&egrave;ges du serveur. <em>Toutes</em> les versions On-Premises sont touch&eacute;es&nbsp;; corrig&eacute; en 2025.11.7 / 2026.1.3, avec un security patch plugin pour 2017.1+. Signal&eacute; par Antoni Tremblay le 10 juillet, pas d'exploitation ITW connue &agrave; la publication. Compromettre un serveur CI, c'est compromettre les artefacts de build en aval.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://blog.jetbrains.com/teamcity/2026/07/cve-2026-63077/" style="color:#2f5474; text-decoration:underline;">blog.jetbrains.com/&#8203;teamcity/2026/07/cve-2026-63077/</a> <span style="color:#7d7a73;">&middot; 2026-07-28</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">VMware VMSA-2026-0006&nbsp;: bypass d'auth vCenter et &eacute;chapp&eacute;e de VM VMXNET3</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Cinq CVE le 29 juillet. Les critiques&nbsp;: CVE-2026-59309 (bypass d'authentification dans le VMware Directory Service, r&eacute;seau, jusqu'&agrave; 9.8) et CVE-2026-59310 (directory traversal dans le serveur syslog vCenter menant &agrave; l'ex&eacute;cution de code). Surtout, CVE-2026-47876&nbsp;: un out-of-bounds write dans l'adaptateur VMXNET3 permet, depuis un guest o&ugrave; l'on est admin, d'ex&eacute;cuter du code sur l'h&ocirc;te ESX &mdash; une vraie sortie de VM. Aucun workaround pour les deux vCenter.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://github.com/vmware/vcf-security-and-compliance-guidelines/tree/main/security-advisories/vmsa-2026-0006" style="color:#2f5474; text-decoration:underline;">github.com/&#8203;vmware/vcf-security-and-compliance-guidelines/.../vmsa-2026-0006</a> <span style="color:#7d7a73;">&middot; 2026-07-29</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#2f5474; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #1f3d57;">[deep-dive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Unit 42&nbsp;: un agent DeepSeek attaque en autonomie &mdash; et &eacute;choue surtout tout seul</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> L'acteur <span style="font-family:Consolas,monospace;">knaithe</span> a c&acirc;bl&eacute; DeepSeek dans le framework Hermes Agent (skills <span style="font-family:Consolas,monospace;">godmode</span>, exploitation web-terminal, recherche FOFA) pilot&eacute; par Telegram. Bilan&nbsp;: ~460 cibles, trois compromissions confirm&eacute;es. L'agent enum&egrave;re, choisit un exploit GitHub, scanne&nbsp;: sur Langflow puis n8n il conclut lui-m&ecirc;me &laquo;&nbsp;stuck&nbsp;: forms have auth enabled&nbsp;&raquo;. Fuite finale&nbsp;: un <span style="font-family:Consolas,monospace;">python3 -m http.server 8888</span> lanc&eacute; sur ordre Telegram a expos&eacute; cl&eacute;s API, scripts et logs de session. Compl&eacute;ment direct de l'autopsie agentique du n&deg;414.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/" style="color:#2f5474; text-decoration:underline;">unit42.paloaltonetworks.com/&#8203;autonomous-ai-cyber-attack-campaign/</a> <span style="color:#7d7a73;">&middot; 2026-08-01</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Cisco Secure FMC&nbsp;: mot de passe cod&eacute; en dur, exploit&eacute; (CVE-2026-20316)</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Des identifiants statiques pour un compte peu privil&eacute;gi&eacute; sont pr&eacute;sents dans le logiciel lui-m&ecirc;me&nbsp;: chaque d&eacute;ploiement partage le m&ecirc;me secret, et un attaquant distant non authentifi&eacute; peut s'y connecter. CVSS 5.3 seul, mais SIR &laquo;&nbsp;High&nbsp;&raquo; c&ocirc;t&eacute; Cisco parce que la faille se cha&icirc;ne avec d'autres bugs FMC pour l'escalade. Exploitation confirm&eacute;e, KEV le 29 juillet (advisory cisco-sa-fmc-static-cred-BET3Cjh).</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474; text-decoration:underline;">cisa.gov/&#8203;known-exploited-vulnerabilities-catalog (CVE-2026-20316)</a> <span style="color:#7d7a73;">&middot; 2026-07-29</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Langflow&nbsp;: la m&ecirc;me famille de RCE revient une troisi&egrave;me fois (CVE-2026-9198)</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le sch&eacute;ma est r&eacute;current&nbsp;: <span style="font-family:Consolas,monospace;">GET /api/v1/auto_login</span> d&eacute;livre un token SUPERUSER sans identifiants (d&eacute;faut <span style="font-family:Consolas,monospace;">LANGFLOW_AUTO_LOGIN=true</span>), et un sink d'ex&eacute;cution de code fait le reste &mdash; endpoint de build public en 33017, injection de <span style="font-family:Consolas,monospace;">builtins</span> dans <span style="font-family:Consolas,monospace;">PythonREPLComponent</span> en 10561 (les deux lus). CVE-2026-9198 (code injection, versions &lt;1.10.1) est la variante ajout&eacute;e au KEV le 4 ao&ucirc;t. Si vous exposez Langflow, il est d&eacute;j&agrave; derri&egrave;re un proxy authentifiant &mdash; ou compromis.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://github.com/langflow-ai/langflow/security/advisories/GHSA-vwmf-pq79-vjvx" style="color:#2f5474; text-decoration:underline;">github.com/&#8203;langflow-ai/langflow/security/advisories/GHSA-vwmf-pq79-vjvx</a> <span style="color:#7d7a73;">&middot; 2026-08-04</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Trail of Bits&nbsp;: les chausse-trapes de Nitro Enclaves + KMS</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Point cl&eacute;&nbsp;: les attestations ne sont pas li&eacute;es cryptographiquement &agrave; la requ&ecirc;te KMS, donc une m&ecirc;me attestation peut &ecirc;tre rejou&eacute;e entre op&eacute;rations ou avec un <span style="font-family:Consolas,monospace;">keyId</span> modifi&eacute;. L'op&eacute;ration <span style="font-family:Consolas,monospace;">Encrypt</span> ne supporte pas l'attestation. Recommandations utiles pour un lab enclave&nbsp;: coder en dur l'ARN complet de la CMK et le v&eacute;rifier dans la r&eacute;ponse, imposer l'encryption context, &eacute;viter <span style="font-family:Consolas,monospace;">aws-nitro-enclaves-sdk-c</span> (exploitable depuis l'h&ocirc;te parent).</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://blog.trailofbits.com/2026/08/05/a-few-notes-on-aws-nitro-enclaves-kms-integration/" style="color:#2f5474; text-decoration:underline;">blog.trailofbits.com/&#8203;2026/08/05/a-few-notes-on-aws-nitro-enclaves-kms-integration/</a> <span style="color:#7d7a73;">&middot; 2026-08-05</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#5c5a55; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #43413d;">[archive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">&Agrave; relire&nbsp;: l'integer overflow 16-bit de HTTP.sys (CVE-2026-47291)</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le write-up ZDI de juillet reste l'un des plus propres de l'&eacute;t&eacute;. Le champ de capacit&eacute; du reference array est un entier 16 bits&nbsp;: &agrave; 0xFFFB slots, la croissance ajoute 5 et tronque &agrave; 0x0000&nbsp;; l'allocation suivante ne r&eacute;serve que 40 octets tandis que le <span style="font-family:Consolas,monospace;">memmove</span> recopie &gt;500&nbsp;Ko. HTTPS requis, chaque en-t&ecirc;te dans son propre record TLS, ~65&nbsp;536 r&eacute;f&eacute;rences&nbsp;: une fen&ecirc;tre &eacute;troite mais un bug noyau. Corrig&eacute; en juin.</td></tr>
+  <tr><td style="padding:6px 0 18px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.zerodayinitiative.com/blog/2026/7/9/cve-2026-47291-remote-code-execution-in-the-windows-httpsys" style="color:#2f5474; text-decoration:underline;">zerodayinitiative.com/&#8203;blog/2026/7/9/cve-2026-47291-...-httpsys</a> <span style="color:#7d7a73;">&middot; 2026-07-09</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 01</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[1]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; CISA &mdash; <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474;">Known Exploited Vulnerabilities Catalog</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[2]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-28</span> &nbsp;&middot;&nbsp; JetBrains &mdash; <a href="https://blog.jetbrains.com/teamcity/2026/07/cve-2026-63077/" style="color:#2f5474;">Critical Security Issue Affecting TeamCity On-Premises (CVE-2026-63077)</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[3]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-29</span> &nbsp;&middot;&nbsp; Broadcom / VMware &mdash; <a href="https://github.com/vmware/vcf-security-and-compliance-guidelines/tree/main/security-advisories/vmsa-2026-0006" style="color:#2f5474;">VMSA-2026-0006 : ESX, vCenter, Workstation, Fusion (Q&amp;A)</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[4]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-01</span> &nbsp;&middot;&nbsp; Unit 42 &mdash; <a href="https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/" style="color:#2f5474;">Chinese-Speaking Threat Actor Harnesses AI Models for Autonomous Cyberattacks</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[5]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-03-16</span> &nbsp;&middot;&nbsp; GitHub Advisory (langflow-ai) &mdash; <a href="https://github.com/langflow-ai/langflow/security/advisories/GHSA-vwmf-pq79-vjvx" style="color:#2f5474;">Unauthenticated RCE in Langflow via Public Flow Build Endpoint (CVE-2026-33017)</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[6]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-06-21</span> &nbsp;&middot;&nbsp; IBM &mdash; <a href="https://www.ibm.com/support/pages/security-bulletin-unauthenticated-remote-code-execution-langflow-oss-pythonreplcomponent-builtins-injection" style="color:#2f5474;">Unauthenticated RCE in Langflow OSS PythonREPLComponent via Builtins Injection (CVE-2026-10561)</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[7]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Trail of Bits &mdash; <a href="https://blog.trailofbits.com/2026/08/05/a-few-notes-on-aws-nitro-enclaves-kms-integration/" style="color:#2f5474;">A few notes on AWS Nitro Enclaves: KMS integration</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[8]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-09</span> &nbsp;&middot;&nbsp; Zero Day Initiative &mdash; <a href="https://www.zerodayinitiative.com/blog/2026/7/9/cve-2026-47291-remote-code-execution-in-the-windows-httpsys" style="color:#2f5474;">CVE-2026-47291: Remote Code Execution in the Windows HTTP.sys</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-2" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 02 &nbsp;&middot;&nbsp; Deep-dive</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Fail-open par accolade&nbsp;: CVE-2026-34486, le fix qui a rouvert l'EncryptInterceptor de Tomcat</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Une accolade d&eacute;plac&eacute;e transforme un canal de cluster chiffr&eacute; en sink de d&eacute;s&eacute;rialisation Java non authentifi&eacute;.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Apache Tombat Tribes est la couche de communication de groupe qui fait la r&eacute;plication de session dans un cluster Tomcat. Les n&oelig;uds s'&eacute;changent des messages s&eacute;rialis&eacute;s Java sur le r&eacute;seau, et parce que ce trafic est cens&eacute; rester entre membres de confiance, la r&eacute;ception d&eacute;s&eacute;rialise sans filtre&nbsp;: <span style="font-family:Consolas,monospace;">XByteBuffer.deserialize()</span> instancie un <span style="font-family:Consolas,monospace;">ObjectInputStream</span> nu et appelle <span style="font-family:Consolas,monospace;">readObject()</span>. La seule chose qui doit garantir cette confiance quand le r&eacute;seau n'est pas isol&eacute;, c'est l'<span style="font-family:Consolas,monospace;">EncryptInterceptor</span>, plac&eacute; en t&ecirc;te de la cha&icirc;ne d'intercepteurs&nbsp;: il d&eacute;chiffre les messages entrants <em>avant</em> qu'ils n'atteignent <span style="font-family:Consolas,monospace;">GroupChannel.messageReceived()</span>. Tant que le d&eacute;chiffrement &eacute;choue sur des octets non authentifi&eacute;s, la d&eacute;s&eacute;rialisation ne doit jamais &ecirc;tre atteinte. C'est exactement cette garantie que CVE-2026-34486 casse.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Pourquoi la r&eacute;ception d&eacute;s&eacute;rialise-t-elle sans filtre&nbsp;? Parce que le mod&egrave;le de confiance de Tribes est celui d'un r&eacute;seau de cluster ferm&eacute;&nbsp;: les membres sont cens&eacute;s &ecirc;tre les seuls &agrave; parler sur ce canal, et le chiffrement de l'<span style="font-family:Consolas,monospace;">EncryptInterceptor</span> est justement le m&eacute;canisme qui remplace l'isolation r&eacute;seau quand celle-ci n'existe pas. Le <span style="font-family:Consolas,monospace;">readObject()</span> sans <span style="font-family:Consolas,monospace;">ObjectInputFilter</span> n'est donc pas un oubli isol&eacute;&nbsp;: c'est une d&eacute;pendance assum&eacute;e sur l'intercepteur. Retirez la garantie de d&eacute;chiffrement, et le sink redevient ce qu'il a toujours &eacute;t&eacute; sous le vernis&nbsp;: une d&eacute;s&eacute;rialisation Java arbitraire ouverte au r&eacute;seau.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  L'ironie est que la faille na&icirc;t d'un correctif de s&eacute;curit&eacute;. En f&eacute;vrier 2026, l'<span style="font-family:Consolas,monospace;">EncryptInterceptor</span> utilisait AES/CBC/PKCS5Padding par d&eacute;faut&nbsp;: CVE-2026-29146, un padding oracle (le CBC permet &agrave; un attaquant, en observant les erreurs de padding, de d&eacute;chiffrer ou forger des messages sans la cl&eacute;). Le commit <span style="font-family:Consolas,monospace;">6d955cc</span> (13 mars) corrige &ccedil;a en modernisant tout le support d'algorithmes&nbsp;: AES/GCM/NoPadding devient recommand&eacute; et d&eacute;l&eacute;gu&eacute; &agrave; un <span style="font-family:Consolas,monospace;">GCMEncryptionManager</span> d&eacute;di&eacute;, et une couche de validation bloque d&eacute;sormais les modes dangereux &mdash; <span style="font-family:Consolas,monospace;">NONE, ECB, PCBC, CTS, KW, KWP</span>, ainsi que CBC/CFB/OFB en NoPadding et GCM avec padding. Un vrai durcissement. Mais au milieu de ce refactor, la m&eacute;thode <span style="font-family:Consolas,monospace;">messageReceived()</span> est r&eacute;organis&eacute;e et l'appel <span style="font-family:Consolas,monospace;">super.messageReceived(msg)</span> se retrouve <em>hors</em> du bloc <span style="font-family:Consolas,monospace;">try</span>. C'est tout. Une accolade, noy&eacute;e dans un changement par ailleurs l&eacute;gitime &mdash; exactement le genre de r&eacute;gression qu'une revue centr&eacute;e sur &laquo;&nbsp;les nouveaux modes sont-ils corrects&nbsp;?&nbsp;&raquo; ne voit pas.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">EncryptInterceptor.java &mdash; le d&eacute;placement d'une accolade</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">// AVANT (&lt;= 11.0.18) : fail-closed
+try {
+    data = encryptionManager.decrypt(data);
+    xbb.clear();
+    xbb.append(data, 0, data.length);
+    super.messageReceived(msg);      // atteint UNIQUEMENT si decrypt() a r&eacute;ussi
+} catch (GeneralSecurityException gse) {
+    log.error(sm.getString("encryptInterceptor.decrypt.failed"), gse);
+}
+
+// APR&Egrave;S le refactor 6d955cc (9.0.116 / 10.1.53 / 11.0.20) : fail-open
+try {
+    data = encryptionManager.decrypt(data);
+    xbb.clear();
+    xbb.append(data, 0, data.length);
+} catch (GeneralSecurityException gse) {
+    log.error(sm.getString("encryptInterceptor.decrypt.failed"), gse);
+}
+super.messageReceived(msg);          // s'ex&eacute;cute M&Ecirc;ME si decrypt() a lev&eacute;</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Diff reconstruit &agrave; partir des commits 6d955cc (r&eacute;gression) et 1fab40c (correctif). Dans la version fail-open, une GeneralSecurityException est journalis&eacute;e puis ignor&eacute;e : le flux continue avec les octets bruts non d&eacute;chiffr&eacute;s dans le XByteBuffer.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le d&eacute;roul&eacute; de l'attaque suit m&eacute;caniquement. On envoie au r&eacute;cepteur des octets qui ne sont pas chiffr&eacute;s avec la cl&eacute; du cluster. <span style="font-family:Consolas,monospace;">decrypt()</span> l&egrave;ve <span style="font-family:Consolas,monospace;">GeneralSecurityException</span>, qui est captur&eacute;e et simplement <em>journalis&eacute;e</em>. Mais comme <span style="font-family:Consolas,monospace;">super.messageReceived(msg)</span> est d&eacute;sormais hors du <span style="font-family:Consolas,monospace;">try</span>, il s'ex&eacute;cute quand m&ecirc;me &mdash; en transmettant le <span style="font-family:Consolas,monospace;">XByteBuffer</span> tel quel, c'est-&agrave;-dire les octets attaquant bruts, &agrave; l'&eacute;tage sup&eacute;rieur. Ces octets remontent jusqu'&agrave; <span style="font-family:Consolas,monospace;">GroupChannel.messageReceived()</span> puis <span style="font-family:Consolas,monospace;">XByteBuffer.deserialize()</span>, o&ugrave; un <span style="font-family:Consolas,monospace;">ObjectInputStream</span> sans <span style="font-family:Consolas,monospace;">ObjectInputFilter</span> appelle <span style="font-family:Consolas,monospace;">readObject()</span>. On a un sink de d&eacute;s&eacute;rialisation Java non authentifi&eacute;, joignable en TCP direct.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">Paquet Tribes brut vers le NioReceiver (0.0.0.0:4000)</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">[ "FLT2002" ]              // 7 octets : d&eacute;but de message
+[ int32  length ]          // longueur du payload
+[ ChannelData enveloppe ]  // adresse de membre synth&eacute;tique, options
+[ objet Java s&eacute;rialis&eacute; ]    // CommonsCollections6 (ysoserial)
+[ "TLF2003" ]              // 7 octets : fin de message
+
+// R&eacute;ception : decrypt() l&egrave;ve, l'exception est logg&eacute;e, puis :
+GroupChannel.messageReceived()
+  &rarr; XByteBuffer.deserialize()
+     &rarr; new ObjectInputStream(...).readObject()      // aucun filtre
+        &rarr; HashSet.readObject() &rarr; TiedMapEntry.hashCode()
+           &rarr; LazyMap.get("poc") &rarr; ChainedTransformer
+              &rarr; Runtime.getRuntime().exec(cmd)</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Cha&icirc;ne CC6 (JDK 8&ndash;21). L'enveloppe Tribes n'a aucune protection cryptographique propre : seul le contenu &eacute;tait cens&eacute; &ecirc;tre chiffr&eacute;, et c'est ce chiffrement que le fail-open contourne.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:0 0 10px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700;">Cha&icirc;ne d'exploitation (d'apr&egrave;s la PoC 404-src et l'analyse Striga)</td>
+  </tr>
+  <tr>
+    <td>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">1</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Atteindre le NioReceiver : par d&eacute;faut il &eacute;coute sur l'interface primaire (pas localhost), port 4000, et accepte une connexion TCP directe. Aucune adh&eacute;sion multicast requise &mdash; tout h&ocirc;te qui joint le port peut envoyer un message.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">2</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">G&eacute;n&eacute;rer un payload ysoserial CommonsCollections6 encapsul&eacute; dans l'enveloppe Tribes (en-t&ecirc;te FLT2002, ChannelData, footer TLF2003), sans chiffrement.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">3</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Envoyer le paquet : decrypt() &eacute;choue, l'exception est captur&eacute;e et journalis&eacute;e, mais super.messageReceived() force le passage des octets bruts &agrave; l'&eacute;tage sup&eacute;rieur.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">4</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">readObject() reconstruit le HashSet : hashCode() d&eacute;clenche la cha&icirc;ne LazyMap &rarr; ChainedTransformer &rarr; Runtime.exec() avec les privil&egrave;ges du process Tomcat.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">5</td></tr></table></td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Sans gadget sur le classpath, la d&eacute;s&eacute;rialisation a quand m&ecirc;me lieu &mdash; prouvable via un gadget URLDNS (callback DNS) &mdash; mais l'ex&eacute;cution de commande exige au moins une biblioth&egrave;que gadget (Commons Collections, souvent pr&eacute;sente via Spring ou Hibernate).</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  L'exposition r&eacute;elle d&eacute;pend de la configuration, et Striga est honn&ecirc;te l&agrave;-dessus&nbsp;: il faut que le clustering Tribes soit explicitement activ&eacute; et que l'<span style="font-family:Consolas,monospace;">EncryptInterceptor</span> soit en usage &mdash; sinon il n'y a rien &agrave; contourner. Mais quand ces conditions tiennent, le mod&egrave;le de menace s'inverse&nbsp;: l'intercepteur &eacute;tait pr&eacute;cis&eacute;ment ce qui permettait de faire tourner un cluster sur un r&eacute;seau non isol&eacute;, et il devient le vecteur. Le <span style="font-family:Consolas,monospace;">NioReceiver</span> se lie &agrave; l'interface primaire (pas &agrave; localhost) et accepte une connexion TCP directe sur le port 4000&nbsp;; aucune adh&eacute;sion multicast n'est requise. En environnement Kubernetes sans NetworkPolicy, n'importe quel pod du m&ecirc;me namespace atteint ce port. Le facteur limitant devient la pr&eacute;sence d'un gadget&nbsp;: sur un classpath Tomcat nu, la d&eacute;s&eacute;rialisation se produit &mdash; prouvable via un callback DNS avec le gadget URLDNS &mdash; mais l'ex&eacute;cution de commande exige au moins une biblioth&egrave;que gadget. Or Commons Collections arrive tr&egrave;s souvent de mani&egrave;re transitive via Spring, Hibernate ou des frameworks similaires, ce qui rend la condition &laquo;&nbsp;gadget pr&eacute;sent&nbsp;&raquo; fr&eacute;quente en production plut&ocirc;t qu'exotique.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="22%" style="width:22%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Branche</td>
+    <td width="26%" style="width:26%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Vuln&eacute;rable</td>
+    <td width="22%" style="width:22%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Corrig&eacute;</td>
+    <td width="30%" style="width:30%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Note</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">9.0.x</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">9.0.0.M1 &rarr; 9.0.116</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">9.0.117</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">EncryptInterceptor pr&eacute;sent</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">10.1.x</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">10.1.0-M1 &rarr; 10.1.53</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">10.1.54</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">idem</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">11.0.x</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">11.0.20 (uniquement)</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">11.0.21</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">r&eacute;gression n&eacute;e du fix de 29146</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">8.5.x</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">non affect&eacute;</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">&mdash;</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">EncryptInterceptor absent de la branche</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">La 11.0.x n'est vuln&eacute;rable qu'en 11.0.20 : la r&eacute;gression 6d955cc et son correctif 1fab40c encadrent une seule version. Les branches 9.0 et 10.1 ont re&ccedil;u le refactor plus t&ocirc;t, d'o&ugrave; une fen&ecirc;tre vuln&eacute;rable plus large.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Limites et cons&eacute;quences. Le correctif <span style="font-family:Consolas,monospace;">1fab40c</span> est litt&eacute;ralement un &laquo;&nbsp;partial revert&nbsp;&raquo;&nbsp;: il remet <span style="font-family:Consolas,monospace;">super.messageReceived(msg)</span> &agrave; l'int&eacute;rieur du <span style="font-family:Consolas,monospace;">try</span>, de sorte qu'un &eacute;chec de d&eacute;chiffrement redevient un abandon silencieux du message. C&ocirc;t&eacute; exploitation, la fiabilit&eacute; est excellente&nbsp;: pas de corruption m&eacute;moire, pas de course, juste une logique invers&eacute;e&nbsp;; le seul al&eacute;a est le gadget disponible sur le classpath cible. C&ocirc;t&eacute; d&eacute;fenseur, le co&ucirc;t d'observation est faible mais r&eacute;el&nbsp;: la version fail-open journalise <span style="font-family:Consolas,monospace;">encryptInterceptor.decrypt.failed</span> &agrave; chaque tentative &mdash; un flot d'erreurs de d&eacute;chiffrement sur le port Tribes est la signature la plus directe. Enfin, cette CVE n'est pas th&eacute;orique&nbsp;: Unit 42 [4] l'attribue &agrave; des tentatives de reverse shell contre neuf serveurs Tomcat dans la phase manuelle de la campagne <span style="font-family:Consolas,monospace;">knaithe</span>, et CISA l'a plac&eacute;e au KEV le 4 ao&ucirc;t.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le vrai enseignement est de classe, pas de produit. Un fail-open n&eacute; d'un refactor de s&eacute;curit&eacute; &mdash; d&eacute;placer une ligne hors d'un <span style="font-family:Consolas,monospace;">try</span> en croyant &laquo;&nbsp;nettoyer&nbsp;&raquo; la gestion d'erreur &mdash; est une des r&eacute;gressions les plus discr&egrave;tes qui soient&nbsp;: le code compile, les tests fonctionnels passent (les messages l&eacute;gitimes sont bien chiffr&eacute;s, donc <span style="font-family:Consolas,monospace;">decrypt()</span> ne l&egrave;ve jamais), et rien ne signale que le chemin d'erreur est devenu un chemin de succ&egrave;s. C'est la m&ecirc;me morale que la partie 04, vue depuis le code source plut&ocirc;t que depuis l'incident.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 02</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[9]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-04-04</span> &nbsp;&middot;&nbsp; Apache Tomcat &mdash; <a href="https://tomcat.apache.org/security-11.html" style="color:#2f5474;">Security advisories &mdash; Tomcat 11 (CVE-2026-34486, CVE-2026-29146)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[10]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-03-13</span> &nbsp;&middot;&nbsp; Apache Tomcat &mdash; <a href="https://github.com/apache/tomcat/commit/6d955cceca841f2eabf2d6c46b59a8c7e1cd6eaa" style="color:#2f5474;">commit 6d955cc &mdash; encryption algorithm support (origine de la r&eacute;gression)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[11]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-04-04</span> &nbsp;&middot;&nbsp; Apache Tomcat &mdash; <a href="https://github.com/apache/tomcat/commit/1fab40ccc752e22639eccfe290d5624afad7eccd" style="color:#2f5474;">commit 1fab40c &mdash; better error handling (partial revert of 6d955cc)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[12]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07</span> &nbsp;&middot;&nbsp; Striga &mdash; <a href="https://www.striga.ai/research/tomcat-tribes-unauth-rce" style="color:#2f5474;">Fail Open, Game Over: Turning a One-Line Tomcat Fix into Unauthenticated RCE</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[13]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07</span> &nbsp;&middot;&nbsp; 404-src &mdash; <a href="https://github.com/404-src/CVE-2026-34486" style="color:#2f5474;">CVE-2026-34486 &mdash; PoC EncryptInterceptor bypass &rarr; unauth RCE</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-3" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 03 &nbsp;&middot;&nbsp; Deep-dive</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">De la .map au ROP&nbsp;: exploitation heap de Titan Quest sur Segment Heap</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Synacktiv d&eacute;rive un integer overflow 32-bit dans un loader de niveau vers du ROP, en groomant le Segment Heap avec 128 Mo d'eau.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le modding de jeu est une surface d'attaque native s&eacute;rieuse&nbsp;: des fichiers non fiables, parseurs en C++ h&eacute;rit&eacute;, et souvent des builds 32 bits o&ugrave; l'ASLR est partiel. Thomas Dubier (Synacktiv) prend <em>Titan Quest Anniversary Edition</em> v2.10.21415 (Windows 11, build 26200, binaire 32 bits) et montre la cha&icirc;ne compl&egrave;te&nbsp;: d'un integer overflow dans le chargement d'un niveau jusqu'&agrave; l'ex&eacute;cution de code, via un groom d&eacute;terministe du Segment Heap. La distribution GOG embarque les outils de d&eacute;veloppement, donc un attaquant peut fabriquer des cartes personnalis&eacute;es charg&eacute;es depuis <span style="font-family:Consolas,monospace;">Documents\My Games\...\custommaps</span>&nbsp;: le vecteur, ce sont les formats <span style="font-family:Consolas,monospace;">.map</span> (monde), <span style="font-family:Consolas,monospace;">.lvl</span> (niveau) et <span style="font-family:Consolas,monospace;">.pfx</span> (particules).
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le bug primaire est dans <span style="font-family:Consolas,monospace;">GAME::ImpassableData::Load</span> (Engine.dll). La fonction lit <span style="font-family:Consolas,monospace;">width</span> et <span style="font-family:Consolas,monospace;">height</span> depuis le <span style="font-family:Consolas,monospace;">.lvl</span>, alloue un buffer via <span style="font-family:Consolas,monospace;">operator new[](width * height)</span>, puis recopie <span style="font-family:Consolas,monospace;">count</span> octets par <span style="font-family:Consolas,monospace;">memcpy</span>. Deux d&eacute;fauts se composent&nbsp;: la multiplication <span style="font-family:Consolas,monospace;">width &times; height</span> d&eacute;borde en 32 bits (allocation minuscule), et <span style="font-family:Consolas,monospace;">count</span>, lu ind&eacute;pendamment du fichier, n'est jamais born&eacute; contre la taille allou&eacute;e. Un heap overflow classique, mais dans un tas moderne.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">GAME::ImpassableData::Load (Engine.dll) &mdash; d&eacute;compil&eacute;</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">bool *buffer = (bool *)operator new[](this-&gt;__width * this-&gt;__height);
+//                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//                                     mult. 32-bit : d&eacute;borde &rarr; alloc minuscule
+memcpy(buffer, binaryRead-&gt;currentPtr, count);
+//                                     ^^^^^ lu depuis le .lvl, non born&eacute; vs alloc</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Chunk .lvl de type 0x03. La m&ecirc;me classe de d&eacute;faut se retrouve dans GAME::EmitterData::InternalBinaryRead (fichiers .pfx), o&ugrave; six compteurs (count1..count6) pilotent des &eacute;critures dans une structure de taille fixe sans borne.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Avant le groom, un mot sur les d&eacute;fauts secondaires, car ils comptent pour la fiabilit&eacute;. <span style="font-family:Consolas,monospace;">GAME::EmitterData::InternalBinaryRead</span> (fichiers <span style="font-family:Consolas,monospace;">.pfx</span>, signature PFX1) offre six chemins d'&eacute;criture distincts o&ugrave; un compteur lu du fichier (<span style="font-family:Consolas,monospace;">count1</span> &agrave; <span style="font-family:Consolas,monospace;">count6</span>) pilote une copie dans une structure de taille fixe&nbsp;: tableaux de cha&icirc;nes, de bool&eacute;ens, de DWORD, donn&eacute;es de courbe. Ce sont autant de primitives d'&eacute;criture contr&ocirc;l&eacute;e utilisables pour faconner le tas ou corrompre un objet voisin, en compl&eacute;ment de l'overflow d'<span style="font-family:Consolas,monospace;">ImpassableData</span>.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le c&oelig;ur du travail, c'est le groom, et il repose enti&egrave;rement sur le comportement du Segment Heap de Windows 11. Les allocations sup&eacute;rieures &agrave; <span style="font-family:Consolas,monospace;">0x4000</span> octets ne passent pas par le LFH mais par le backend Segment Heap, avec des motifs de r&eacute;utilisation FIFO&nbsp;: en lib&eacute;rant puis r&eacute;allouant des blocs de m&ecirc;me classe de taille, on obtient une disposition pr&eacute;visible. Dubier d&eacute;tourne <span style="font-family:Consolas,monospace;">GAME::Water::Load</span> pour pulv&eacute;riser jusqu'&agrave; 128&nbsp;Mo&nbsp;: 128 objets <span style="font-family:Consolas,monospace;">WaterLayer</span>, chacun portant un champ <span style="font-family:Consolas,monospace;">noiseTextureName</span> jusqu'&agrave; 1&nbsp;Mo. Chaque allocation de 1&nbsp;Mo r&eacute;serve des pages align&eacute;es, si bien que le contenu se r&eacute;p&egrave;te &agrave; des adresses dont les 12 bits de poids faible sont pr&eacute;visibles (forme <span style="font-family:Consolas,monospace;">XXXXX000</span>). C'est l&agrave; le contournement d'ASLR&nbsp;: on n'a pas besoin de fuiter une adresse, on remplit assez d'espace pour qu'une adresse fixe tombe de mani&egrave;re fiable dans le spray &mdash; et plusieurs DLL 32 bits du jeu n'ont de toute fa&ccedil;on pas d'ASLR, ce qui fournit le gadget &agrave; adresse constante. Le premier <span style="font-family:Consolas,monospace;">.map</span> pr&eacute;pare la disposition&nbsp;; le second d&eacute;clenche l'overflow, pla&ccedil;ant le buffer malveillant juste avant un objet <span style="font-family:Consolas,monospace;">Level</span>.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le d&eacute;tournement de flux passe par une vtable. On corrompt le membre <span style="font-family:Consolas,monospace;">water</span> de l'objet <span style="font-family:Consolas,monospace;">Level</span> pour qu'il pointe vers un faux <span style="font-family:Consolas,monospace;">Water</span> dont le pointeur de vtable <span style="font-family:Consolas,monospace;">WaterLayer</span> est contr&ocirc;l&eacute;. Au traitement du chunk <span style="font-family:Consolas,monospace;">0x09</span> (eau), le destructeur <span style="font-family:Consolas,monospace;">GAME::Water::~Water</span> appelle indirectement <span style="font-family:Consolas,monospace;">(*layer)-&gt;vtable-&gt;release(*layer, 1)</span> &mdash; un appel indirect sur des donn&eacute;es enti&egrave;rement pilot&eacute;es par le spray.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">D&eacute;tournement de vtable + pivot ROP</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">// Destructeur GAME::Water::~Water : appel indirect sur structure contr&ocirc;l&eacute;e
+(*layer)-&gt;vtable-&gt;release(*layer, 1);   // layer pointe dans le spray de 128 Mo
+
+// Gadget de pivot (Engine.dll, image sans ASLR en 32-bit)
+0x10021b91 : xchg esp, eax ; pop edi ; pop esi ; pop ebp ; pop ebx ; ret
+//           ^ EAX = pointeur heap contr&ocirc;l&eacute; &rArr; bascule de pile &rArr; cha&icirc;ne ROP</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Le xchg esp, eax fait de la pile une zone heap contr&ocirc;l&eacute;e ; la cha&icirc;ne ROP rend ensuite le heap ex&eacute;cutable et saute au shellcode. L'encodage de heap du NT Heap n'entrave pas la cha&icirc;ne car le d&eacute;tournement intervient avant la v&eacute;rification de d&eacute;sallocation.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:0 0 10px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700;">La cha&icirc;ne, de bout en bout</td>
+  </tr>
+  <tr>
+    <td>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">1</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Premier .map : Water::Load alloue/lib&egrave;re pour installer une disposition FIFO pr&eacute;visible dans le Segment Heap (allocations > 0x4000).</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">2</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Spray : jusqu'&agrave; 128 WaterLayer &times; 1 Mo de noiseTextureName &rarr; 128 Mo &agrave; des adresses XXXXX000, contournant l'ASLR partiel du build 32-bit.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">3</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Second .map, chunk .lvl 0x03 : l'integer overflow d'ImpassableData::Load produit une alloc minuscule, puis memcpy &eacute;crit count octets au-del&agrave;, juste avant un objet Level.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">4</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Le membre water de Level est r&eacute;&eacute;crit pour pointer vers un faux Water &agrave; vtable contr&ocirc;l&eacute;e.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">5</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Chunk 0x09 : le destructeur Water appelle (*layer)->vtable->release ; le gadget xchg esp, eax pivote la pile.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">6</td></tr></table></td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">La cha&icirc;ne ROP rend le heap ex&eacute;cutable et transf&egrave;re l'ex&eacute;cution au shellcode d&eacute;pos&eacute; dans le spray.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="24%" style="width:24%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Primitive</td>
+    <td width="22%" style="width:22%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Fichier / chunk</td>
+    <td width="27%" style="width:27%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Contr&ocirc;le attaquant</td>
+    <td width="27%" style="width:27%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Contrainte</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Integer overflow &rarr; heap overflow</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">.lvl / 0x03</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">width, height, count, contenu</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">alloc doit tomber dans Segment Heap (&gt;0x4000)</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">&Eacute;critures OOB secondaires</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">.pfx (PFX1)</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">count1..count6, tableaux</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">structure de taille fixe</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Spray d&eacute;terministe</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">.map / Water::Load</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">128 &times; 1 Mo = 128 Mo</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">adresses XXXXX000, ASLR partiel 32-bit</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">D&eacute;tournement de flux</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">.map / 0x09</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">vtable de WaterLayer</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">gadget &agrave; 0x10021b91 (DLL sans ASLR)</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Toutes les valeurs proviennent du write-up Synacktiv. La cible est un binaire 32-bit sp&eacute;cifique (v2.10.21415) &mdash; les offsets et l'adresse du gadget sont li&eacute;s &agrave; cette build.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Limites et co&ucirc;t. Le vecteur suppose que la victime charge une carte fournie par l'attaquant&nbsp;: c'est un probl&egrave;me de distribution (partage de mods, d&eacute;p&ocirc;ts communautaires) plut&ocirc;t qu'un RCE r&eacute;seau, et la cha&icirc;ne est li&eacute;e &agrave; une build 32 bits pr&eacute;cise &mdash; changer de version d&eacute;place les offsets et l'adresse du gadget. La d&eacute;terminisme repose sur deux propri&eacute;t&eacute;s du Segment Heap Windows 11 (seuil <span style="font-family:Consolas,monospace;">0x4000</span>, r&eacute;utilisation FIFO) et sur l'absence d'ASLR de certaines DLL du jeu&nbsp;; un build durci (ASLR complet, <span style="font-family:Consolas,monospace;">/GS</span>, CFG) casserait le pivot. C&ocirc;t&eacute; d&eacute;fenseur, il n'y a pas de t&eacute;l&eacute;m&eacute;trie utile sur un jeu grand public&nbsp;: l'int&eacute;r&ecirc;t du papier n'est pas la d&eacute;tection mais la m&eacute;thode &mdash; comment un integer overflow banal redevient exploitable en 2026 quand on ma&icirc;trise le comportement du tas moderne. Aucune CVE n'est assign&eacute;e&nbsp;; le contact &eacute;diteur remonte au 15 avril, publication le 29 juillet.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 03</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[14]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-29</span> &nbsp;&middot;&nbsp; Synacktiv (Thomas Dubier) &mdash; <a href="https://www.synacktiv.com/publications/exploiting-titan-quest" style="color:#2f5474;">Exploiting Titan Quest</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 24px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;">
+  Les parties 04 de ce num&eacute;ro ne tiennent pas dans le corps du mail (limite de 90&nbsp;Ko impos&eacute;e par Gmail). Elles sont <strong>compl&egrave;tes dans la pi&egrave;ce jointe</strong> <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">offsec-quotidien-415.html</span> et en ligne&nbsp;: <a href="https://rzdhop.github.io/Newsletter/415" style="color:#2f5474; text-decoration:underline;">rzdhop.github.io/Newsletter/415</a>.
+</td>
+</tr>
+<tr>
+<td style="padding:22px 30px 26px 30px; background-color:#1e1d1b; border-top:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">G&eacute;n&eacute;r&eacute; le 2026-08-06 &agrave; 00:30 UTC &nbsp;&middot;&nbsp; pipeline v1.0</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">Fen&ecirc;tre couverte&nbsp;: 2026-07-30 06:00 &rarr; 2026-08-06 06:00 UTC &nbsp;&middot;&nbsp; 68 sources scann&eacute;es, 17 retenues</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; padding-bottom:10px;"><a href="https://rzdhop.github.io/Newsletter" style="color:#c9b79a; text-decoration:underline;">rzdhop.github.io/Newsletter</a> &nbsp;&middot;&nbsp; <span style="color:#8f8b82;">&eacute;ditions n&deg;1 &agrave; 415</span></td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:10px; padding-bottom:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Fond clair assum&eacute;&nbsp;: aucune variante sombre n&rsquo;est fournie. Diffusion&nbsp;: 1 destinataire(s).</td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#8f8b82;">Bulletin d&rsquo;analyse technique en s&eacute;curit&eacute; offensive. Chaque sujet porte sur des travaux publics et cit&eacute;s&nbsp;: le bulletin commente la recherche existante et n&rsquo;en produit pas. Destin&eacute; &agrave; un lectorat professionnel, pour usage en laboratoire ou dans le cadre d&rsquo;engagements autoris&eacute;s.</td></tr>
+  </table>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

@@ -145,6 +145,49 @@
         "https://www.elastic.co/security-labs/ai-agent-attack-detection-hugging-face-breach",
         "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
       ]
+    },
+    {
+      "id": "tomcat-tribes-encryptinterceptor-failopen-cve-2026-34486",
+      "issue": 415,
+      "date": "2026-08-06",
+      "part": 2,
+      "domain": "web",
+      "title": "Fail-open par accolade : le RCE non authentifie de Tomcat Tribes (CVE-2026-34486)",
+      "summary": "Le fix de CVE-2026-29146 (padding oracle CBC) a refactore l'EncryptInterceptor et deplace super.messageReceived(msg) hors du bloc try : quand decrypt() leve GeneralSecurityException sur des octets non chiffres, l'exception est loggee mais les octets bruts sont quand meme transmis a GroupChannel.messageReceived -> XByteBuffer.deserialize -> ObjectInputStream.readObject sans filtre. Un paquet Tribes brut (FLT2002/TLF2003) porteur d'une chaine ysoserial CommonsCollections6, envoye en TCP direct au NioReceiver (port 4000, interface primaire, pas de multicast), donne un RCE non authentifie si un gadget est sur le classpath. Vulnerable : 9.0.0.M1-9.0.116, 10.1.0-M1-10.1.53, 11.0.20 ; corrige 9.0.117/10.1.54/11.0.21 (commit 1fab40c, partial revert). 8.5 non affecte. Exploite ITW (knaithe, Unit 42), KEV 4 aout.",
+      "sources": [
+        "https://tomcat.apache.org/security-11.html",
+        "https://github.com/apache/tomcat/commit/1fab40ccc752e22639eccfe290d5624afad7eccd",
+        "https://github.com/apache/tomcat/commit/6d955cceca841f2eabf2d6c46b59a8c7e1cd6eaa",
+        "https://www.striga.ai/research/tomcat-tribes-unauth-rce",
+        "https://github.com/404-src/CVE-2026-34486"
+      ]
+    },
+    {
+      "id": "titan-quest-heap-segmentheap-rop",
+      "issue": 415,
+      "date": "2026-08-06",
+      "part": 3,
+      "domain": "exploitation",
+      "title": "De la .map au ROP : exploitation heap de Titan Quest sur Segment Heap",
+      "summary": "Synacktiv (Thomas Dubier) derive un integer overflow 32-bit dans GAME::ImpassableData::Load (operator new[](width*height) deborde, memcpy count non borne, chunk .lvl 0x03) vers l'execution de code sur Titan Quest AE v2.10.21415 (Win11 26200, 32-bit). Groom deterministe du Segment Heap (allocations >0x4000, reuse FIFO) via Water::Load : 128 WaterLayer x 1 Mo de noiseTextureName = 128 Mo a adresses previsibles XXXXX000, contournant l'ASLR partiel (DLL 32-bit sans ASLR). Le chunk 0x09 declenche le destructeur Water qui appelle (*layer)->vtable->release sur une vtable controlee ; gadget xchg esp,eax a 0x10021b91 pivote vers une chaine ROP. Ecritures OOB secondaires dans EmitterData::InternalBinaryRead (.pfx). Vecteur : carte custom chargee par la victime. Pas de CVE ; publie le 29 juillet.",
+      "sources": [
+        "https://www.synacktiv.com/publications/exploiting-titan-quest"
+      ]
+    },
+    {
+      "id": "nable-ncentral-authbypass-cve-2026-18577",
+      "issue": 415,
+      "date": "2026-08-06",
+      "part": 4,
+      "domain": "threat-intel",
+      "title": "Autopsie N-central : le patch incomplet qui a livre les endpoints manages (CVE-2026-18577)",
+      "summary": "CVE-2026-18577 est le correctif incomplet de CVE-2026-18556 : un contournement d'authentification 'alternate path or channel' de la console N-central (RMM) que le fix de 18556 (livre en 2026.2) ne fermait que partiellement, etendant la portee a toutes les builds < 2026.3.1.7. Exploite ITW des le 1er aout : acces admin console -> abus de Take Control (compte MSP Support) vers les endpoints manages dont des DC -> persistance par service cloudflared (Cloudflare Tunnel), artefacts svchost.exe dans Documents et logs BASupSrvc_*.log.gz. La primitive exacte du bypass n'est pas publique. Hotfix 2026.3.1.7 le 2 aout ; KEV 18577 le 3 aout, 18556 le 4 aout. Living-off-the-RMM : aucune novelty, le maillon faible est le patch incomplet lui-meme.",
+      "sources": [
+        "https://www.rapid7.com/blog/post/etr-cve-2026-18577-n-able-n-central-authentication-bypass-exploited-in-the-wild/",
+        "https://www.huntress.com/blog/n-able-vulnerability-exploitation",
+        "https://www.helpnetsecurity.com/2026/08/03/cve-2026-18577-n-able-n-central-vulnerability/",
+        "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+      ]
     }
   ],
   "mentions": [
@@ -158,6 +201,54 @@
       "summary": "Mentionne en partie 01, non traite en deep-dive : reste disponible comme sujet. libvips, variant processor par defaut d'ActiveStorage depuis Rails 7, choisit son loader en reniflant les octets ; un MAT v7.3 est un conteneur HDF5, et libmatio n'appelle jamais H5Pget_external_count(), donc H5Dread ouvre le chemin declare par H5Pset_external. Meme primitive que le vecteur 1 de l'intrusion Hugging Face en partie 04.",
       "sources": [
         "https://ethiack.com/info-hub/research/kindarails2shell-how-a-matlab-file-reads-your-secrets-and-pops-a-shell-on-ruby-on-rails"
+      ]
+    },
+    {
+      "id": "teamcity-cve-2026-63077",
+      "issue": 415,
+      "date": "2026-08-06",
+      "part": 1,
+      "domain": "web",
+      "title": "TeamCity On-Premises : RCE non authentifie via l'agent polling protocol (CVE-2026-63077)",
+      "summary": "Mentionne en partie 01, non traite en deep-dive : reste disponible comme sujet. CVSS 9.8, CWE-502 : un attaquant non authentifie atteint la deserialisation du protocole de polling des agents et execute des commandes OS avec les privileges du serveur. Toutes versions On-Premises ; corrige 2025.11.7/2026.1.3 + security patch plugin pour 2017.1+. Signale par Antoni Tremblay le 10 juillet, pas d'exploitation ITW connue a la publication.",
+      "sources": [
+        "https://blog.jetbrains.com/teamcity/2026/07/cve-2026-63077/"
+      ]
+    },
+    {
+      "id": "httpsys-cve-2026-47291",
+      "issue": 415,
+      "date": "2026-08-06",
+      "part": 1,
+      "domain": "kernel",
+      "title": "Integer overflow 16-bit dans Windows HTTP.sys (CVE-2026-47291)",
+      "summary": "Mentionne en partie 01 (archive), non traite en deep-dive : reste disponible. Le champ de capacite du reference array est un entier 16-bit ; a 0xFFFB slots la croissance ajoute 5 et tronque a 0x0000, l'allocation suivante ne reserve que 40 octets tandis que le memmove recopie >500 Ko -> corruption tas noyau. HTTPS requis, chaque en-tete dans son propre record TLS, ~65536 references. Corrige juin 2026. Write-up ZDI.",
+      "sources": [
+        "https://www.zerodayinitiative.com/blog/2026/7/9/cve-2026-47291-remote-code-execution-in-the-windows-httpsys"
+      ]
+    },
+    {
+      "id": "nitro-enclaves-kms-tob",
+      "issue": 415,
+      "date": "2026-08-06",
+      "part": 1,
+      "domain": "crypto",
+      "title": "Nitro Enclaves x KMS : attestations non liees aux requetes (Trail of Bits)",
+      "summary": "Mentionne en partie 01 (PoC/lab), non traite en deep-dive : reste disponible. Les attestations ne sont pas liees cryptographiquement a la requete KMS (rejeu entre operations, keyId modifiable) ; Encrypt ne supporte pas l'attestation. Recommandations : coder en dur l'ARN de la CMK et le verifier, imposer l'encryption context, eviter aws-nitro-enclaves-sdk-c (exploitable depuis l'hote parent).",
+      "sources": [
+        "https://blog.trailofbits.com/2026/08/05/a-few-notes-on-aws-nitro-enclaves-kms-integration/"
+      ]
+    },
+    {
+      "id": "hermes-deepseek-autonomous-unit42",
+      "issue": 415,
+      "date": "2026-08-06",
+      "part": 1,
+      "domain": "threat-intel",
+      "title": "Campagne autonome DeepSeek/Hermes Agent (Unit 42, acteur knaithe)",
+      "summary": "Mentionne en partie 01, complement de l'autopsie agentique du n414 : reste disponible comme sujet. knaithe cable DeepSeek dans Hermes Agent (skills godmode, exploitation web-terminal, FOFA) via Telegram ; ~460 cibles, 3 compromissions confirmees. L'agent enumere/choisit un exploit GitHub/scanne puis conclut lui-meme 'stuck : forms have auth enabled' sur Langflow et n8n. Fuite finale via un python3 -m http.server 8888 exposant cles API, scripts et logs. A tenter reverse shell CVE-2026-34486 (9 serveurs Tomcat).",
+      "sources": [
+        "https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/"
       ]
     }
   ]
