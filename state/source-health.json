@@ -1,472 +1,771 @@
 {
- "checked_at": "2026-08-09T14:45:31.693346+00:00",
+ "checked_at": "2026-08-09T14:55:54.090186+00:00",
+ "stale_days": 90,
  "total": 58,
- "healthy": 58,
- "dead": [],
+ "reachable": 57,
+ "feeds": 36,
+ "feeds_contributing": 35,
+ "dead": [
+  {
+   "name": "Doyensec",
+   "tier": "tier_1_vendor_research",
+   "url": "https://blog.doyensec.com/atom.xml",
+   "kind": "feed",
+   "ok": false,
+   "state": "DEAD",
+   "status": null,
+   "entries": null,
+   "newest_age_days": null,
+   "note": "unreachable"
+  }
+ ],
+ "empty": [],
+ "quiet": [
+  {
+   "name": "Outflank",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.outflank.nl/blog/feed/",
+   "kind": "feed",
+   "ok": true,
+   "state": "quiet",
+   "status": 200,
+   "entries": 10,
+   "newest_age_days": 129,
+   "note": "10 entries, newest 129d ago (nothing new in 90d)"
+  },
+  {
+   "name": "modexp",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://modexp.wordpress.com/feed/",
+   "kind": "feed",
+   "ok": true,
+   "state": "quiet",
+   "status": 200,
+   "entries": 10,
+   "newest_age_days": 692,
+   "note": "10 entries, newest 692d ago (nothing new in 90d)"
+  },
+  {
+   "name": "hasherezade",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://hshrzd.wordpress.com/feed/",
+   "kind": "feed",
+   "ok": true,
+   "state": "quiet",
+   "status": 200,
+   "entries": 10,
+   "newest_age_days": 257,
+   "note": "10 entries, newest 257d ago (nothing new in 90d)"
+  },
+  {
+   "name": "Connor McGarr",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://connormcgarr.github.io/feed.xml",
+   "kind": "feed",
+   "ok": true,
+   "state": "quiet",
+   "status": 200,
+   "entries": 10,
+   "newest_age_days": 200,
+   "note": "10 entries, newest 200d ago (nothing new in 90d)"
+  }
+ ],
  "results": [
   {
    "name": "Quarkslab",
    "tier": "tier_1_vendor_research",
    "url": "https://blog.quarkslab.com/feeds/all.atom.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 15,
+   "newest_age_days": 34,
+   "note": "15 entries, newest 34d ago"
   },
   {
    "name": "Synacktiv",
    "tier": "tier_1_vendor_research",
    "url": "https://www.synacktiv.com/feed/lastblog.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 30,
+   "newest_age_days": null,
+   "note": "30 entries (no parsable dates)"
   },
   {
    "name": "Google Project Zero",
    "tier": "tier_1_vendor_research",
    "url": "https://googleprojectzero.blogspot.com/feeds/posts/default",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 4,
+   "newest_age_days": 3,
+   "note": "4 entries, newest 3d ago"
   },
   {
    "name": "SpecterOps",
    "tier": "tier_1_vendor_research",
    "url": "https://specterops.io/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 50,
+   "newest_age_days": 3,
+   "note": "50 entries, newest 3d ago"
   },
   {
    "name": "Outflank",
    "tier": "tier_1_vendor_research",
-   "url": "https://www.outflank.nl/blog/",
+   "url": "https://www.outflank.nl/blog/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "quiet",
    "status": 200,
-   "note": ""
+   "entries": 10,
+   "newest_age_days": 129,
+   "note": "10 entries, newest 129d ago (nothing new in 90d)"
   },
   {
    "name": "MDSec",
    "tier": "tier_1_vendor_research",
    "url": "https://www.mdsec.co.uk/knowledge-centre/research/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "Trail of Bits",
    "tier": "tier_1_vendor_research",
-   "url": "https://blog.trailofbits.com/",
+   "url": "https://blog.trailofbits.com/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 20,
+   "newest_age_days": 4,
+   "note": "20 entries, newest 4d ago"
   },
   {
    "name": "NCC Group Research",
    "tier": "tier_1_vendor_research",
    "url": "https://research.nccgroup.com/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "Elastic Security Labs",
    "tier": "tier_1_vendor_research",
-   "url": "https://www.elastic.co/security-labs",
+   "url": "https://www.elastic.co/security-labs/rss/feed.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 20,
+   "newest_age_days": 1,
+   "note": "20 entries, newest 1d ago"
   },
   {
    "name": "Sekoia.io",
    "tier": "tier_1_vendor_research",
    "url": "https://www.sekoia.com/blog/rss.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 100,
+   "newest_age_days": 3,
+   "note": "100 entries, newest 3d ago"
   },
   {
    "name": "Volexity",
    "tier": "tier_1_vendor_research",
-   "url": "https://www.volexity.com/blog/",
+   "url": "https://www.volexity.com/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 10,
+   "newest_age_days": 22,
+   "note": "10 entries, newest 22d ago"
   },
   {
    "name": "Binarly",
    "tier": "tier_1_vendor_research",
-   "url": "https://www.binarly.io/blog",
+   "url": "https://www.binarly.io/blog/rss.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 83,
+   "newest_age_days": 3,
+   "note": "83 entries, newest 3d ago"
   },
   {
    "name": "Check Point Research",
    "tier": "tier_1_vendor_research",
-   "url": "https://research.checkpoint.com/",
+   "url": "https://research.checkpoint.com/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 15,
+   "newest_age_days": 2,
+   "note": "15 entries, newest 2d ago"
   },
   {
    "name": "Unit 42",
    "tier": "tier_1_vendor_research",
-   "url": "https://unit42.paloaltonetworks.com/",
+   "url": "https://unit42.paloaltonetworks.com/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 15,
+   "newest_age_days": 1,
+   "note": "15 entries, newest 1d ago"
   },
   {
    "name": "CrowdStrike",
    "tier": "tier_1_vendor_research",
    "url": "https://www.crowdstrike.com/blog/category/threat-intel-research/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "PortSwigger Research",
    "tier": "tier_1_vendor_research",
    "url": "https://portswigger.net/research/rss",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 40,
+   "newest_age_days": 2,
+   "note": "40 entries, newest 2d ago"
   },
   {
    "name": "watchTowr Labs",
    "tier": "tier_1_vendor_research",
    "url": "https://labs.watchtowr.com/rss/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 15,
+   "newest_age_days": 37,
+   "note": "15 entries, newest 37d ago"
   },
   {
    "name": "Zero Day Initiative (blog)",
    "tier": "tier_1_vendor_research",
    "url": "https://www.thezdi.com/blog?format=rss",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 20,
+   "newest_age_days": 10,
+   "note": "20 entries, newest 10d ago"
   },
   {
    "name": "Doyensec",
    "tier": "tier_1_vendor_research",
    "url": "https://blog.doyensec.com/atom.xml",
-   "ok": true,
-   "status": 200,
-   "note": ""
+   "kind": "feed",
+   "ok": false,
+   "state": "DEAD",
+   "status": null,
+   "entries": null,
+   "newest_age_days": null,
+   "note": "unreachable"
   },
   {
    "name": "JFrog Security Research",
    "tier": "tier_1_vendor_research",
    "url": "https://research.jfrog.com/rss.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 9,
+   "newest_age_days": 5,
+   "note": "9 entries, newest 5d ago"
   },
   {
    "name": "Cisco Talos",
    "tier": "tier_1_vendor_research",
    "url": "https://blog.talosintelligence.com/rss/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 15,
+   "newest_age_days": 2,
+   "note": "15 entries, newest 2d ago"
   },
   {
    "name": "SentinelOne Labs",
    "tier": "tier_1_vendor_research",
    "url": "https://www.sentinelone.com/labs/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 10,
+   "newest_age_days": 17,
+   "note": "10 entries, newest 17d ago"
   },
   {
    "name": "Zscaler ThreatLabz",
    "tier": "tier_1_vendor_research",
    "url": "https://www.zscaler.com/blogs/feeds/security-research",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 50,
+   "newest_age_days": 2,
+   "note": "50 entries, newest 2d ago"
   },
   {
    "name": "Rapid7",
    "tier": "tier_1_vendor_research",
    "url": "https://blog.rapid7.com/rss/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 20,
+   "newest_age_days": 2,
+   "note": "20 entries, newest 2d ago"
   },
   {
    "name": "Huntress",
    "tier": "tier_1_vendor_research",
    "url": "https://www.huntress.com/blog/rss.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 650,
+   "newest_age_days": 26,
+   "note": "650 entries, newest 26d ago"
   },
   {
    "name": "VX-Underground",
    "tier": "tier_2_researchers_maldev",
    "url": "https://vx-underground.org/",
+   "kind": "page",
    "ok": true,
+   "state": "guard",
    "status": 403,
+   "entries": null,
+   "newest_age_days": null,
    "note": "reachable but refuses automated requests"
   },
   {
    "name": "Maldev Academy",
    "tier": "tier_2_researchers_maldev",
    "url": "https://maldevacademy.com/",
+   "kind": "page",
    "ok": true,
+   "state": "guard",
    "status": 403,
+   "entries": null,
+   "newest_age_days": null,
    "note": "reachable but refuses automated requests"
   },
   {
    "name": "0xflux (fluxsec)",
    "tier": "tier_2_researchers_maldev",
    "url": "https://fluxsec.red/rss.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 53,
+   "newest_age_days": 14,
+   "note": "53 entries, newest 14d ago"
   },
   {
    "name": "Smukx (5mukx)",
    "tier": "tier_2_researchers_maldev",
    "url": "https://www.5mukx.site/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "ired.team",
    "tier": "tier_2_researchers_maldev",
    "url": "https://www.ired.team/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "cocomelonc",
    "tier": "tier_2_researchers_maldev",
-   "url": "https://cocomelonc.github.io/",
+   "url": "https://cocomelonc.github.io/feed.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 10,
+   "newest_age_days": 6,
+   "note": "10 entries, newest 6d ago"
   },
   {
    "name": "modexp",
    "tier": "tier_2_researchers_maldev",
-   "url": "https://modexp.wordpress.com/",
+   "url": "https://modexp.wordpress.com/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "quiet",
    "status": 200,
-   "note": ""
+   "entries": 10,
+   "newest_age_days": 692,
+   "note": "10 entries, newest 692d ago (nothing new in 90d)"
   },
   {
    "name": "hasherezade",
    "tier": "tier_2_researchers_maldev",
-   "url": "https://hshrzd.wordpress.com/",
+   "url": "https://hshrzd.wordpress.com/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "quiet",
    "status": 200,
-   "note": ""
+   "entries": 10,
+   "newest_age_days": 257,
+   "note": "10 entries, newest 257d ago (nothing new in 90d)"
   },
   {
    "name": "Connor McGarr",
    "tier": "tier_2_researchers_maldev",
-   "url": "https://connormcgarr.github.io/",
+   "url": "https://connormcgarr.github.io/feed.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "quiet",
    "status": 200,
-   "note": ""
+   "entries": 10,
+   "newest_age_days": 200,
+   "note": "10 entries, newest 200d ago (nothing new in 90d)"
   },
   {
    "name": "James Forshaw",
    "tier": "tier_2_researchers_maldev",
-   "url": "https://www.tiraniddo.dev/",
+   "url": "https://www.tiraniddo.dev/feeds/posts/default",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 25,
+   "newest_age_days": 46,
+   "note": "25 entries, newest 46d ago"
   },
   {
    "name": "Dirk-jan Mollema",
    "tier": "tier_2_researchers_maldev",
-   "url": "https://dirkjanm.io/",
+   "url": "https://dirkjanm.io/feed.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 10,
+   "newest_age_days": 4,
+   "note": "10 entries, newest 4d ago"
   },
   {
    "name": "Paged Out!",
    "tier": "tier_3_magazines",
    "url": "https://pagedout.institute/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "MISC Magazine",
    "tier": "tier_3_magazines",
    "url": "https://connect.ed-diamond.com/misc",
+   "kind": "page",
    "ok": true,
+   "state": "guard",
    "status": 403,
+   "entries": null,
+   "newest_age_days": null,
    "note": "reachable but refuses automated requests"
   },
   {
    "name": "Phrack",
    "tier": "tier_3_magazines",
    "url": "http://phrack.org/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "tmp.0ut",
    "tier": "tier_3_magazines",
    "url": "https://tmpout.sh/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "BleepingComputer",
    "tier": "tier_4_news",
    "url": "https://www.bleepingcomputer.com/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 15,
+   "newest_age_days": 0,
+   "note": "15 entries, newest 0d ago"
   },
   {
    "name": "The Hacker News",
    "tier": "tier_4_news",
    "url": "https://feeds.feedburner.com/TheHackersNews",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 50,
+   "newest_age_days": 1,
+   "note": "50 entries, newest 1d ago"
   },
   {
    "name": "The Record",
    "tier": "tier_4_news",
    "url": "https://therecord.media/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "KrebsOnSecurity",
    "tier": "tier_4_news",
    "url": "https://krebsonsecurity.com/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 10,
+   "newest_age_days": 2,
+   "note": "10 entries, newest 2d ago"
   },
   {
    "name": "Risky Business",
    "tier": "tier_4_news",
    "url": "https://risky.biz/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "r/netsec",
    "tier": "tier_4_news",
    "url": "https://www.reddit.com/r/netsec/.rss",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 25,
+   "newest_age_days": 0,
+   "note": "25 entries, newest 0d ago"
   },
   {
    "name": "Hacker News",
    "tier": "tier_4_news",
    "url": "https://news.ycombinator.com/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "CERT-FR",
    "tier": "tier_4_news",
    "url": "https://www.cert.ssi.gouv.fr/feed/",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 40,
+   "newest_age_days": 2,
+   "note": "40 entries, newest 2d ago"
   },
   {
    "name": "CISA KEV",
    "tier": "tier_5_vulns_exploits",
    "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+   "kind": "page",
    "ok": true,
+   "state": "guard",
    "status": 403,
+   "entries": null,
+   "newest_age_days": null,
    "note": "reachable but refuses automated requests"
   },
   {
    "name": "ZDI advisories",
    "tier": "tier_5_vulns_exploits",
    "url": "https://www.zerodayinitiative.com/advisories/published/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "GitHub Security Advisories",
    "tier": "tier_5_vulns_exploits",
    "url": "https://github.com/advisories",
+   "kind": "page",
    "ok": true,
+   "state": "guard",
    "status": 403,
+   "entries": null,
+   "newest_age_days": null,
    "note": "reachable but refuses automated requests"
   },
   {
    "name": "LOLDrivers",
    "tier": "tier_5_vulns_exploits",
    "url": "https://www.loldrivers.io/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "LOLBAS",
    "tier": "tier_5_vulns_exploits",
    "url": "https://lolbas-project.github.io/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "GitHub trending (security)",
    "tier": "tier_5_vulns_exploits",
    "url": "https://github.com/trending?since=daily",
+   "kind": "page",
    "ok": true,
+   "state": "guard",
    "status": 403,
+   "entries": null,
+   "newest_age_days": null,
    "note": "reachable but refuses automated requests"
   },
   {
    "name": "oss-security (seclists mirror)",
    "tier": "tier_5_vulns_exploits",
    "url": "https://seclists.org/rss/oss-sec.rss",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 15,
+   "newest_age_days": 2,
+   "note": "15 entries, newest 2d ago"
   },
   {
    "name": "GreyNoise",
    "tier": "tier_5_vulns_exploits",
    "url": "https://www.greynoise.io/blog/rss.xml",
+   "kind": "feed",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": 100,
+   "newest_age_days": 5,
+   "note": "100 entries, newest 5d ago"
   },
   {
    "name": "infosec.exchange (Mastodon)",
    "tier": "tier_6_social",
    "url": "https://infosec.exchange/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   },
   {
    "name": "Bluesky",
    "tier": "tier_6_social",
    "url": "https://bsky.app/",
+   "kind": "page",
    "ok": true,
+   "state": "ok",
    "status": 200,
-   "note": ""
+   "entries": null,
+   "newest_age_days": null,
+   "note": "page reachable (no feed declared)"
   }
  ]
 }

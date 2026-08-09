@@ -53,6 +53,11 @@ tiers:
           2026-08-09 sweep; the site advertises `feed/lastblog.xml`, which
           returns 30 entries and carried "Exploiting Titan Quest" (issue 415).
           There is no separate publications or advisories feed.
+          SWEEP CAVEAT: every item carries an empty self-closing `<pubDate/>`,
+          so this feed has NO usable dates. It cannot be filtered to the current
+          week programmatically - diff the item list against the previous run,
+          or open the publications page, and never assume position implies
+          recency.
       - name: Google Project Zero
         url: https://googleprojectzero.blogspot.com/
         feed: https://googleprojectzero.blogspot.com/feeds/posts/default
@@ -70,6 +75,7 @@ tiers:
           2026-08-09 sweep, newest 2026-08-05.
       - name: Outflank
         url: https://www.outflank.nl/blog/
+        feed: https://www.outflank.nl/blog/feed/
         topics: [EDR-evasion, C2, BOF, maldev]
         confidence: verified
       - name: MDSec
@@ -78,6 +84,7 @@ tiers:
         confidence: verified
       - name: Trail of Bits
         url: https://blog.trailofbits.com/
+        feed: https://blog.trailofbits.com/feed/
         topics: [appsec, crypto, fuzzing, compilers]
         confidence: verified
       - name: NCC Group Research
@@ -92,6 +99,7 @@ tiers:
           no equivalent elsewhere in this registry.
       - name: Elastic Security Labs
         url: https://www.elastic.co/security-labs
+        feed: https://www.elastic.co/security-labs/rss/feed.xml
         topics: [malware-analysis, detection-engineering]
         confidence: verified
       - name: Sekoia.io
@@ -106,18 +114,22 @@ tiers:
           www.sekoia.com/blog/rss.xml - 100 entries, newest 2026-08-06.
       - name: Volexity
         url: https://www.volexity.com/blog/
+        feed: https://www.volexity.com/feed/
         topics: [APT, memory-forensics]
         confidence: verified
       - name: Binarly
         url: https://www.binarly.io/blog
+        feed: https://www.binarly.io/blog/rss.xml
         topics: [firmware, UEFI, supply-chain]
         confidence: probable
       - name: Check Point Research
         url: https://research.checkpoint.com/
+        feed: https://research.checkpoint.com/feed/
         topics: [malware, threat-intel]
         confidence: verified
       - name: Unit 42
         url: https://unit42.paloaltonetworks.com/
+        feed: https://unit42.paloaltonetworks.com/feed/
         topics: [threat-intel, malware]
         confidence: verified
       - name: CrowdStrike
@@ -157,7 +169,13 @@ tiers:
         feed: https://blog.doyensec.com/atom.xml
         topics: [appsec, web, electron, deserialisation]
         confidence: verified
-        note: 103 entries, newest 2026-06-17. Slow cadence, high signal.
+        note: >
+          103 entries, newest 2026-06-17. Slow cadence, high signal.
+          Flaky under repeated requests: served fine, then reset the connection
+          on three consecutive retries later the same day. check_sources.py
+          retries once on transport errors, so an isolated DEAD line for this
+          host means it refused twice and is worth re-checking by hand before
+          concluding anything.
       - name: JFrog Security Research
         url: https://research.jfrog.com/
         feed: https://research.jfrog.com/rss.xml
@@ -250,26 +268,32 @@ tiers:
         confidence: verified
       - name: cocomelonc
         url: https://cocomelonc.github.io/
+        feed: https://cocomelonc.github.io/feed.xml
         topics: [maldev, injection, persistence]
         confidence: verified
       - name: modexp
         url: https://modexp.wordpress.com/
+        feed: https://modexp.wordpress.com/feed/
         topics: [shellcode, injection, windows-internals]
         confidence: verified
       - name: hasherezade
         url: https://hshrzd.wordpress.com/
+        feed: https://hshrzd.wordpress.com/feed/
         topics: [malware-analysis, PE-format, tooling]
         confidence: verified
       - name: Connor McGarr
         url: https://connormcgarr.github.io/
+        feed: https://connormcgarr.github.io/feed.xml
         topics: [kernel-exploitation, windows-internals]
         confidence: verified
       - name: James Forshaw
         url: https://www.tiraniddo.dev/
+        feed: https://www.tiraniddo.dev/feeds/posts/default
         topics: [windows-security, COM, sandbox-escape]
         confidence: verified
       - name: Dirk-jan Mollema
         url: https://dirkjanm.io/
+        feed: https://dirkjanm.io/feed.xml
         topics: [AD, entra-id, kerberos]
         confidence: verified
 
