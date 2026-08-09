@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<title>OffSec Quotidien n&deg;416</title>
+<!-- No <meta viewport>: its width=device-width is mangled by quoted-printable
+     encoding in transit. No stylesheet, no JS: every style is inline below. -->
+</head>
+<body style="margin:0; padding:0; background-color:#e6e4df; -webkit-text-size-adjust:100%;">
+
+<div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; color:#e6e4df;">Signer avec une cle Windows Hello sans jamais la sortir du TPM, un memcpy non borne jusqu'a S-EL1 dans OP-TEE, et l'autopsie du ver npm CHAINDROP.</div>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#e6e4df; margin:0; padding:0;">
+<tr>
+<td align="center" style="padding:24px 12px 40px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" style="width:100%; max-width:680px; border-collapse:collapse; background-color:#fbfaf8; border:1px solid #cfccc4;">
+
+<tr>
+<td style="padding:26px 30px 20px 30px; background-color:#1e1d1b; border-bottom:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#a8a49b; padding-bottom:8px;">Bulletin interne &nbsp;/&nbsp; s&eacute;curit&eacute; offensive &nbsp;/&nbsp; diffusion 1</td>
+  </tr>
+  <tr>
+    <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:27px; line-height:32px; font-weight:700; color:#f5f3ef; letter-spacing:-0.4px; padding-bottom:10px;">OffSec Quotidien &mdash; n&deg;416</td>
+  </tr>
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#c8c3b9;">dimanche 9 aout 2026 &nbsp;&middot;&nbsp; 06:00 CEST &nbsp;&middot;&nbsp; 7&nbsp;425 mots &nbsp;&middot;&nbsp; ~37 min</td>
+  </tr>
+  <tr>
+    <td style="padding-top:14px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-left:3px solid #7a4a2e;">
+      <tr>
+        <td style="padding:2px 0 2px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#e8e4dc;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#a8a49b;">Th&egrave;me de la semaine</span><br><span style="font-weight:600; color:#f5f3ef;">Emprunter plutot que voler</span> &mdash; une cle TPM non exportable qui signe quand meme, un token npm qui republie tout seul, et la fenetre de quelques cycles qui suit le flush du branch predictor</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px; background-color:#2a2825;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:16px 0 8px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#8f8b82;">Sommaire</td>
+  </tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-1" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">01</span> &nbsp; Le fil de la semaine <span style="color:#8f8b82;">&mdash; 9 items</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-2" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">02</span> &nbsp; Emprunter la cle Windows Hello <span style="color:#8f8b82;">&mdash; identite / Windows</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-3" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">03</span> &nbsp; Trustfall : le monde securise d'OP-TEE <span style="color:#8f8b82;">&mdash; hardware / TEE</span></a></td></tr>
+  <tr><td style="padding:5px 0 16px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-4" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">04</span> &nbsp; Autopsie : le ver npm CHAINDROP <span style="color:#8f8b82;">&mdash; supply chain</span></a></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:24px 20px 4px 20px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f2ecdd; border:2px solid #1e1d1b;">
+  <tr>
+    <td style="padding:16px 18px 6px 18px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; letter-spacing:2px; text-transform:uppercase; font-weight:700; color:#1e1d1b; border-bottom:1px solid #cfc4a8;">TL;DR &mdash; 30 secondes</td>
+  </tr>
+  <tr>
+    <td style="padding:14px 18px 18px 18px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">Dirk-jan Mollema publie une variante WebAuthn de l'abus de cle Windows Hello : le Passport KSP signe sans redemander le PIN, et l'assertion WebAuthn ne transporte aucun etat d'appareil - la derniere contrainte de la technique de 2021 tombe.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">Trustfall : dans le chemin RSA NOPAD d'OP-TEE, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">memcpy(buf + rsa.len - src_len, ...)</span> wrappe en size_t et ecrit avant le buffer ; l'unlink de BGET fait le reste jusqu'a S-EL1.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">CHAINDROP : plus de 400 paquets npm republies depuis un compte mainteneur, C2 resolu par contrat Ethereum, et une provenance Sigstore authentique obtenue via un second jeton OIDC d'audience sigstore.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">Cote silicium, TONTOU (MIT CSAIL) ne casse pas eIBRS : il injecte des interruptions dans la fenetre qui suit la neutralisation du branch predictor. 5,47 o/s sur Zen 2, /etc/shadow dans 5 essais sur 10.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b;"><span style="font-weight:700;">A faire aujourd'hui :</span> l'echeance BOD 26-04 pour CVE-2026-8037 (Progress LoadMaster, KEV du 7 aout) tombe demain lundi 10 aout - verifier les appliances en bordure. Puis passer la requete SigninLogs de [11] sur 30 jours : methode WHfB avec DeviceDetail.deviceId vide.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-1" style="padding:34px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 01</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Le fil de la semaine</td></tr>
+  <tr><td style="padding:0 0 4px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Neuf items retenus sur 403 entrees de flux relevees sur 22 sources.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Semaine dense, et pour une fois pas sur le meme registre que les precedentes. Trois publications de la semaine attaquent la meme classe de probleme sous trois angles : un secret qu'on n'a pas besoin d'extraire pour s'en servir. La cle Windows Hello reste dans le TPM et signe quand meme (partie 02). Le token npm d'un mainteneur n'est pas casse, il est reutilise pour republier 400 paquets (partie 04). Et cote silicium, TONTOU ne casse pas eIBRS : il travaille dans la fenetre qui suit le flush. Le reste du fil couvre un UAF SCTP vieux de dix-huit ans, cinq bugs memoire dans le runtime Workers de Cloudflare, et un 0-day Metabase exploite avant correctif.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#2f5474; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #1f3d57;">[deep-dive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">SCTPhantom : un UAF SCTP de dix-huit ans, du conteneur vers root (CVE-2026-64564)</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le Zhuque Lab de Tencent decrit une incoherence dans le traitement ASCONF de <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">net/sctp/sm_make_chunk.c</span> : la verification DEL-IP valide l'adresse demandee contre un parametre, tandis que le traitement ulterieur s'appuie sur le transport selectionne via un autre. La sequence <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">[ Address Parameter L ][ DEL-IP L ][ DEL-IP 0.0.0.0 ]</span> supprime un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">struct sctp_transport</span> tout en laissant <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">primary_path</span> et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">active_path</span> pointer dessus. Le primitif obtenu est une lecture noyau de 4 octets repetable via <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">SCTP_STATUS</span> en getsockopt, donc un bypass KASLR gratuit. Le code fautif date du commit <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">42e30bf3463c</span> (Linux 2.6.25) ; le correctif <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">9b2854f86f0b</span> ajoute simplement <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">if (peer == asconf->transport) return SCTP_ERROR_REQ_REFUSED;</span>. Utilisateur local non privilegie, pas de <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">CAP_NET_ADMIN</span>, seccomp par defaut suffit pour la variante evasion de conteneur. CVSS v4.0 8.5.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://matrix.tencent.com/en/2026/08/06/sctphantom-CVE-2026-64564" style="color:#2f5474; text-decoration:underline;">matrix.tencent.com&#8203;/en/2026/08/06/sctphantom-CVE-2026-64564</a> <span style="color:#7d7a73;">&middot; 6 aout 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#2f5474; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #1f3d57;">[deep-dive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">TONTOU : la fenetre entre le flush du branch predictor et son utilisation</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Daniel Trujillo et Mengjia Yan (MIT CSAIL) transposent TOCTOU au silicium : Time-of-Neutralization to Time-of-Use. Les mitigations Spectre v2 fondees sur la neutralisation - eIBRS chez Intel, Safe RET cote AMD sous Linux - supposent qu'un attaquant ne peut rien faire entre le nettoyage de l'etat du predicteur et son usage par la branche victime. Les auteurs montrent que cette supposition ne tient pas : un programme non privilegie peut programmer des interruptions timer pour tomber pendant l'execution du noyau, et se servir du handler d'interruption pour repoisonner le predicteur indirect et le RSB dans cette fenetre. Ils appellent ca Interrupt Injection. Sur Zen 2 : 5,47 octets/s a 91,97 % de precision, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">/etc/shadow</span> extrait dans 5 essais sur 10, environ 18 minutes par essai, noyau 6.14.0-37-generic. Presente a Black Hat USA ; le papier complet arrive a USENIX Security fin octobre, il n'est pas encore public.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.bleepingcomputer.com/news/security/new-tontou-cpu-attack-bypasses-spectre-v2-fixes-leaks-linux-password-hashes/" style="color:#2f5474; text-decoration:underline;">bleepingcomputer.com&#8203;/news/security/new-tontou-cpu-attack-bypasses-spectre-v2-fixes</a> <span style="color:#7d7a73;">&middot; 6 aout 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#2f5474; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #1f3d57;">[deep-dive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Cinq bugs memoire dans workerd : quand la glue C++ est le maillon faible</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Check Point Research a regarde Code Mode, le mecanisme Cloudflare qui expose les outils MCP a un modele sous forme d'API TypeScript typee plutot qu'en appels structures. L'interet de l'article n'est pas la partie agentique : c'est que l'isolation repose sur des isolates V8 partageant un processus, et que les bindings natifs reimplementes en C++ (JSG, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">JavaScript Glue</span>) vivent sur un tas tcmalloc situe <strong>hors</strong> de la cage V8 et hors des memory protection keys. D'ou une OOB read dans <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">URLPattern</span> (V8 et workerd ne comptent pas les groupes de capture de la meme facon sur <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">(ab(cde))</span>), un UAF dans <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">node:zlib</span> ou <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">deflateParams()</span> flush a travers un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">next_out</span> perime, un UAF dans l'iterateur d'attributs HTMLRewriter, et un contournement d'autorisation SQLite ou <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">ALTER TABLE kv_tmp RENAME TO _cf_KV</span> passe parce que l'authorizer verifie les references de table et pas les destinations de rename. Deux classees critiques par Cloudflare, corrige en production, self-hosted a partir de workerd v1.20260619.1. Aucun CVE assigne.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://research.checkpoint.com/2026/when-agentic-glue-melts/" style="color:#2f5474; text-decoration:underline;">research.checkpoint.com&#8203;/2026/when-agentic-glue-melts/</a> <span style="color:#7d7a73;">&middot; 6 aout 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Write Once, Shell Everywhere : la table de correspondance ecriture arbitraire vers RCE</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Ethiack (Andre Baptista, Rafael Castilho, Bruno Mendes) a presente au Bug Bounty Village de la DEF CON 34 un inventaire systematique des chemins qui transforment une ecriture de fichier arbitraire en execution, classes par runtime et notes en utilite reelle. Le connu y est : <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">/etc/ld.so.preload</span>, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.pth</span> et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">sitecustomize.py</span> en Python, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.user.ini</span> en PHP, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">web.config</span> cote IIS. Trois apports sont moins vus. D'abord la reecriture du script shell en cours d'execution : bash garde le script sur le fd 255, dash sur le fd 10, et le shell relit a la demande - ecrire a travers ce descripteur reecrit le programme en vol, ce qui compte enormement pour un entrypoint de conteneur. Ensuite <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">db/schema_cache.yml</span> en Rails, charge en YAML non sur, chaine via <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">Gem::Requirement</span> sans redemarrage de process. Enfin l'oracle systeme de fichiers : differencier <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">ENOENT</span> / <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">EACCES</span> / <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">EISDIR</span> a travers les codes de reponse HTTP suffit a profiler OS, distribution et version de runtime avant de tirer.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://ethiack.com/info-hub/research/write-once-shell-everywhere-arbitrary-file-writes-into-rce" style="color:#2f5474; text-decoration:underline;">ethiack.com&#8203;/info-hub/research/write-once-shell-everywhere-arbitrary-file-writes-into-rce</a> <span style="color:#7d7a73;">&middot; 8 aout 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Execution de code via provisioning packages Windows</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.ppkg</span> est un conteneur WIM de deploiement Microsoft, construit avec <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">ICD.exe</span> du Windows ADK. Le <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">customizations.xml</span> embarque accepte un noeud <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;"><CommandLine></span>, et l'iPurple Team montre qu'un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">cmd /c "powershell -ep bypass -w hidden ..."</span> y est execute tel quel au deploiement. Ce n'est pas un contournement d'UAC - l'utilisateur voit deux invites et doit cliquer <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">Yes, add it</span> - mais c'est un format de deploiement legitime, signe socialement par sa nature administrative, qui n'est pas dans les listes de surveillance habituelles. Cote traces : provider Provisioning Diagnostics, event ID 20 a l'application du paquet, event ID 10 pour les comptes et fichiers crees, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">C:\ProgramData\Microsoft\Provisioning</span> en stockage et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">HKLM\SOFTWARE\Microsoft\Provisioning\Results</span> en registre. L'article propose de correler 4663 avec l'event 20, ce qui est le bon niveau de detection.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://ipurple.team/2026/08/04/provisioning-packages/" style="color:#2f5474; text-decoration:underline;">ipurple.team&#8203;/2026/08/04/provisioning-packages/</a> <span style="color:#7d7a73;">&middot; 4 aout 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Metabase : SQLi non authentifiee sur <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">/api/session/reset_password</span>, exploitee en 0-day</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Metabase a publie le 6 aout que Metabase Cloud avait ete attaque via une vulnerabilite inconnue permettant d'injecter du SQL arbitraire contre la base applicative, ce qui donne l'acces administrateur a l'instance. Les versions 1.58 et superieures sont concernees, les inferieures a 58 ne le sont pas ; correctifs en v0.58.24, v0.59.21, v0.60.17, v0.61.11, v0.62.9 et v0.63.5. L'IoC donne par l'editeur est exploitable immediatement en retro-hunt sur les logs d'acces : un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">POST /api/session/reset_password</span> qui repond 400, suivi d'un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">GET /api/user/current</span> qui repond 200. Pas de CVE, mais un GHSA (GHSA-vwf4-m7j8-wcjf). Framework et Tally ont confirme des acces a leurs donnees clients. Le detail interessant est le 400 : la reponse d'erreur ne signifie pas que l'injection a echoue.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.metabase.com/blog/security-update" style="color:#2f5474; text-decoration:underline;">metabase.com&#8203;/blog/security-update</a> <span style="color:#7d7a73;">&middot; 6 aout 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Progress LoadMaster CVE-2026-8037 entre au KEV, echeance demain</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Injection de commande non authentifiee, CVSS 9,6, dans la fonction <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">escape_quotes()</span> de l'application load balancer. Ajoutee au catalogue CISA KEV le 7 aout, catalogue 2026.08.07, avec une echeance FCEB au <strong>10 aout</strong> au titre de la BOD 26-04 - c'est-a-dire demain. La telemetrie citee par The Hacker News fait etat de 792 tentatives d'exploitation sur 41 jours depuis 65 adresses uniques reparties sur 18 pays, ce qui situe le bruit de fond : ce n'est pas une exploitation ciblee, c'est du balayage. Un LoadMaster est par construction en bordure, donc l'appareil non patche est un point d'entree, pas une cible laterale.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474; text-decoration:underline;">cisa.gov&#8203;/known-exploited-vulnerabilities-catalog</a> <span style="color:#7d7a73;">&middot; 7 aout 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">RovoBlast : un parametre d'URL qui injecte un prompt dans l'assistant Atlassian</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Dolev Taler (Varonis) montre que <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">home.atlassian.com/chat?rovoChatPathway=chat&rovoChatPrompt=...</span> fait remonter les instructions de l'attaquant directement dans Rovo Chat, sans avertissement ni confirmation. Le moteur d'exfiltration est le ResearchAgent, dont la fonction declaree est la navigation multi-etapes sur des sites arbitraires : il fournit donc le canal sortant sans que l'utilisateur ait besoin d'un acces internet direct. En entree, Rovo voit Jira, Confluence, Bitbucket, Slack, Microsoft 365, Google Workspace et les connecteurs. La session amorcee persiste dans le navigateur, donc le clic unique suffit. Corrige via Bugcrowd, presente a la DEF CON 34. Le point structurant est que Rovo ne peut pas etre completement desinstalle par une organisation.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.varonis.com/blog/rovoblast" style="color:#2f5474; text-decoration:underline;">varonis.com&#8203;/blog/rovoblast</a> <span style="color:#7d7a73;">&middot; 7 aout 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#5c5a55; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #43413d;">[archive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Mercusys MB115-4G : de l'UART au buffer overflow pre-auth (CVE-2026-12495)</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Publie en fevrier, remonte le 4 aout, et c'est la meilleure porte d'entree hardware vue cette semaine parce que la methodologie est complete et reproductible sans programmateur : identification et soudure de l'UART (ttyS1, 115200), shell root avec des identifiants trouves dans le firmware telecharge et extrait au binwalk (admin:1234), puis dump de toutes les partitions <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">/dev/mtd*</span> via le busybox tftp du routeur vers un serveur local. Le bug ensuite : dans <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">/usr/bin/httpd</span> (MIPS32 LE), <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">http_rpm_login</span> alloue <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">decrypted_payload[512]</span> et appelle <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">http_gdpr_decrypt</span> qui travaille sur un buffer temporaire de 2048 octets et fait un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">memcpy</span> non borne. La route <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">/cgi/login</span> est enregistree avec <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">g_http_author_all</span>, donc pre-auth. Pas de canary, pas de PIE, pile executable. L'auteur note honnetement que la limite de 1024 caracteres d'URL plafonne le payload autour de 450 octets, en dessous du seuil, et que Mercusys a classe l'impact demontre en DoS.</td></tr>
+  <tr><td style="padding:6px 0 18px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://rotcee.github.io/posts/analyzing-the-mersusys-mb115-4g-router/" style="color:#2f5474; text-decoration:underline;">rotcee.github.io&#8203;/posts/analyzing-the-mersusys-mb115-4g-router/</a> <span style="color:#7d7a73;">&middot; 4 aout 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 01</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[1]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-06</span> &nbsp;&middot;&nbsp; Tencent Zhuque Lab &mdash; <a href="https://matrix.tencent.com/en/2026/08/06/sctphantom-CVE-2026-64564" style="color:#2f5474;">SCTPhantom: An 18-Year-Old SCTP ASCONF Transport Use-After-Free (CVE-2026-64564)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[2]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-06</span> &nbsp;&middot;&nbsp; BleepingComputer &mdash; <a href="https://www.bleepingcomputer.com/news/security/new-tontou-cpu-attack-bypasses-spectre-v2-fixes-leaks-linux-password-hashes/" style="color:#2f5474;">New TONTOU CPU attack bypasses Spectre v2 fixes, leaks Linux password hashes</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[3]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-06</span> &nbsp;&middot;&nbsp; Check Point Research &mdash; <a href="https://research.checkpoint.com/2026/when-agentic-glue-melts/" style="color:#2f5474;">When Agentic Glue Melts: Exploiting Cloudflare Code Mode and Workers</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[4]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-08</span> &nbsp;&middot;&nbsp; Ethiack (Baptista, Castilho, Mendes) &mdash; <a href="https://ethiack.com/info-hub/research/write-once-shell-everywhere-arbitrary-file-writes-into-rce" style="color:#2f5474;">Write Once, Shell Everywhere - Turning Arbitrary File Writes into RCE</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[5]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-04</span> &nbsp;&middot;&nbsp; iPurple Team &mdash; <a href="https://ipurple.team/2026/08/04/provisioning-packages/" style="color:#2f5474;">Code Execution via Provisioning Packages</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[6]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-06</span> &nbsp;&middot;&nbsp; Metabase &mdash; <a href="https://www.metabase.com/blog/security-update" style="color:#2f5474;">Security update (GHSA-vwf4-m7j8-wcjf)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[7]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-07</span> &nbsp;&middot;&nbsp; CISA &mdash; <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474;">Known Exploited Vulnerabilities Catalog, version 2026.08.07</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[8]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-08</span> &nbsp;&middot;&nbsp; The Hacker News &mdash; <a href="https://thehackernews.com/2026/08/progress-kemp-loadmaster-flaw-hits-cisa.html" style="color:#2f5474;">Progress Kemp LoadMaster Flaw Hits CISA KEV After 792 Reported Exploit Attempts</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[9]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-07</span> &nbsp;&middot;&nbsp; Dolev Taler (Varonis) &mdash; <a href="https://www.varonis.com/blog/rovoblast" style="color:#2f5474;">RovoBlast: How One Click Triggered Atlassian's AI Assistant to Leak Data</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[10]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-04</span> &nbsp;&middot;&nbsp; Rotce &mdash; <a href="https://rotcee.github.io/posts/analyzing-the-mersusys-mb115-4g-router/" style="color:#2f5474;">Hardware Hacking: From zero to a Pre-Auth Stack Buffer Overflow on the Mercusys MB115-4G</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-2" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 02 &nbsp;&middot;&nbsp; Deep-dive</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Emprunter la cle Windows Hello : signer sans PIN, s'enregistrer sans appareil</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">La cle ne sort pas du TPM. Elle n'a pas besoin d'en sortir.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La promesse commerciale de Windows Hello for Business tient en une phrase, et Microsoft la documente telle quelle : <strong>la cle privee est stockee localement, protegee par le TPM, et ne peut pas etre exportee</strong> [12]. C'est vrai. Le probleme est que "non exportable" et "non utilisable par un attaquant" sont deux proprietes differentes, et que le modele de menace de WHfB ne protege que la premiere. Dirk-jan Mollema a publie le 5 aout une mise a jour d'une technique qu'il documente depuis 2021, et la nouveaute de 2026 est ce qui rend l'ensemble beaucoup plus penible a contenir : le passage par WebAuthn supprime la derniere contrainte qui restait, celle de devoir operer depuis un appareil enregistre [11].
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:0 0 10px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700;">Plan</td>
+  </tr>
+  <tr>
+    <td>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">1</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Ce que le conteneur Hello contient reellement, et quelle cle sert a quoi.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">2</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Pourquoi NCryptOpenKey signe sans demander le PIN, et pourquoi c'est documente.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">3</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">L'assertion PRT de 2021 : ce qu'elle exigeait, et pourquoi ce n'etait pas suffisant.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">4</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">L'assertion WebAuthn de 2026 : la structure du user_handle et la disparition du device.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">5</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">La chaine complete jusqu'a la persistance, et ce qu'elle coute en fiabilite.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">6</td></tr></table></td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Ce qui l'arrete : attestation stricte, acces conditionnel, et une requete KQL a trois lignes.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Commencons par le conteneur, parce que la moitie des raccourcis qu'on lit sur WHfB viennent de ne pas savoir de quelle cle on parle. Microsoft decrit trois niveaux [12]. Le <strong>protector key</strong> est genere par gesture : si l'utilisateur enregistre un PIN, une empreinte et un visage sur la meme machine, chacun de ces trois gestes a son propre protector. Le protector du PIN realise une operation de seal TPM en utilisant le PIN comme entropie - ou, sans TPM, un chiffrement symetrique avec une cle derivee du PIN. Ce protector enveloppe l'<strong>authentication key</strong>, unique par conteneur, dont il existe autant de copies chiffrees que de protectors. Et l'authentication key deverrouille les <strong>user ID keys</strong>, qui sont celles qui signent effectivement les requetes envoyees a l'IdP.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le point qui interesse un operateur est l'avant-derniere phrase de la section "Authentication" de la documentation Microsoft, qu'il faut lire en entier parce qu'elle n'est pas ambigue : "Although the keys are unlocked, applications cannot use them at will. Applications can use specific APIs to request operations that require key material for particular actions. <strong>Access through these APIs doesn't require explicit validation through a user gesture</strong>, and the key material isn't exposed to the requesting application" [12]. Autrement dit : une fois le conteneur deverrouille - c'est-a-dire des que l'utilisateur s'est connecte a sa session - toute application du contexte utilisateur peut demander une signature sans que le systeme redemande quoi que ce soit. Ce n'est pas un bug, c'est le design, et c'est meme la raison pour laquelle le SSO fonctionne. Il existe bien un mecanisme de re-authentification forcee, mais c'est a l'application appelante de le demander, ce qu'aucun attaquant ne fera.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Deux details de la phase de provisioning meritent d'etre gardes en tete, parce qu'ils expliquent ou vit la contrepartie publique de cette cle. Microsoft precise que la paire est generee <strong>apres</strong> une MFA, que la cle privee est liee au TPM quand il y en a un, et que la cle publique est enregistree aupres de l'IdP et rattachee au compte utilisateur - le Device Registration Service l'ecrit sur l'objet utilisateur dans Entra ID [12]. En hybride, une phase de synchronisation supplementaire recopie cette cle publique dans Active Directory, sur l'attribut <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">msDS-KeyCredentialLink</span> de l'objet utilisateur, via Entra Connect Sync [12]. C'est le meme attribut que celui manipule par toute la famille Shadow Credentials, et ce n'est pas une coincidence : la cle WHfB et une credential injectee frauduleusement occupent exactement le meme emplacement et sont, du point de vue du KDC, indiscernables. La technique de Mollema attaque l'autre bout de la meme structure - non pas ecrire une cle qu'on possede, mais utiliser une cle deja enregistree qu'on ne possede pas.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Mollema decrit trois voies d'acces au materiel de cle et en retient une [11]. L'acces TPM direct suppose de disposer du bon key blob. Le Platform KSP, via l'interface NGC, reclame le PIN dechiffre par le TPM. Reste le <strong>Microsoft Passport Key Storage Provider</strong>, qui passe lui-meme par le Platform KSP et qui, appele par les fonctions natives de <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">Ncrypt.dll</span>, ne declenche aucune invite. Sa formulation est directe : "calling these native functions from for example PowerShell does not prompt the user for a PIN or biometric authentication at all, but works based on cached data". Le cache en question est le mecanisme de "ticket" de mise en cache du PIN.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">Sequence CNG - Passport KSP, signature sans gesture</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">// Mecanisme decrit dans [11], reduit a la sequence CNG qui compte.
+// Le nom du conteneur NGC est obtenu par enumeration du provider,
+// il n'est pas devinable et n'est pas reproduit ici.
+
+NCryptOpenStorageProvider(&amp;hProv,
+        L"Microsoft Passport Key Storage Provider", 0);
+
+NCryptOpenKey(hProv, &amp;hKey, &lt;nom du conteneur NGC&gt;, 0, 0);
+//  ^ aucune invite PIN / biometrie : le conteneur est deja
+//    deverrouille depuis l'ouverture de session, et l'API ne
+//    redemande pas de gesture (comportement documente, [12]).
+
+NCryptSignHash(hKey, &amp;padInfo, hash, cbHash, sig, cbSig, &amp;cb, dwFlags);
+//  -&gt; signature utilisable comme assertion aupres de l'IdP</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Ni le TPM ni le PIN ne sont contournes : la cle reste dans le TPM et signe a la demande.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La technique de 2021 exploitait cela pour fabriquer un JWT localement, le signer avec la cle WHfB et l'echanger contre un <strong>Primary Refresh Token</strong>. Le PRT est le jeton de SSO d'Entra ID : valide 90 jours, renouvelable, et il porte des claims sur l'utilisateur <strong>et</strong> sur l'appareil [12]. C'est un excellent objectif, et c'etait aussi la limite de la technique : l'assertion a une duree de vie de cinq minutes, et surtout l'echange contre un PRT suppose de disposer d'un appareil joint ou enregistre dans Entra ID [11]. Un operateur qui a du code dans une session mais pas de device enregistre sous son controle restait bloque a cette etape - et Entra exige aujourd'hui un jeton non lie a un appareil pour enregistrer un nouveau device, ce qui faisait de la contrainte une boucle fermee.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  C'est cette boucle que la variante WebAuthn ouvre. WHfB peut se comporter comme un authenticateur FIDO2 - Microsoft le documente explicitement : "Windows Hello can also be used as a FIDO2 authenticator to authenticate to any website that supports WebAuthn" [12]. Or une assertion WebAuthn ne transporte aucun etat d'appareil. Mollema recupere le challenge emis par le serveur, qui est un JWT de cinq minutes prefixe <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">O.</span>, le signe avec la cle WHfB, et fabrique le <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">user_handle</span> attendu par concatenation : le litteral <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">ON:</span>, puis l'identifiant de tenant en binaire little-endian, puis le SHA-256 de l'identifiant utilisateur en binaire little-endian [11]. Le resultat est une authentification valide, sans device, depuis n'importe ou.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="22%" style="width:22%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Critere</td>
+    <td width="26%" style="width:26%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Assertion PRT (2021)</td>
+    <td width="26%" style="width:26%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Assertion WebAuthn (2026)</td>
+    <td width="26%" style="width:26%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Consequence</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Cle utilisee</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">user ID key WHfB, via Passport KSP</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">meme cle, meme provider</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">aucun changement cote endpoint : rien de nouveau a detecter localement</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Prerequis device</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">appareil joint ou enregistre Entra</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">aucun</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">l'operateur n'a plus besoin d'un device sous son controle</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Duree de vie</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">assertion 5 min, PRT 90 jours renouvelable</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">challenge 5 min, puis jetons standards</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">la fenetre courte ne protege de rien</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Privileges requis</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">utilisateur (cle utilisateur)</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">utilisateur</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">pas d'elevation, donc pas de franchissement de frontiere a instrumenter</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Sortie immediate</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">PRT lie a l'appareil</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">jeton non lie a l'appareil</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">debloque l'enregistrement d'un nouveau device dans Entra</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Comparaison etablie a partir de [11] ; les prerequis Entra sont ceux decrits par l'auteur.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La chaine complete se lit alors dans l'ordre inverse de l'intuition. On ne vole pas une cle pour obtenir un jeton : on obtient un jeton non lie a l'appareil pour pouvoir <strong>enregistrer un appareil</strong>, et c'est l'appareil enregistre qui donne acces au PRT et au reste. Mollema note le detail qui ferme la boucle : "using the WHFB key counts as performing fresh MFA, so we can add other passkeys or WHFB keys on our new device" [11]. La cle empruntee sert donc de second facteur pour enregistrer les moyens d'authentification suivants. A partir de la, la persistance ne depend plus de la machine compromise : elle est dans l'annuaire.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Il vaut la peine de dire pourquoi les deux autres voies d'acces echouent la ou celle-ci passe, parce que c'est ce qui situe la technique. L'acces TPM direct supposerait de disposer du key blob correspondant - c'est-a-dire d'avoir deja resolu le probleme qu'on cherche a resoudre. Le Platform KSP, via l'interface NGC, reclame le PIN dechiffre par le TPM, donc soit l'entropie fournie par l'utilisateur, soit un moyen de la reconstituer. Le Passport KSP, lui, ne demande rien parce qu'il delegue au Platform KSP en s'appuyant sur l'etat deja etabli de la session [11]. La technique ne casse donc aucun des trois mecanismes : elle choisit celui des trois qui a ete concu pour ne pas redemander, ce qui est exactement le comportement que la documentation annonce [12]. C'est le genre de resultat qu'on ne trouve pas en cherchant une faille, mais en lisant ce que le systeme promet et en notant ce qu'il ne promet pas.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Cote outillage, tout est public et cite : <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">roadtx</span> gere l'authentification par passkey WHfB et l'enregistrement d'appareil, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">roadlib</span> embarque une implementation WebAuthn minimale capable de signer avec une cle RSA, et le depot contient un repertoire <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">winhello_assertion</span> [11][13]. <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">DSInternals.Passkeys</span> couvre le cas d'une vraie cle FIDO2 materielle avec attestation. Il n'y a rien a reimplementer, et c'est precisement ce qui rend la technique operationnellement banale.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Limites et compromis.</strong> Il faut d'abord etre honnete sur ce que la technique n'est pas : ce n'est pas un acces initial. Le prerequis, dans les termes de l'auteur, est "we have access to a user session" [11]. C'est donc un primitif de post-exploitation, dont l'interet est de convertir un acces a une session - fragile, revocable, bruyant a maintenir - en materiel d'authentification durable dans le tenant. C'est une conversion tres rentable, mais elle suppose l'etape d'avant.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Trois choses l'arretent, et l'auteur les enumere lui-meme [11]. <strong>L'attestation stricte</strong> : lorsque l'enregistrement de passkey exige une attestation, les scripts fournis ne passent pas. <strong>L'acces conditionnel par appareil</strong> : une politique qui exige un appareil conforme ou joint bloque l'authentification sans jeton, ce qui neutralise la sortie WebAuthn avant qu'elle ne serve a quoi que ce soit. Et enfin, les fichiers de metadonnees de passkey appartenant a SYSTEM restent inaccessibles depuis un contexte faiblement privilegie - ce qui borne ce qu'on peut enumerer sans elevation.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La detection, elle, est etonnamment bon marche, et c'est le point le plus interessant pour un red teamer : le cout defensif de cette technique est de trois lignes de KQL. L'auteur donne la requete, qui cherche les connexions dont la methode d'authentification est WHfB mais dont <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">DeviceDetail.deviceId</span> est vide [11]. C'est exactement la signature de l'assertion WebAuthn : une cle liee a un appareil, utilisee sans que l'appareil soit dans la transaction. Contre un tenant qui surveille ca, la variante 2026 est plus visible que la variante 2021, pas moins.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">KQL - WHfB utilise sans etat d'appareil</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">SigninLogs
+| where AuthenticationDetails has
+        '"authenticationMethod":"Windows Hello for Business"'
+| where DeviceDetail.deviceId == ""</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Requete telle que publiee dans [11].</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f7ecd6; border:2px dashed #8a5a12;">
+  <tr>
+    <td style="padding:12px 16px 6px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:#6b4409;">&#9888;&#65039; Hypoth&egrave;se non test&eacute;e</td>
+  </tr>
+  <tr>
+    <td style="padding:0 16px 14px 16px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#3b2c11;">L'article etablit que la signature via le Passport KSP fonctionne "based on cached data" et n'invite pas l'utilisateur. Il ne precise pas la duree de validite de ce cache ni ce qui se passe sur un cache froid - par exemple immediatement apres un redemarrage, ou apres un verrouillage prolonge de la session. En deduire qu'un implant peut signer a n'importe quel instant apres l'ouverture de session est une extrapolation de ma part, pas un resultat de [11], et elle n'a pas ete testee ici. Le comportement sur cache expire devrait etre verifie en laboratoire avant d'etre suppose dans un plan.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le dernier mot revient au modele de confiance, parce que c'est la que cette recherche est reellement utile. WHfB repose sur trois assertions simultanees : la cle est liee au materiel, la cle est liee a l'appareil, et l'usage de la cle est liee a un geste utilisateur. La premiere tient - la cle ne sort pas du TPM, et aucune etape de la chaine ne pretend le contraire. La troisieme est explicitement relachee par design, pour que le SSO existe. Et la seconde ne tient que tant que le protocole utilise transporte l'etat de l'appareil, ce que WebAuthn ne fait pas. Deux des trois assertions ne survivent donc pas a du code dans la session de l'utilisateur, et la propriete "non exportable" protege le mauvais actif : elle empeche de <strong>copier</strong> la cle, pas de <strong>s'en servir</strong>.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 02</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[11]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Dirk-jan Mollema &mdash; <a href="https://dirkjanm.io/borrowing-windows-hello-keys/" style="color:#2f5474;">Borrowing Windows Hello keys for authentication and persistence</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[12]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-03-29</span> &nbsp;&middot;&nbsp; Microsoft Learn &mdash; <a href="https://learn.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/how-it-works" style="color:#2f5474;">How Windows Hello for Business works</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[13]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; dirkjanm &mdash; <a href="https://github.com/dirkjanm/ROADtools" style="color:#2f5474;">ROADtools (roadlib, roadrecon, roadtx, winhello_assertion)</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 24px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;">
+  Les parties 03 et 04 de ce num&eacute;ro ne tiennent pas dans le corps du mail (limite de 90&nbsp;Ko impos&eacute;e par Gmail). Elles sont <strong>compl&egrave;tes dans la pi&egrave;ce jointe</strong> <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">offsec-quotidien-416.html</span> et en ligne&nbsp;: <a href="https://rzdhop.github.io/Newsletter/416" style="color:#2f5474; text-decoration:underline;">rzdhop.github.io/Newsletter/416</a>.
+</td>
+</tr>
+<tr>
+<td style="padding:22px 30px 26px 30px; background-color:#1e1d1b; border-top:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">G&eacute;n&eacute;r&eacute; le 2026-08-09 a 14:12 UTC &nbsp;&middot;&nbsp; pipeline v1.0</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">Fen&ecirc;tre couverte&nbsp;: 2026-08-02 06:00 -&gt; 2026-08-09 06:00 UTC &nbsp;&middot;&nbsp; 403 sources scann&eacute;es, 19 retenues</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; padding-bottom:10px;"><a href="https://rzdhop.github.io/Newsletter" style="color:#c9b79a; text-decoration:underline;">rzdhop.github.io/Newsletter</a> &nbsp;&middot;&nbsp; <span style="color:#8f8b82;">&eacute;ditions n&deg;1 &agrave; 416</span></td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:10px; padding-bottom:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Fond clair assum&eacute;&nbsp;: aucune variante sombre n&rsquo;est fournie. Diffusion&nbsp;: 1 destinataire(s).</td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#8f8b82;">Bulletin d&rsquo;analyse technique en s&eacute;curit&eacute; offensive. Chaque sujet porte sur des travaux publics et cit&eacute;s&nbsp;: le bulletin commente la recherche existante et n&rsquo;en produit pas. Destin&eacute; &agrave; un lectorat professionnel, pour usage en laboratoire ou dans le cadre d&rsquo;engagements autoris&eacute;s.</td></tr>
+  </table>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

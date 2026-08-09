@@ -26,7 +26,10 @@
     "threat-intel",
     "tooling",
     "crypto",
-    "mobile"
+    "mobile",
+    "identity",
+    "supply-chain",
+    "exploitation"
   ],
   "subjects": [
     {
@@ -188,6 +191,48 @@
         "https://www.helpnetsecurity.com/2026/08/03/cve-2026-18577-n-able-n-central-vulnerability/",
         "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
       ]
+    },
+    {
+      "id": "whfb-key-borrowing-webauthn",
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 2,
+      "domain": "identity",
+      "title": "Emprunter la cle Windows Hello : signer sans PIN, s'enregistrer sans appareil",
+      "summary": "Dirk-jan Mollema (2026-08-05) etend sa technique de 2021 : le Microsoft Passport Key Storage Provider, appele via NCryptOpenKey depuis le contexte utilisateur, signe avec la cle WHfB sans redemander PIN ni biometrie - comportement documente par Microsoft ('Access through these APIs doesn't require explicit validation through a user gesture'). La cle reste dans le TPM ; non-exportable protege la copie, pas l'usage. Nouveaute 2026 : la variante WebAuthn/FIDO2 (challenge JWT 5 min prefixe 'O.', user_handle = 'ON:' + tenantId LE + SHA256(userId) LE) ne transporte aucun etat d'appareil, ce qui supprime le prerequis du device enregistre, debloque l'enregistrement d'un nouveau device dans Entra, puis le PRT et l'ajout de passkeys (WHfB compte comme fresh MFA). Post-exploitation, pas d'acces initial ; pas d'admin. Bloque par attestation stricte et acces conditionnel par appareil. Detection : SigninLogs, methode WHfB avec DeviceDetail.deviceId vide. Outillage roadtx/roadlib (winhello_assertion), DSInternals.Passkeys. Lien note vers msDS-KeyCredentialLink (famille Shadow Credentials).",
+      "sources": [
+        "https://dirkjanm.io/borrowing-windows-hello-keys/",
+        "https://learn.microsoft.com/en-us/windows/security/identity-protection/hello-for-business/how-it-works",
+        "https://github.com/dirkjanm/ROADtools"
+      ]
+    },
+    {
+      "id": "optee-trustfall-rsa-nopad-underwrite",
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 3,
+      "domain": "hardware",
+      "title": "Trustfall : une soustraction size_t ouvre le monde securise d'OP-TEE",
+      "summary": "Shahriyar Jalayeri / byteray (2026-08-06), trouve independamment par Argus et Ramtine Tofighi Shirazi (Secmate.dev). Dans le chemin RSA NOPAD d'OP-TEE (lib/libmbedtls/core/rsa.c), 'memcpy(buf + rsa.len - src_len, src, src_len)' ne verifie pas src_len <= rsa.len ; en size_t la soustraction wrappe et ecrit avant le buffer, depuis le monde normal via TEE_AsymmetricEncrypt, dans le tas S-EL1. Chaine : (1) fuite en gonflant le compteur de limbs d'un bignum sans toucher au pointeur de donnees, l'export du modulus rend 'real modulus || adjacent heap' et casse CFG_CORE_ASLR ; (2) write-what-where via l'unlink de coalescence BGET (flink=VALUE, blink=TARGET-16), avec ecriture collaterale a TARGET+24 ; (3) detournement de ctx->ops (offset 0) sur TEE_DigestUpdate. Restent debout : pages inscriptibles XN (code reuse seulement) et code des TA privileged-execute-never. Deux autres bugs : TA_FLAG_CONCURRENT accepte pour TA utilisateur -> UAF sur uctx->vm_info.regions (PR #7900) ; NULL deref dans la PTA Widevine via ts_get_calling_session() (PR #7899). Correctif RSA merge en PR #7808 le 3 aout ; la PR #7898 du rapporteur fermee le 4 aout comme supplantee. Aucun CVE assigne, aucune plage de versions publiee.",
+      "sources": [
+        "https://blog.byteray.co.uk/blog/optee-rsa-nopad-heap-underwrite.html",
+        "https://github.com/OP-TEE/optee_os/pull/7808",
+        "https://github.com/OP-TEE/optee_os/pull/7898"
+      ]
+    },
+    {
+      "id": "chaindrop-npm-worm-autopsy",
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 4,
+      "domain": "threat-intel",
+      "title": "Autopsie CHAINDROP : 400 paquets npm, un C2 sur Ethereum, une provenance Sigstore valide",
+      "summary": "Ver npm auto-propageant analyse independamment par Unit 42 et Elastic (2026-08-06). Compte mainteneur keyv compromis (vecteur NON etabli par les deux rapports) ; hook preinstall -> setup.mjs -> telecharge Bun 1.3.13 -> math_init.js / Math_Symbol.js, process detache, _NODE_RUNTIME_INIT=1. Collecte 300+ motifs (.env, .netrc, ~/.npmrc, ~/.ssh, Terraform, kubeconfig, Docker/Helm, configs outils IA), IMDS/token endpoints pour IAM, et helper Python lisant /proc/<pid>/maps et /proc/<pid>/mem de Runner.Worker pour les jetons OIDC des runners GitHub Actions. Propagation : enumeration des paquets publiables, ajout du preinstall, bump du numero de PATCH (bande ramassee par ^ et ~), republication. Sur OpenSearch, second jeton OIDC d'audience 'sigstore' -> certificat Fulcio -> provenance Sigstore authentique sur un artefact infecte (le point reellement neuf). Exfil JSON+gzip+AES-256-GCM+RSA-OAEP-SHA256 vers npm-cache[.]com:443/router ; C2 resolu par contrat Ethereum 0xE1f2395ee43e45A1556EC6438a88c31B83493103, rotation vers awqhnjewqjkl[.]icu le 2026-08-04 15:15:26 UTC ; 453 depots d'exfil GitHub 'Shai-Hulud: Here We Go Again' sur 5 comptes, le plus ancien du 11 mai. Filiation Shai-Hulud (source publiee mai 2026) mais attribution explicitement NON etablie (TeamPCP ou repreneur). Maillon faible : le hook preinstall et le telechargement reseau de Bun. Ancrage Tier 5 : advisories GitHub de type malware du 4 aout (GHSA-3p9h-f68w-m6fx + 19 @keyv/*).",
+      "sources": [
+        "https://unit42.paloaltonetworks.com/chaindrop-npm-worm-analysis/",
+        "https://www.elastic.co/security-labs/shai-hulud-chaindrop-npm-supply-chain",
+        "https://github.com/advisories/GHSA-3p9h-f68w-m6fx"
+      ]
     }
   ],
   "mentions": [
@@ -250,6 +295,115 @@
       "sources": [
         "https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/"
       ]
+    },
+    {
+      "id": "sctphantom-cve-2026-64564",
+      "domain": "kernel",
+      "title": "SCTPhantom : UAF ASCONF SCTP vieux de 18 ans (CVE-2026-64564)",
+      "summary": "Partie 01, non traite en deep-dive pour eviter un second UAF reseau Linux apres le bridge STP du n414 - reste un excellent sujet. Tencent Zhuque : DEL-IP valide contre un parametre, le traitement suit un autre transport ; primary_path/active_path restent sur un sctp_transport libere. Lecture noyau 4 octets repetable via SCTP_STATUS getsockopt -> bypass KASLR ; local non privilegie, evasion de conteneur sous seccomp par defaut. Fautif depuis 42e30bf3463c (2.6.25), corrige par 9b2854f86f0b. CVSS v4.0 8.5.",
+      "sources": [
+        "https://matrix.tencent.com/en/2026/08/06/sctphantom-CVE-2026-64564"
+      ],
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 1
+    },
+    {
+      "id": "tontou-spectre-v2-interrupt-injection",
+      "domain": "hardware",
+      "title": "TONTOU : Interrupt Injection dans la fenetre post-neutralisation (MIT CSAIL)",
+      "summary": "Partie 01. Trujillo et Yan transposent TOCTOU au branch predictor : eIBRS (Intel) et Safe RET (AMD/Linux) supposent qu'on ne peut rien faire entre le nettoyage de l'etat et son usage. Interruptions timer programmees par un process non privilegie pour repoisonner predicteur indirect et RSB. Zen 2 : 5,47 o/s, 91,97 % de precision, /etc/shadow dans 5 essais sur 10, ~18 min. Non traite en deep-dive parce que le papier n'est PAS encore public : Black Hat USA fait, USENIX Security 27-29 octobre 2026. A reprendre quand le papier sort.",
+      "sources": [
+        "https://www.bleepingcomputer.com/news/security/new-tontou-cpu-attack-bypasses-spectre-v2-fixes-leaks-linux-password-hashes/"
+      ],
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 1
+    },
+    {
+      "id": "cloudflare-workerd-code-mode-memory-bugs",
+      "domain": "web",
+      "title": "Cinq bugs memoire dans workerd / Cloudflare Code Mode (Check Point)",
+      "summary": "Partie 01, candidat deep-dive serieux. La glue C++ JSG vit sur un tas tcmalloc hors cage V8 et hors MPK. OOB read URLPattern (desaccord de comptage des groupes de capture entre V8 et workerd sur '(ab(cde))'), UAF node:zlib deflateParams() via next_out perime, UAF iterateur d'attributs HTMLRewriter, bypass de l'authorizer SQLite par ALTER TABLE ... RENAME TO _cf_KV. Vol de secrets cross-tenant et evasion de sandbox jusqu'a du shellcode ARM64 en region RWX. Corrige en prod ; self-hosted workerd v1.20260619.1. Aucun CVE.",
+      "sources": [
+        "https://research.checkpoint.com/2026/when-agentic-glue-melts/"
+      ],
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 1
+    },
+    {
+      "id": "ethiack-arbitrary-file-write-to-rce",
+      "domain": "web",
+      "title": "Write Once, Shell Everywhere : AFW -> RCE par runtime (Ethiack, DEF CON 34)",
+      "summary": "Partie 01. Inventaire classe par runtime avec notes d'utilite reelle. Apports nouveaux : reecriture du script shell en cours d'execution via fd 255 (bash) / fd 10 (dash), pertinent sur entrypoint de conteneur ; db/schema_cache.yml Rails en YAML non sur chaine par Gem::Requirement sans redemarrage ; oracle systeme de fichiers par differenciation ENOENT/EACCES/EISDIR a travers les codes HTTP.",
+      "sources": [
+        "https://ethiack.com/info-hub/research/write-once-shell-everywhere-arbitrary-file-writes-into-rce"
+      ],
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 1
+    },
+    {
+      "id": "windows-provisioning-packages-exec",
+      "domain": "maldev-windows",
+      "title": "Execution de code via provisioning packages (.ppkg)",
+      "summary": "Partie 01. customizations.xml accepte <CommandLine> ; execute au deploiement, deux invites UAC. Traces : provider Provisioning Diagnostics event ID 20 (application) et 10 (comptes/fichiers), C:\\ProgramData\\Microsoft\\Provisioning, HKLM\\SOFTWARE\\Microsoft\\Provisioning\\Results, correlation 4663 + event 20.",
+      "sources": [
+        "https://ipurple.team/2026/08/04/provisioning-packages/"
+      ],
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 1
+    },
+    {
+      "id": "metabase-reset-password-sqli-0day",
+      "domain": "web",
+      "title": "Metabase : SQLi non authentifiee sur /api/session/reset_password, exploitee en 0-day",
+      "summary": "Partie 01. Injection SQL contre la base applicative -> admin de l'instance. 1.58+ concernees ; correctifs v0.58.24 / 0.59.21 / 0.60.17 / 0.61.11 / 0.62.9 / 0.63.5. Pas de CVE, GHSA-vwf4-m7j8-wcjf. IoC editeur : POST reset_password en 400 suivi d'un GET /api/user/current en 200. Framework et Tally confirmes touches.",
+      "sources": [
+        "https://www.metabase.com/blog/security-update"
+      ],
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 1
+    },
+    {
+      "id": "progress-loadmaster-cve-2026-8037-kev",
+      "domain": "web",
+      "title": "Progress LoadMaster CVE-2026-8037 au KEV (echeance BOD 26-04 au 10 aout)",
+      "summary": "Partie 01. Injection de commande non authentifiee, CVSS 9,6, fonction escape_quotes(). KEV du 7 aout (catalogue 2026.08.07), echeance FCEB 10 aout. Telemetrie citee : 792 tentatives sur 41 jours, 65 IP, 18 pays - balayage, pas ciblage.",
+      "sources": [
+        "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+        "https://thehackernews.com/2026/08/progress-kemp-loadmaster-flaw-hits-cisa.html"
+      ],
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 1
+    },
+    {
+      "id": "rovoblast-atlassian-rovo-prompt-injection",
+      "domain": "web",
+      "title": "RovoBlast : injection de prompt par parametre d'URL dans Atlassian Rovo",
+      "summary": "Partie 01. rovoChatPrompt dans l'URL amorce Rovo Chat sans confirmation ; le ResearchAgent (navigation multi-etapes) fournit le canal d'exfiltration. Entrees : Jira, Confluence, Bitbucket, Slack, M365, Workspace, connecteurs. Session persistante apres un clic unique. Corrige via Bugcrowd, DEF CON 34, Dolev Taler (Varonis). Rovo n'est pas desinstallable par une organisation.",
+      "sources": [
+        "https://www.varonis.com/blog/rovoblast"
+      ],
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 1
+    },
+    {
+      "id": "mercusys-mb115-4g-cve-2026-12495",
+      "domain": "hardware",
+      "title": "Mercusys MB115-4G : UART, dump mtd, buffer overflow pre-auth (CVE-2026-12495)",
+      "summary": "Partie 01, tag archive (publie en fevrier, remonte le 4 aout). Methodologie complete sans programmateur : UART ttyS1 115200, admin:1234 trouve dans le firmware extrait au binwalk, dump /dev/mtd* par busybox tftp. Bug : http_rpm_login alloue decrypted_payload[512], http_gdpr_decrypt memcpy non borne depuis un buffer de 2048 ; /cgi/login enregistre avec g_http_author_all donc pre-auth ; pas de canary, pas de PIE. Limite honnete de l'auteur : URL plafonnee a 1024 caracteres -> ~450 octets, Mercusys classe en DoS.",
+      "sources": [
+        "https://rotcee.github.io/posts/analyzing-the-mersusys-mb115-4g-router/"
+      ],
+      "issue": 416,
+      "date": "2026-08-09",
+      "part": 1
     }
   ]
 }
