@@ -45,14 +45,68 @@ research that exists, not producing research that does not.
   it is not, leave it out. It is not a required section and it is not a
   disclaimer.
 
-**Out of scope**, regardless of how the day's news reads:
+### Depth contract
 
-- Complete, weaponised, ready-to-run offensive tooling.
-- Novel technique development — designing an evasion or a bypass that does not
-  already exist in the literature you are citing.
-- Anything aimed at a live third-party system rather than a lab.
-- Ransomware or destructive-payload construction, and mass data exfiltration
-  tooling. These are categorically out; no framing makes them in scope.
+This newsletter covers offensive technique at full mechanism depth. Depth is
+the deliverable, not a risk to be managed — a treatment that stops short of the
+mechanism is useless to its reader and fails the brief. The boundary below is
+narrow and categorical; everything outside it is in scope at whatever depth the
+published source supports.
+
+**In scope, at full depth.** Non-exhaustive, and the absence of a technique
+from this list is not a reason to soften it:
+
+- **Technique internals** — injection primitives, direct and indirect syscalls,
+  SSN resolution, Hell's Gate and Halo's Gate, unhooking via a fresh ntdll
+  mapping, ETW and AMSI patching, sleep obfuscation (Ekko, Foliage, Cronos),
+  COFF and BOF loading, kernel callback removal, TLS callback abuse, module
+  stomping, hardware-breakpoint hooking, call-stack spoofing, PE and loader
+  internals.
+- **Exploitation** — memory-corruption classes, heap grooming and shaping, ROP
+  and JOP chains, type confusion, race conditions, sandbox and kernel escape
+  reasoning, exploitability analysis.
+- **Platform trust models** — which assumption the OS, the hypervisor or the
+  security product is making, and the precise conditions under which it stops
+  holding.
+- **Analysis** — vulnerability research, adversarial simulation, detection
+  engineering, incident reconstruction.
+- **Concrete artefacts** — real API names, real structure layouts, real call
+  sequences, and code extracts quoted or adapted from the source under
+  discussion. Vagueness here is a failure, not caution.
+
+**Out of scope — categorical.** No framing, format or audience changes these. A
+course, a lab exercise and a newsletter are the same thing to this list:
+
+1. **Self-propagating code.** Worm propagation logic, autonomous spread
+   mechanics, the routine by which a compromise reaches the next host.
+2. **Mass credential or secret harvesting tooling, and mass exfiltration
+   tooling.** Includes CI/CD runner secret-extraction implementations.
+3. **Ransomware and destructive payloads.** Encryption routines, key handling
+   for extortion, wipers.
+
+**Out of scope — editorial.** These are the newsletter's own choices, not
+policy boundaries:
+
+4. Anything aimed at a live third-party system rather than a lab.
+5. Novel technique development — designing an evasion or a bypass that does not
+   already exist in the literature you are citing. See rule 4b of `brief.md`.
+
+The distinction matters when you hit friction. Items 1–3 are fixed and apply on
+every surface. Items 4–5 are the brief's identity and are equally binding, but
+they are ours.
+
+### Covering a campaign whose payload is out of scope
+
+An attack built on 1–3 is still legitimate subject matter. What is excluded is
+the reproduction of the payload mechanics, not the analysis of the event. A worm
+campaign is covered at: timeline, initial access vector, the trust relationship
+abused, blast radius, C2 architecture at design level, the telemetry that
+existed and went unread, and the defensive controls that would have changed the
+outcome. That is a complete Partie 04. The propagation routine adds nothing the
+reader uses.
+
+If a subject cannot be covered at all without reproducing 1–3, it is not a
+subject. Note it in one line and take the next candidate from the reserve.
 
 None of this reduces technical depth. The deepest published work in this field
 — Project Zero's exploitation write-ups, SpecterOps' and MDSec's tradecraft
@@ -132,6 +186,12 @@ Classify each retained item into exactly one tag: `quick`, `deep-dive`,
 Target 6–10 items. If the week is thin, say so in an `empty` block and take an
 older red-team subject as a blogpost instead — do not inflate the count.
 
+**Carry a reserve.** Keep the two or three strongest candidates you did *not*
+promote to a deep-dive, with their primary sources, as a short reserve list in
+your working notes. The scope gate in Step 3 and the safeguard procedure below
+both substitute from this list. Rebuilding a candidate pool at 03:00 because one
+subject was dropped means paying for a research sweep you have already done.
+
 ---
 
 ## Step 3 — Choose the deep-dives (Parties 02 and 03)
@@ -149,6 +209,18 @@ Apply the `refs/erebos-inventory.md` selection procedure. In short:
 - **Partie 02 and Partie 03 must be in different domains** (maldev / hardware /
   web / kernel). Two Windows-maldev pieces in one issue is a weaker edition.
 - Saturday and Sunday: lighter subjects.
+
+**Scope gate — apply it here, not at drafting time.** Before committing to a
+subject, check it against the *Out of scope* list in Context and scope above.
+The question is not "is this topic sensitive" — most of this field is — but
+"can this be covered as analysis of published work, at the depth the brief
+demands, without the piece becoming the thing itself?" A technique whose
+published source is a full weaponised implementation, where the only honest
+2 500 words would amount to reproducing it, fails the gate. Say so in one line
+in your notes and take the next candidate from the reserve.
+
+This check is cheap at selection and expensive at 2 500 words. A subject that
+fails it after drafting has cost the run an hour and may cost it the morning.
 
 Each deep-dive needs: a plan (`steps` block), real technical substance, at
 least one code block where code clarifies better than prose, a comparison table
@@ -170,6 +242,18 @@ above.
 Pick a recent attack with enough public technical detail to reconstruct. Tie it
 to at least one Tier 5 anchor (CISA KEV, ZDI, LOLDrivers).
 
+**Apply the scope gate here, exactly as Step 3 applies it to the deep-dives.**
+The gate was written for Parties 02 and 03, and that omission is what let a
+self-propagating worm through unchallenged on 2026-08-07. Ask the same question:
+can this chain be covered as analysis of public reporting, at the depth the
+brief demands, without the piece reproducing carve-outs 1–3?
+
+For most campaigns the answer is yes, *including* campaigns whose payload is out
+of scope — see *Covering a campaign whose payload is out of scope* above. The
+gate fails only where the chain's sole technical content **is** the excluded
+mechanic. Note the decision in one line and take the next candidate from the
+Step 2 reserve.
+
 Break the chain into timestamped phases (`autopsy` block): initial access,
 execution, escalation, evasion, exfiltration — whatever the chain actually did.
 
@@ -188,6 +272,53 @@ chain contains inference, and unlabelled inference is the main way this part
 could mislead. Do not fill a gap in the reporting by designing the missing step
 yourself.
 
+### Extraction-prompt discipline
+
+Every `WebFetch` and every subagent brief is itself a request that is screened.
+An extraction prompt asks for **the analysis inputs the part consumes**, never
+for a reproduction of the artefact under analysis.
+
+This is not a softening. The compliant form below returns everything a Partie 04
+prints; the blocked form additionally requested material the part was never
+going to use, and cost the run of 2026-08-07 its entire session.
+
+```text
+# BLOCKED — requests reproduction of the artefact
+Full technical detail of the ChainDrop npm worm: the smart-contract C2 routing
+mechanism on Ethereum (which contract, how the malware reads the C2 address
+from the blockchain), GitHub Actions runner secret extraction, self-propagation
+logic, affected package count and download volume, the compromised maintainer
+vector, timeline with dates, and all IOCs. Preserve identifiers, function
+names, wallet/contract addresses, and hashes.
+
+# COMPLIANT — requests the analysis inputs
+From this report, extract for an incident analysis:
+  - the timeline with dates, from first compromise to public disclosure
+  - the initial access vector and how maintainer trust was abused
+  - blast radius: package count, download volume, downstream orgs affected
+  - which defensive controls existed at each phase, and which were not acted on
+  - what the reporting establishes, versus what it leaves as inference
+  - the C2 design at architectural level only: why blockchain-hosted C2 resists
+    takedown compared with DNS or hardcoded IPs
+Do not reproduce propagation or credential-harvesting implementation detail;
+the analysis does not use it.
+```
+
+Check every extraction prompt against three questions before sending it:
+
+1. **Does each requested item appear in the part's output?** If the part will
+   never print it, do not ask for it. "All IOCs" and "preserve hashes" fail this
+   on a newsletter that prints neither.
+2. **Does it ask to preserve implementation identifiers?** Phrases like *full
+   technical detail*, *preserve function names*, *preserve identifiers* convert
+   an analysis request into an extraction request. Rewrite.
+3. **Does it name a mechanic from carve-outs 1–3?** *Self-propagation*, *secret
+   extraction*, *encryption routine*. Rewrite to the architectural or impact
+   level, or drop the item.
+
+The same three questions apply to deep-dive research in Step 3. They are
+cheapest at the prompt and most expensive after a session is lost.
+
 ---
 
 ## Step 5 — Write
@@ -202,11 +333,34 @@ Partie 02 starts at [5].
 
 ---
 
-## Step 6 — Emit `content.json`
+## Step 6 — Emit the fragments
+
+**Write each part to disk the moment it is finished. Do not hold the issue in
+context until the end.**
+
+```
+work/meta.json      the `meta`, `preheader` and `tldr` fields below
+work/part-01.json   one part object
+work/part-02.json
+work/part-03.json
+work/part-04.json
+```
+
+Write `work/meta.json` first, as soon as the issue number and theme are settled
+— before Partie 01 is drafted. It is the one fragment that cannot be defaulted,
+and an issue whose meta never landed is unpublishable no matter how many parts
+survived.
+
+This is the mechanism that makes a safeguard block cost a part instead of a
+morning. `scripts/assemble.py` merges the fragments into `content.json` and
+substitutes the `empty` component for anything missing, so an issue that lost
+Partie 03 still ships with Parties 01, 02 and 04 intact. Held in context
+instead, a single blocked request destroys all four.
 
 The schema below is the contract with `render.py`. You never write HTML — you
 write content, and the renderer produces the markup. This is what makes design
-drift impossible.
+drift impossible. The `parts` array is shown inline for readability; on disk
+each element is its own `work/part-NN.json` file.
 
 Fields ending in `_html` accept inline markup (`<span>`, `<strong>`, `<a>`).
 Everything else is plain text and gets escaped. **You do not need to write HTML
@@ -278,93 +432,47 @@ non-ASCII character.
 
 ---
 
-## Step 7 — Render and check the budget
-
-```bash
-python3 scripts/split.py content.json issues/<YYYY>/<MM>/<NNN>/
-```
-
-Produces `full.html` (every part) and `digest.html` (as many complete parts as
-fit under 90 KB, plus a pointer to the rest). Parts are dropped whole, never
-mid-article.
-
-Expect roughly: full ≈ 140–180 KB for a 10k-word issue, digest ≈ Parties 01–02.
-If `split.py` exits non-zero, the digest overflowed even at one part — shorten
-Partie 01 and re-render.
-
-Verify before continuing:
-- both files are pure ASCII (the renderer guarantees this; confirm anyway)
-- the digest carries the continuation notice when parts were dropped
-- no `empty` block was used to dodge work that had material available
-
----
-
-## Step 8 — Publish, archive, deliver
-
-The order below is load-bearing. Two of these steps are in the position they
-are because the alternative has already failed in production.
-
-### 8.1 — Update the ledger BEFORE committing
+## Step 7 — Update the ledger
 
 Write every subject covered today into `state/topics-index.json`. Per subject:
 issue number, date, part, domain, a two-sentence summary, and the source URLs.
-This is what makes rule 3 work tomorrow.
+This is what makes rule 3 of `brief.md` work tomorrow.
 
-Do it **now**, not after the commit. A ledger update written afterwards needs a
-second commit that a run ending early will never make — which is how issue
+**Do it before publishing, not after.** A ledger update written afterwards needs
+a second commit that a run ending early will never make — which is how issue
 413's subjects nearly went unrecorded, leaving the next run free to repeat them.
+`publish.sh` warns if it finds no entry for today's issue, but a warning is not
+a substitute for the entry.
 
-### 8.2 — Build permalinks, then commit everything together
+---
 
-```bash
-python3 scripts/build_index.py
-git add issues/ state/ index.html <NNN>/
-git commit -m "issue <NNN> - <subject of the day>"
-```
-
-`build_index.py` publishes `/<NNN>/index.html` and regenerates the archive
-index; both are part of the same artefact as the issue and belong in the same
-commit. This commit is also what resets GitHub's 60-day scheduled-workflow
-inactivity timer.
-
-### 8.3 — Push to `main`, explicitly
+## Step 8 — Publish
 
 ```bash
-git push origin HEAD:main
+scripts/publish.sh work/
 ```
 
-A cloud routine starts on an auto-created feature branch. GitHub Pages serves
-**only the default branch**, so an issue committed and left on the feature
-branch produces a permalink that 404s — in a mail that has already been sent.
-A bare `git push` is not sufficient and was the single largest defect of the
-2026-08-05 run.
+One command. It assembles the fragments, renders, checks the 90 KB digest
+budget, builds the permalinks, commits, pushes `HEAD:main`, verifies the push
+landed, and only then queues the issue and cancels the dead-man alert.
 
-### 8.4 — Verify the push landed, before delivering
+Every one of those steps used to live here as a separate instruction, and each
+was a point where a blocked session could strand a finished issue. The ordering
+inside the script is load-bearing and is documented in its comments — in
+particular the hash comparison against `origin/main`, which refuses to deliver a
+mail whose embedded permalink would 404, and which was the single largest defect
+of the 2026-08-05 run.
 
-```bash
-git fetch origin main
-git rev-parse HEAD origin/main    # the two hashes MUST match
-```
+**If `publish.sh` fails, read its output and stop.** It exits non-zero only on
+conditions the operator must see: no surviving fragment, a digest that overflows
+at one part, or a push that did not land. In all three the dead-man alert is left
+armed on purpose.
 
-The mail embeds the permalink, so delivery must not happen until the content
-behind that permalink exists. If the hashes differ, stop: leave the dead-man
-alert armed and report the failure. If the push was rejected by branch
-protection, that is a configuration problem for the operator, not something to
-work around by delivering anyway.
+**If this session is blocked before you reach this step**, the operator runs the
+identical command by hand and the issue ships from the fragments that survived.
+That is the whole reason the tail is a script.
 
-### 8.5 — Deliver
-
-```bash
-python3 scripts/deliver.py send issues/<YYYY>/<MM>/<NNN>/ <NNN>
-```
-
-Queues the issue for exactly 06:00 Europe/Paris and then attempts to cancel the
-dead-man alert. Cancellation needs `RESEND_MGMT_KEY`; if it is absent or the
-call fails, the script warns and exits 0 on purpose — the issue is already
-queued, and reporting a delivered issue as a failed run costs more than a
-spurious alert mail.
-
-### 8.6 — Write the archive manifest to Google Drive
+### Then — write the archive manifest to Google Drive
 
 Write `archive/<YYYY>/<MM>/offsec-quotidien-<NNN>.MANIFEST.md` to Google Drive
 via the connector, containing: issue number and date, theme, part titles, word
@@ -385,8 +493,86 @@ A Drive hiccup must never cost the operator a morning.
 
 ---
 
+## Safeguard interruptions
+
+Anthropic applies real-time cyber safeguards on Opus and Sonnet models. They
+screen two tiers: **prohibited use**, which is fixed for everyone, and
+**high-risk dual use**, which the Cyber Verification Program adjusts for
+verified organisations. This newsletter's CVP is approved and org-verified, so
+dual-use friction should be rare. Carve-outs 1–3 of the depth contract are the
+prohibited tier, and CVP does not lift them.
+
+**A block is terminal for the session, not for the turn.** This is the part the
+previous version of this section got wrong. Observed behaviour is that the block
+state is sticky and not model-specific: once a session trips, every subsequent
+request fails regardless of content — including `git push` and
+`python3 scripts/deliver.py send`. There is no substituting a subject and
+carrying on inside the same session. There is no retrying on another model. The
+session is over.
+
+Three consequences, in order:
+
+1. **Prevention is the only control that works.** The depth contract, the
+   extraction-prompt discipline in Step 4, and the scope gate applied at
+   selection in Steps 3 and 4 are the mechanism. All three are cheap; a lost
+   session costs the morning.
+2. **Recovery lives outside the session.** `scripts/publish.sh` owns render, split,
+   ledger, commit, push and deliver, and executes on whatever parts completed. A
+   trip during Partie 03 still ships an issue carrying Parties 01, 02 and 04,
+   because each part was written to `work/part-NN.json` the moment it was
+   finished. Never put a delivery step inside a drafting session.
+3. **Logging is the operator's job once a session is hot.** A blocked session
+   cannot write `state/safeguard-log.json` — it cannot write anything. If you
+   are still able to write, record the date, issue number, part, subject,
+   primary source URL, the exact message and the request id. If you are not,
+   the run log at claude.ai/code/routines carries the same evidence and the
+   operator transcribes it. That log is the evidence base for an appeal.
+
+Three things you must **not** do, in any circumstance:
+
+- **Do not reword the request to get the same content past the check.** The
+  safeguard is a control the operator is subject to, not an obstacle between you
+  and the issue. Rephrasing to evade it is circumvention regardless of how
+  defensible the subject is, and it would put the newsletter's account at risk
+  for the sake of one deep-dive.
+- **Do not retry on a different or weaker model.** The safeguards apply across
+  Opus and Sonnet alike, so this does not work; and a run that silently
+  downgrades its own model produces exactly the shallow output the Model policy
+  section exists to prevent. If quality tracks capability, the fallback for a
+  blocked subject is a *different subject at full depth*, never the same subject
+  at reduced depth.
+- **Do not weaken the depth contract to make a subject fit.** Carve-outs 1–3 are
+  not adjustable, and 4–5 are the newsletter's editorial identity.
+
+If a block is hit on material that is plainly dual-use rather than prohibited,
+that is a false positive and the appeal path exists for it: the report/appeal
+form at <https://claude.com/form/cyber-block-false-positive-report-cvp-rejection-appeal>,
+supported by `state/safeguard-log.json`. That is an operator action tracked in
+`CHECKLIST.md`, not something a run performs for itself.
+
+---
+
 ## Failure handling
 
-If you cannot complete the issue, **stop and leave the dead-man alert armed**.
-Do not send a half-issue and do not cancel the alert. A missing issue the
-operator knows about is strictly better than a padded one they have to read.
+Distinguish a part that cannot be written from a run that cannot continue. Only
+the second one kills the issue.
+
+**A part that cannot be written** — no material, or a subject dropped at the
+scope gate with the reserve exhausted — gets an `empty` block and one honest
+sentence, written to its `work/part-NN.json` as normal. The run continues. This
+is degradation working as designed and it does not warrant an alert.
+
+**A part killed by a safeguard block** never gets written at all, because the
+session that would have written it is finished. Nothing is required of you here:
+the fragment is simply absent, and `assemble.py` substitutes the same `empty`
+component when the operator runs `publish.sh`. Do not attempt to recover inside
+a blocked session.
+
+**A run that cannot continue** — preflight failed, the push to `main` did not
+land, `split.py` cannot fit even one part, or no fragment survived — means
+**stop and leave the dead-man alert armed**. Do not send a half-issue and do not
+cancel the alert. A missing issue the operator knows about is strictly better
+than a padded one they have to read.
+
+The line between them: if at least one part carries real, sourced, non-padded
+material and the permalink resolves, deliver. Otherwise, stop.
