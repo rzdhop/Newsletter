@@ -23,7 +23,16 @@ Environment:
                       Without it the alert cannot be cancelled and a spurious
                       "no issue" mail arrives alongside a perfectly good issue.
     NEWSLETTER_FROM   default "OffSec Quotidien <newsletter@rzdhop.com>"
-    NEWSLETTER_TO     default "verdu.rida@gmail.com" (comma-separated for many)
+    NEWSLETTER_TO     fallback only, used when subscribers.txt is absent or
+                      empty (comma-separated for many). The distribution list
+                      itself lives in subscribers.txt at the repository root.
+    NEWSLETTER_ALERT_TO  optional. Where the dead-man alert goes. Defaults to
+                      OPERATOR_FALLBACK below. Never the readership: readers
+                      must not receive failure notices for a console they
+                      cannot open.
+
+Readers above one are blind-copied, so no subscriber ever sees another
+subscriber's address. See envelope().
 """
 
 import base64
@@ -41,6 +50,18 @@ PARIS = zoneinfo.ZoneInfo("Europe/Paris")
 # Written by arm(), consumed by send(). Lives in the run workspace and is
 # gitignored: it is a handle to a pending send, not project state.
 ALERT_ID_FILE = ".resend-alert-id"
+
+# Resolved from this file rather than from the working directory: the routine
+# invokes the scripts from the workspace root, but a manual debug re-run from
+# scripts/ must read the same distribution list.
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SUBSCRIBERS_PATH = os.path.join(REPO_ROOT, "subscribers.txt")
+
+# The dead-man alert is an operational signal, not an issue: it must reach the
+# person who can re-run the routine and nobody else. Pinned here rather than
+# read from subscribers.txt so that editing the reader list can never redirect
+# the alerts. Override with NEWSLETTER_ALERT_TO.
+OPERATOR_FALLBACK = "verdu.rida@gmail.com"
 
 # Resend sits behind Cloudflare, which rejects the stock "Python-urllib/3.x"
 # agent with HTTP 403 and Cloudflare error 1010 ("browser signature banned").
@@ -119,13 +140,103 @@ def next_six_am():
     return target.isoformat()
 
 
+def _dedupe(addresses):
+    """
+    Order-preserving, case-insensitive dedupe.
+
+    A line pasted twice into subscribers.txt would otherwise become a second
+    delivery to that reader, and Resend counts it twice against its documented
+    50-address ceiling on `to`. Order is preserved so the payload stays
+    diffable between runs instead of reshuffling with set iteration.
+    """
+    seen = set()
+    unique = []
+    for address in addresses:
+        key = address.lower()
+        if key not in seen:
+            seen.add(key)
+            unique.append(address)
+    return unique
+
+
 def recipients():
-    return [address.strip() for address in
-            _env("NEWSLETTER_TO", "verdu.rida@gmail.com").split(",") if address.strip()]
+    """
+    The distribution list, read from subscribers.txt at the repository root.
+
+    A committed file rather than NEWSLETTER_TO because the routine environment
+    is configured through a web UI and is therefore NOT version-controlled -
+    the known cost of engine A1, already compensated for elsewhere by
+    preflight.py. Adding a reader through the env var means editing a text box
+    no `git diff` will ever show; a file makes the list reviewable, revertible
+    and editable from anywhere git reaches.
+
+    Plain text rather than YAML: check_sources.py already hand-parses
+    sources.yaml specifically to keep this pipeline free of third-party
+    packages, and a list of addresses has no structure worth a parser.
+
+    NEWSLETTER_TO survives as the fallback so a workspace without the file, or
+    a one-off test run, still has a defined destination - and so preflight's
+    existing check on that variable keeps its meaning instead of becoming a
+    lie about where mail actually goes.
+    """
+    if os.path.exists(SUBSCRIBERS_PATH):
+        with open(SUBSCRIBERS_PATH, encoding="utf-8") as handle:
+            # split("#", 1)[0] strips trailing comments, so a line can carry a
+            # name: "alice@example.com  # Alice, joined 2026-08".
+            addresses = [line.split("#", 1)[0].strip() for line in handle]
+        addresses = [address for address in addresses if address]
+        if addresses:
+            return _dedupe(addresses)
+
+    return _dedupe([address.strip() for address
+                    in _env("NEWSLETTER_TO", "verdu.rida@gmail.com").split(",")
+                    if address.strip()])
 
 
 def sender():
     return _env("NEWSLETTER_FROM", "OffSec Quotidien <newsletter@rzdhop.com>")
+
+
+def operator():
+    """
+    Where the dead-man alert goes: the operator, never the readership.
+
+    arm() used to reuse recipients(), which was harmless with a list of one and
+    becomes a defect at the second address - every reader would receive a
+    French failure notice linking to a private routine console they cannot
+    open, on exactly the mornings when the product already looks broken.
+
+    Deliberately NOT recipients()[0]: deriving the operator from list order
+    means a reordered or alphabetised subscribers.txt silently redirects the
+    alerts to a reader. The address is pinned instead, and overridable through
+    the environment for anyone who forks this pipeline.
+    """
+    return [address.strip() for address
+            in os.environ.get("NEWSLETTER_ALERT_TO", OPERATOR_FALLBACK).split(",")
+            if address.strip()]
+
+
+def envelope(addresses):
+    """
+    Split the distribution list into a (to, bcc) pair.
+
+    Every address in `to` is disclosed to every other recipient, and Resend
+    documents a ceiling of 50 there. With one reader that is irrelevant; with a
+    dozen it publishes the readership of a newsletter about offensive security
+    to the readership itself. The issue is therefore addressed to the sending
+    identity and everyone else is blind-copied.
+
+    Bcc rather than one send per reader: a per-recipient loop would re-upload
+    the ~157 KB base64 attachment once per person and multiply the number of
+    calls that can fail between arming and cancelling the dead-man switch. One
+    call, one upload, one id to reason about.
+
+    A single recipient short-circuits to the previous behaviour exactly, so
+    this changes nothing until the second address exists.
+    """
+    if len(addresses) <= 1:
+        return addresses, []
+    return [sender()], addresses
 
 
 def arm():
@@ -140,7 +251,7 @@ def arm():
     try:
         result = _request("POST", RESEND_ENDPOINT, {
             "from": sender(),
-            "to": recipients(),
+            "to": operator(),
             "subject": "[OffSec Quotidien] Aucun numero ce matin",
             "html": (
                 "<p style=\"font-family:sans-serif\">La routine de g&eacute;n&eacute;ration a "
@@ -210,9 +321,11 @@ def send(out_dir, issue):
     today = datetime.datetime.now(PARIS).strftime("%Y-%m-%d")
     scheduled = next_six_am()
 
+    to_addresses, bcc_addresses = envelope(recipients())
+
     payload = {
         "from": sender(),
-        "to": recipients(),
+        "to": to_addresses,
         "subject": f"OffSec Quotidien n°{issue} — {today}",
         "html": digest_html,
         "scheduled_at": scheduled,
@@ -223,6 +336,12 @@ def send(out_dir, issue):
             "content": base64.b64encode(full_bytes).decode("ascii"),
         }],
     }
+
+    # Omitted rather than sent empty: a single-recipient run must still produce
+    # the payload that shipped issue 413, so this change is a no-op until the
+    # list actually grows.
+    if bcc_addresses:
+        payload["bcc"] = bcc_addresses
 
     try:
         result = _request("POST", RESEND_ENDPOINT, payload)

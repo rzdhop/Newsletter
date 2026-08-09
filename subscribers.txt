@@ -1,0 +1,14 @@
+# OffSec Quotidien - distribution list.
+#
+# One address per line. Blank lines and "#" comments are ignored, and a
+# trailing comment may carry a name or a joining date.
+#
+# To add a reader: add the line, commit, push. The next 02:00 run reads it.
+# No routine UI edit, no redeploy. If this file is missing or empty, the
+# pipeline falls back to the NEWSLETTER_TO environment variable.
+#
+# Privacy: from the second address on, readers are blind-copied - nobody on
+# this list ever sees anybody else's address. Dead-man failure alerts do NOT
+# go here; they go to the operator only (NEWSLETTER_ALERT_TO in deliver.py).
+
+verdu.rida@gmail.com    # Rida, operator
