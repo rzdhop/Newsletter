@@ -122,9 +122,18 @@ def check_cancel_rights():
              detail_ok="set - the dead-man alert can be cancelled")
 
 
+def _git(*args):
+    """Run a git command and return (ok, stdout). Never raises."""
+    try:
+        done = subprocess.run(("git",) + args, capture_output=True, text=True, timeout=15)
+        return done.returncode == 0, (done.stdout or "").strip()
+    except Exception as error:  # noqa: BLE001 - a preflight must never crash the run
+        return False, f"{type(error).__name__}: {error}"
+
+
 def check_git_target():
     """
-    Require that the run is on `main`.
+    Require that the run is on `main`, and put it there if it is not.
 
     This project works on main and only on main. GitHub Pages serves the default
     branch, so an issue committed and left on a side branch produces a permalink
@@ -136,16 +145,53 @@ def check_git_target():
     remembered to push elsewhere. That put the correctness of the permalink in
     the hands of a step that runs hours later, after the expensive work. Failing
     here costs one `git checkout main`; failing at Step 8 costs the issue.
+
+    Why it now switches instead of only complaining: the wrong branch does not
+    come from an operator mistake that a message can teach out of. It is injected
+    by the run configuration, which is not version-controlled and which reasserts
+    itself on every single run - on 2026-08-09 the routine started on
+    'feature/friendly-cray-3zccwz' and had to be corrected by hand before any
+    work could begin. A check that fails identically every morning is not a
+    guard, it is a chore, and the repair it demands is exactly one command with
+    exactly one correct outcome. So it performs that command.
+
+    The switch is conditional on a clean tree, and that condition is the whole
+    safety argument. `git checkout` refuses to discard modified tracked files
+    anyway, but relying on that would mean carrying uncommitted work onto main
+    silently. If anything is dirty, this stays blocking and says so: an
+    unexpectedly dirty tree at preflight means the previous run died mid-write,
+    which a human should look at rather than a script tidy away.
     """
-    try:
-        branch = subprocess.run(["git", "rev-parse", "--abbrev-ref", "HEAD"],
-                                capture_output=True, text=True, timeout=10).stdout.strip()
-    except Exception as error:  # noqa: BLE001 - a preflight must never crash the run
-        blocking("git branch", False, f"{type(error).__name__}: {error}")
+    ok, branch = _git("rev-parse", "--abbrev-ref", "HEAD")
+    if not ok:
+        blocking("git branch", False, f"cannot read HEAD: {branch}")
         return
-    blocking("git branch", branch == "main",
-             f"on '{branch}' - run `git checkout main`; this project never uses branches",
-             detail_ok="main")
+
+    if branch == "main":
+        blocking("git branch", True, detail_ok="main")
+        return
+
+    clean_ok, dirty = _git("status", "--porcelain")
+    if not clean_ok:
+        blocking("git branch", False, f"on '{branch}' - cannot read status: {dirty}")
+        return
+    if dirty:
+        blocking("git branch", False,
+                 f"on '{branch}' with {len(dirty.splitlines())} uncommitted change(s) - "
+                 "refusing to switch automatically; inspect, then `git checkout main`")
+        return
+
+    switched, detail = _git("checkout", "main")
+    if not switched:
+        blocking("git branch", False,
+                 f"on '{branch}' and `git checkout main` failed: {detail or 'see git output'}")
+        return
+
+    _, now = _git("rev-parse", "--abbrev-ref", "HEAD")
+    blocking("git branch", now == "main",
+             f"switched off '{branch}' but landed on '{now}', not main",
+             detail_ok=f"main - switched automatically from '{branch}' "
+                       "(clean tree; this project never uses branches)")
 
 
 def main():

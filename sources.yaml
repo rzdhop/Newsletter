@@ -13,9 +13,17 @@
 # is a source that cannot be cited.
 
 meta:
-  version: 1
+  version: 2
   maintained_by: rzdhop
   revalidate_every_days: 7
+  last_revalidated: 2026-08-09
+  # Revalidation of 2026-08-09, run after issue 416 came out of a sweep in which
+  # 7 of 25 feeds contributed nothing. Every `feed:` below was re-requested and
+  # the entry count checked; the ones that had rotted are annotated with what
+  # they used to be, so a future move is diagnosable rather than mysterious.
+  # A source whose feed is dead keeps its entry WITHOUT a `feed:` key: the lab
+  # still publishes, it just has to be opened by hand. Deleting it would quietly
+  # shrink the Tier 1/2 pool, which is the exact decay this file exists to fight.
 
 tiers:
 
@@ -36,19 +44,30 @@ tiers:
         confidence: verified
       - name: Synacktiv
         url: https://www.synacktiv.com/publications
-        feed: https://www.synacktiv.com/feed/publications.xml
+        feed: https://www.synacktiv.com/feed/lastblog.xml
         topics: [pentest, exploitation, AD, pwn2own]
         lang: en/fr
         confidence: verified
+        note: >
+          Feed moved. `feed/publications.xml` has 404ed since at least the
+          2026-08-09 sweep; the site advertises `feed/lastblog.xml`, which
+          returns 30 entries and carried "Exploiting Titan Quest" (issue 415).
+          There is no separate publications or advisories feed.
       - name: Google Project Zero
         url: https://googleprojectzero.blogspot.com/
         feed: https://googleprojectzero.blogspot.com/feeds/posts/default
         topics: [0-day, exploitation, browser, kernel]
         confidence: verified
       - name: SpecterOps
-        url: https://posts.specterops.io/
+        url: https://specterops.io/blog/
+        feed: https://specterops.io/feed/
         topics: [AD, red-team, BOF, tradecraft]
         confidence: verified
+        note: >
+          Off Medium. `posts.specterops.io/feed` still answers 200 but returns
+          zero entries, which is worse than a 404 because it reads as a quiet
+          week. The live feed is on their own domain: 50 entries at the
+          2026-08-09 sweep, newest 2026-08-05.
       - name: Outflank
         url: https://www.outflank.nl/blog/
         topics: [EDR-evasion, C2, BOF, maldev]
@@ -64,16 +83,27 @@ tiers:
       - name: NCC Group Research
         url: https://research.nccgroup.com/
         topics: [hardware, exploitation, protocol]
-        confidence: verified
+        confidence: probable
+        note: >
+          NO FEED - check by hand. /feed/, /feed/atom/, ?feed=rss2, /feed/rss/
+          and the WP JSON route all return the site's HTML shell, and the page
+          advertises no feed <link> at all. The blog itself is alive; only the
+          syndication is gone. Kept because the hardware and protocol work has
+          no equivalent elsewhere in this registry.
       - name: Elastic Security Labs
         url: https://www.elastic.co/security-labs
         topics: [malware-analysis, detection-engineering]
         confidence: verified
       - name: Sekoia.io
-        url: https://blog.sekoia.io/
+        url: https://www.sekoia.com/blog/
+        feed: https://www.sekoia.com/blog/rss.xml
         topics: [threat-intel, infrastructure-tracking]
         lang: en/fr
         confidence: verified
+        note: >
+          Domain move: blog.sekoia.io now serves a Webflow page for
+          www.sekoia.com and its /feed/ paths answer 403. The working feed is
+          www.sekoia.com/blog/rss.xml - 100 entries, newest 2026-08-06.
       - name: Volexity
         url: https://www.volexity.com/blog/
         topics: [APT, memory-forensics]
@@ -94,6 +124,80 @@ tiers:
         url: https://www.crowdstrike.com/blog/category/threat-intel-research/
         topics: [threat-intel, adversary-tracking]
         confidence: probable
+
+      # ---- added 2026-08-09 -------------------------------------------------
+      # Found while repairing the feeds above. Every one was requested and its
+      # entry count checked on that date; the count and newest date are recorded
+      # so the next revalidation can tell "quiet lab" from "broken feed".
+      - name: PortSwigger Research
+        url: https://portswigger.net/research/
+        feed: https://portswigger.net/research/rss
+        topics: [web, request-smuggling, desync, cache-poisoning]
+        confidence: verified
+        note: >
+          40 entries, newest 2026-08-06. The single strongest web-exploitation
+          source available and the origin of most of the desync literature, so
+          it belongs in Tier 1 rather than being discovered through Tier 4.
+      - name: watchTowr Labs
+        url: https://labs.watchtowr.com/
+        feed: https://labs.watchtowr.com/rss/
+        topics: [edge-appliance, pre-auth-rce, n-day-analysis]
+        confidence: verified
+        note: 15 entries, newest 2026-07-02. Edge appliances and pre-auth chains.
+      - name: Zero Day Initiative (blog)
+        url: https://www.thezdi.com/blog
+        feed: https://www.thezdi.com/blog?format=rss
+        topics: [exploitation, pwn2own, root-cause]
+        confidence: verified
+        note: >
+          20 entries, newest 2026-07-30. The advisories are already a Tier 5
+          anchor; the blog is the Tier 1 write-up behind them.
+      - name: Doyensec
+        url: https://blog.doyensec.com/
+        feed: https://blog.doyensec.com/atom.xml
+        topics: [appsec, web, electron, deserialisation]
+        confidence: verified
+        note: 103 entries, newest 2026-06-17. Slow cadence, high signal.
+      - name: JFrog Security Research
+        url: https://research.jfrog.com/
+        feed: https://research.jfrog.com/rss.xml
+        topics: [supply-chain, package-registries, appsec]
+        confidence: verified
+        note: 9 entries, newest 2026-08-04.
+      - name: Cisco Talos
+        url: https://blog.talosintelligence.com/
+        feed: https://blog.talosintelligence.com/rss/
+        topics: [threat-intel, malware, vulnerability-research]
+        confidence: verified
+        note: 15 entries, newest 2026-08-06.
+      - name: SentinelOne Labs
+        url: https://www.sentinelone.com/labs/
+        feed: https://www.sentinelone.com/labs/feed/
+        topics: [malware-analysis, APT, macOS]
+        confidence: verified
+        note: 10 entries, newest 2026-07-22.
+      - name: Zscaler ThreatLabz
+        url: https://www.zscaler.com/blogs/security-research
+        feed: https://www.zscaler.com/blogs/feeds/security-research
+        topics: [threat-intel, malware, loaders]
+        confidence: verified
+        note: 50 entries, newest 2026-08-07.
+      - name: Rapid7
+        url: https://blog.rapid7.com/
+        feed: https://blog.rapid7.com/rss/
+        topics: [vulnerability-analysis, ITW-exploitation, metasploit]
+        confidence: verified
+        note: >
+          20 entries, newest 2026-08-07. Already cited in issue 415 (N-central)
+          through a Tier 4 discovery path; registering it removes that detour.
+      - name: Huntress
+        url: https://www.huntress.com/blog
+        feed: https://www.huntress.com/blog/rss.xml
+        topics: [incident-response, ITW-exploitation, RMM-abuse]
+        confidence: verified
+        note: >
+          650 entries, newest 2026-07-13. Useful for Partie 04: they publish
+          intrusion detail on live exploitation earlier than most.
 
   # --------------------------------------------------------------------------
   tier_2_researchers_maldev:
@@ -116,17 +220,30 @@ tiers:
         note: mostly paid course material; public posts are the citable part
       - name: 0xflux (fluxsec)
         url: https://fluxsec.red/
+        feed: https://fluxsec.red/rss.xml
         topics: [rust-maldev, EDR-internals, windows-drivers]
         confidence: verified
         note: >
           Ian G. Sanctum EDR series is a strong Partie 03 seam - writing an EDR
           to understand evasion inverts the usual angle.
+          Feed was `index.xml` (404 since at least 2026-08-09); it is
+          `rss.xml`, 54 entries of which 6 are from 2026. WARNING: this feed is
+          NOT sorted by date - entry[0] was from April 2025 at the last sweep.
+          Sort by pubDate before deciding the blog is dormant.
       - name: Smukx (5mukx)
-        url: https://5mukx.site/blog
-        extra: https://maldev.5mukx.site/
+        url: https://www.5mukx.site/
+        extra: https://git.smukx.site/smukx/Rust-for-Malware-Development
         topics: [rust-maldev, injection, sideloading]
-        confidence: verified
-        note: operator wrote this as "smuk5"; canonical handle is 5mukx / Smukx
+        confidence: probable
+        note: >
+          operator wrote this as "smuk5"; canonical handle is 5mukx / Smukx.
+          NO WORKING FEED - check by hand. The apex `5mukx.site` and
+          `/blog` both 404; the live host is `www.5mukx.site`, which advertises
+          `www.5mukx.site/rss.xml` - and that URL 404s too, so the feed is
+          broken at the source, not merely moved. `maldev.5mukx.site` fails TLS
+          verification (certificate does not cover the subdomain), so it cannot
+          be fetched without disabling verification, which we do not do. The
+          Rust-for-Malware-Development tree is the reliably reachable artefact.
       - name: ired.team
         url: https://www.ired.team/
         topics: [offensive-tradecraft, AD, injection]
@@ -180,6 +297,11 @@ tiers:
         topics: [exploitation, philosophy, archive]
         cadence: rare
         confidence: verified
+        note: >
+          NO FEED - check by hand. `phrack.org/rss.xml` answers 200 but serves
+          the current call-for-papers page, not a feed, so a parser sees zero
+          entries and reports a healthy fetch. Given the cadence, a manual look
+          when an issue drops is the right cost anyway.
       - name: tmp.0ut
         url: https://tmpout.sh/
         topics: [ELF, unix-maldev, demoscene]
@@ -255,6 +377,27 @@ tiers:
         confidence: verified
         note: filter by the security/maldev/redteam topics
 
+      # ---- added 2026-08-09 -------------------------------------------------
+      - name: oss-security (seclists mirror)
+        url: https://seclists.org/oss-sec/
+        feed: https://seclists.org/rss/oss-sec.rss
+        topics: [linux, OSS-CVE, disclosure]
+        confidence: verified
+        note: >
+          15 entries, newest 2026-08-06. Ground truth for Linux and open-source
+          disclosure, upstream of every Tier 4 summary of a kernel CVE - the
+          SCTPhantom class of subject lands here first. Seclists is used rather
+          than the openwall archive because it syndicates.
+      - name: GreyNoise
+        url: https://www.greynoise.io/blog
+        feed: https://www.greynoise.io/blog/rss.xml
+        topics: [ITW-exploitation-telemetry, scanning, KEV-corroboration]
+        confidence: verified
+        note: >
+          100 entries, newest 2026-07-31. Turns "is this actually being
+          exploited" into a number, which is what an entry like the LoadMaster
+          KEV item in issue 416 needs to say more than the advisory does.
+
   # --------------------------------------------------------------------------
   tier_6_social:
     weight: low
@@ -290,3 +433,32 @@ excluded:
   - name: Telegram / Discord leak channels
     reason: unverifiable provenance; cannot satisfy the citation rule
     mitigation: wait for a Tier 1 lab to publish an analysis, then cite that
+
+  # ---- probed and rejected on 2026-08-09 ------------------------------------
+  # These were tested during the same revalidation that repaired the feeds
+  # above. They are recorded as failures rather than left unlisted, so the next
+  # revalidation does not spend the same requests rediscovering them.
+  - name: Google Threat Intelligence / Mandiant
+    reason: >
+      no usable feed found. cloud.google.com/blog/topics/threat-intelligence/rss
+      returns the SPA shell, and the /feeds/ path 404s. The research is good;
+      the syndication is not machine-readable.
+    mitigation: reachable through Tier 4 discovery when a report matters
+  - name: SSD Secure Disclosure
+    reason: >
+      Cloudflare sgcaptcha. /feed/ answers HTTP 202 with a meta-refresh to
+      /.well-known/sgcaptcha/, so it cannot be fetched without solving a
+      challenge - and working around an anti-automation control is not
+      something this pipeline does.
+    mitigation: >
+      their advisories surface on r/netsec, which is how the Linux bridge STP
+      write-up reached issue 414
+  - name: Assetnote / Searchlight Cyber research
+    reason: feed is valid RSS but contains zero items (760 bytes, no entries)
+    mitigation: none needed; the web seam is covered by PortSwigger and Doyensec
+  - name: DEVCORE / Orange Tsai
+    reason: devco.re/blog/feed.xml and blog.orange.tw feeds both 404
+    mitigation: PortSwigger Research covers the same desync and web seam
+  - name: Trellix
+    reason: HTTP 403 to any non-browser agent
+    mitigation: overlaps heavily with Talos and Zscaler, both of which syndicate

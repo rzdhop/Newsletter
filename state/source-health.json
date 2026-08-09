@@ -1,0 +1,472 @@
+{
+ "checked_at": "2026-08-09T14:45:31.693346+00:00",
+ "total": 58,
+ "healthy": 58,
+ "dead": [],
+ "results": [
+  {
+   "name": "Quarkslab",
+   "tier": "tier_1_vendor_research",
+   "url": "https://blog.quarkslab.com/feeds/all.atom.xml",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Synacktiv",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.synacktiv.com/feed/lastblog.xml",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Google Project Zero",
+   "tier": "tier_1_vendor_research",
+   "url": "https://googleprojectzero.blogspot.com/feeds/posts/default",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "SpecterOps",
+   "tier": "tier_1_vendor_research",
+   "url": "https://specterops.io/feed/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Outflank",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.outflank.nl/blog/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "MDSec",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.mdsec.co.uk/knowledge-centre/research/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Trail of Bits",
+   "tier": "tier_1_vendor_research",
+   "url": "https://blog.trailofbits.com/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "NCC Group Research",
+   "tier": "tier_1_vendor_research",
+   "url": "https://research.nccgroup.com/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Elastic Security Labs",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.elastic.co/security-labs",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Sekoia.io",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.sekoia.com/blog/rss.xml",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Volexity",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.volexity.com/blog/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Binarly",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.binarly.io/blog",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Check Point Research",
+   "tier": "tier_1_vendor_research",
+   "url": "https://research.checkpoint.com/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Unit 42",
+   "tier": "tier_1_vendor_research",
+   "url": "https://unit42.paloaltonetworks.com/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "CrowdStrike",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.crowdstrike.com/blog/category/threat-intel-research/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "PortSwigger Research",
+   "tier": "tier_1_vendor_research",
+   "url": "https://portswigger.net/research/rss",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "watchTowr Labs",
+   "tier": "tier_1_vendor_research",
+   "url": "https://labs.watchtowr.com/rss/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Zero Day Initiative (blog)",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.thezdi.com/blog?format=rss",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Doyensec",
+   "tier": "tier_1_vendor_research",
+   "url": "https://blog.doyensec.com/atom.xml",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "JFrog Security Research",
+   "tier": "tier_1_vendor_research",
+   "url": "https://research.jfrog.com/rss.xml",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Cisco Talos",
+   "tier": "tier_1_vendor_research",
+   "url": "https://blog.talosintelligence.com/rss/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "SentinelOne Labs",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.sentinelone.com/labs/feed/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Zscaler ThreatLabz",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.zscaler.com/blogs/feeds/security-research",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Rapid7",
+   "tier": "tier_1_vendor_research",
+   "url": "https://blog.rapid7.com/rss/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Huntress",
+   "tier": "tier_1_vendor_research",
+   "url": "https://www.huntress.com/blog/rss.xml",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "VX-Underground",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://vx-underground.org/",
+   "ok": true,
+   "status": 403,
+   "note": "reachable but refuses automated requests"
+  },
+  {
+   "name": "Maldev Academy",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://maldevacademy.com/",
+   "ok": true,
+   "status": 403,
+   "note": "reachable but refuses automated requests"
+  },
+  {
+   "name": "0xflux (fluxsec)",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://fluxsec.red/rss.xml",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Smukx (5mukx)",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://www.5mukx.site/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "ired.team",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://www.ired.team/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "cocomelonc",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://cocomelonc.github.io/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "modexp",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://modexp.wordpress.com/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "hasherezade",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://hshrzd.wordpress.com/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Connor McGarr",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://connormcgarr.github.io/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "James Forshaw",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://www.tiraniddo.dev/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Dirk-jan Mollema",
+   "tier": "tier_2_researchers_maldev",
+   "url": "https://dirkjanm.io/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Paged Out!",
+   "tier": "tier_3_magazines",
+   "url": "https://pagedout.institute/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "MISC Magazine",
+   "tier": "tier_3_magazines",
+   "url": "https://connect.ed-diamond.com/misc",
+   "ok": true,
+   "status": 403,
+   "note": "reachable but refuses automated requests"
+  },
+  {
+   "name": "Phrack",
+   "tier": "tier_3_magazines",
+   "url": "http://phrack.org/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "tmp.0ut",
+   "tier": "tier_3_magazines",
+   "url": "https://tmpout.sh/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "BleepingComputer",
+   "tier": "tier_4_news",
+   "url": "https://www.bleepingcomputer.com/feed/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "The Hacker News",
+   "tier": "tier_4_news",
+   "url": "https://feeds.feedburner.com/TheHackersNews",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "The Record",
+   "tier": "tier_4_news",
+   "url": "https://therecord.media/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "KrebsOnSecurity",
+   "tier": "tier_4_news",
+   "url": "https://krebsonsecurity.com/feed/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Risky Business",
+   "tier": "tier_4_news",
+   "url": "https://risky.biz/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "r/netsec",
+   "tier": "tier_4_news",
+   "url": "https://www.reddit.com/r/netsec/.rss",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Hacker News",
+   "tier": "tier_4_news",
+   "url": "https://news.ycombinator.com/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "CERT-FR",
+   "tier": "tier_4_news",
+   "url": "https://www.cert.ssi.gouv.fr/feed/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "CISA KEV",
+   "tier": "tier_5_vulns_exploits",
+   "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+   "ok": true,
+   "status": 403,
+   "note": "reachable but refuses automated requests"
+  },
+  {
+   "name": "ZDI advisories",
+   "tier": "tier_5_vulns_exploits",
+   "url": "https://www.zerodayinitiative.com/advisories/published/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "GitHub Security Advisories",
+   "tier": "tier_5_vulns_exploits",
+   "url": "https://github.com/advisories",
+   "ok": true,
+   "status": 403,
+   "note": "reachable but refuses automated requests"
+  },
+  {
+   "name": "LOLDrivers",
+   "tier": "tier_5_vulns_exploits",
+   "url": "https://www.loldrivers.io/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "LOLBAS",
+   "tier": "tier_5_vulns_exploits",
+   "url": "https://lolbas-project.github.io/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "GitHub trending (security)",
+   "tier": "tier_5_vulns_exploits",
+   "url": "https://github.com/trending?since=daily",
+   "ok": true,
+   "status": 403,
+   "note": "reachable but refuses automated requests"
+  },
+  {
+   "name": "oss-security (seclists mirror)",
+   "tier": "tier_5_vulns_exploits",
+   "url": "https://seclists.org/rss/oss-sec.rss",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "GreyNoise",
+   "tier": "tier_5_vulns_exploits",
+   "url": "https://www.greynoise.io/blog/rss.xml",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "infosec.exchange (Mastodon)",
+   "tier": "tier_6_social",
+   "url": "https://infosec.exchange/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  },
+  {
+   "name": "Bluesky",
+   "tier": "tier_6_social",
+   "url": "https://bsky.app/",
+   "ok": true,
+   "status": 200,
+   "note": ""
+  }
+ ]
+}
