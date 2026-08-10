@@ -12,3 +12,4 @@
 # go here; they go to the operator only (NEWSLETTER_ALERT_TO in deliver.py).
 
 verdu.rida@gmail.com    # Rida, operator
+oscar77.fonty@gmail.com
