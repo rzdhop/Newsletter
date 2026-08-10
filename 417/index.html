@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<title>OffSec Quotidien n&deg;417</title>
+<!-- No <meta viewport>: its width=device-width is mangled by quoted-printable
+     encoding in transit. No stylesheet, no JS: every style is inline below. -->
+</head>
+<body style="margin:0; padding:0; background-color:#e6e4df; -webkit-text-size-adjust:100%;">
+
+<div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; color:#e6e4df;">OVSwrap : un d&eacute;cr&eacute;ment arbitraire sans grooming. WSUS : la signature qu'un .txt suffit &agrave; sauter. Autopsie ChocoPoC.</div>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#e6e4df; margin:0; padding:0;">
+<tr>
+<td align="center" style="padding:24px 12px 40px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" style="width:100%; max-width:680px; border-collapse:collapse; background-color:#fbfaf8; border:1px solid #cfccc4;">
+
+<tr>
+<td style="padding:26px 30px 20px 30px; background-color:#1e1d1b; border-bottom:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#a8a49b; padding-bottom:8px;">Bulletin interne &nbsp;/&nbsp; s&eacute;curit&eacute; offensive &nbsp;/&nbsp; diffusion 1</td>
+  </tr>
+  <tr>
+    <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:27px; line-height:32px; font-weight:700; color:#f5f3ef; letter-spacing:-0.4px; padding-bottom:10px;">OffSec Quotidien &mdash; n&deg;417</td>
+  </tr>
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#c8c3b9;">lundi 10 ao&ucirc;t 2026 &nbsp;&middot;&nbsp; 06:00 CEST &nbsp;&middot;&nbsp; 7&nbsp;268 mots &nbsp;&middot;&nbsp; ~36 min</td>
+  </tr>
+  <tr>
+    <td style="padding-top:14px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-left:3px solid #7a4a2e;">
+      <tr>
+        <td style="padding:2px 0 2px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#e8e4dc;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#a8a49b;">Th&egrave;me de la semaine</span><br><span style="font-weight:600; color:#f5f3ef;">Ce que le syst&egrave;me ne rev&eacute;rifie pas</span> &mdash; une longueur que le noyau a lui-m&ecirc;me &eacute;crite, une extension de fichier, une ligne de d&eacute;pendances : trois invariants suppos&eacute;s vrais, trois cha&icirc;nes d'ex&eacute;cution</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px; background-color:#2a2825;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:16px 0 8px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#8f8b82;">Sommaire</td>
+  </tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-1" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">01</span> &nbsp; Le fil de la semaine <span style="color:#8f8b82;">&mdash; 7 items</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-2" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">02</span> &nbsp; OVSwrap : le filet de s&eacute;curit&eacute; qui portait la charge <span style="color:#8f8b82;">&mdash; Deep-dive &middot; kernel</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-3" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">03</span> &nbsp; WSUS : la signature qu'un .txt suffit &agrave; sauter <span style="color:#8f8b82;">&mdash; Deep-dive &middot; Windows</span></a></td></tr>
+  <tr><td style="padding:5px 0 16px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-4" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">04</span> &nbsp; Autopsie ChocoPoC : la cible, c'&eacute;tait nous <span style="color:#8f8b82;">&mdash; Autopsie &middot; 7 d&eacute;p&ocirc;ts, 8 mois</span></a></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:24px 20px 4px 20px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f2ecdd; border:2px solid #1e1d1b;">
+  <tr>
+    <td style="padding:16px 18px 6px 18px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; letter-spacing:2px; text-transform:uppercase; font-weight:700; color:#1e1d1b; border-bottom:1px solid #cfc4a8;">TL;DR &mdash; 30 secondes</td>
+  </tr>
+  <tr>
+    <td style="padding:14px 18px 18px 18px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">OVSwrap (CVE-2026-64531) : le datapath Open vSwitch &eacute;crit une longueur 32 bits dans un champ <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">nla_len</span> de 16 bits ; &agrave; 65 612 octets elle retombe &agrave; 76 et le parser reprend sa lecture dans des labels conntrack fournis par l'attaquant. L'assignation date de 2013 ; ce qui l'a rendue atteignable est un commit de mars 2025 qui a retir&eacute; un plafond de 32 KiB pos&eacute; pour de tout autres raisons.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">SpecterOps transforme WSUS en usine &agrave; backdoors : coercition NTLM du compte machine, relais vers SUSDB, injection de m&eacute;tadonn&eacute;es d'update par proc&eacute;dures stock&eacute;es. Et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">VerifyFile</span> qui saute enti&egrave;rement <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">CheckCertificateSignature</span> quand le nom du fichier se termine par .txt ou .esd.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">Autopsie ChocoPoC : sept faux d&eacute;p&ocirc;ts de PoC visant les chercheurs en vuln&eacute;rabilit&eacute;s, charge d&eacute;port&eacute;e dans les d&eacute;pendances transitives, ex&eacute;cution conditionn&eacute;e &agrave; la pr&eacute;sence de <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">exploit_poc.py</span> pour neutraliser les sandboxes. Les sept CVE servant d'app&acirc;t &eacute;taient toutes au KEV : l'acteur ne choisit pas les failles graves, il choisit celles qui sont sous &eacute;ch&eacute;ance.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b;"><span style="font-weight:700;">&Agrave; faire aujourd'hui :</span> inventorier les noyaux sous 5.15.212 / 6.1.178 / 6.6.145 / 6.12.97 / 6.18.40 / 7.1.5, et v&eacute;rifier si les user namespaces non privil&eacute;gi&eacute;s y sont actifs &mdash; c'est la seule att&eacute;nuation imm&eacute;diate. Rappel du n&deg;416 : l'&eacute;ch&eacute;ance CISA pour CVE-2026-8037 (Progress LoadMaster) tombe aujourd'hui.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-1" style="padding:34px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 01</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Le fil de la semaine</td></tr>
+  <tr><td style="padding:0 0 4px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Sept items retenus sur 43 sources balay&eacute;es, du 3 au 10 ao&ucirc;t.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Semaine dense, et curieusement homog&egrave;ne. Les deux deep-dives et plusieurs des items ci-dessous d&eacute;crivent la m&ecirc;me forme de d&eacute;faut : un composant produit lui-m&ecirc;me une valeur, puis la traite comme fiable parce qu'elle vient de lui. Le noyau Linux &eacute;crit sa propre longueur d'attribut et ne la relit pas. U-Boot copie des donn&eacute;es externes d&eacute;crites par des propri&eacute;t&eacute;s que sa signature ne couvre pas. WSUS v&eacute;rifie la signature de tout ce qu'il t&eacute;l&eacute;charge, sauf quand le nom du fichier lui indique de ne pas le faire. Ce n'est pas une co&iuml;ncidence &eacute;ditoriale : c'est la classe de bug qui reste quand les entr&eacute;es &eacute;videntes ont &eacute;t&eacute; durcies.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Note de suivi sur le n&deg;416, paru hier : l'&eacute;ch&eacute;ance BOD de CVE-2026-8037 (Progress Kemp LoadMaster, injection de commande non authentifi&eacute;e, CVSS 9,6, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">escape_quotes()</span>) tombe aujourd'hui 10 ao&ucirc;t. Rien de neuf &agrave; ajouter &agrave; ce qui a &eacute;t&eacute; &eacute;crit hier, sinon que la fen&ecirc;tre est close. Les cinq bugs m&eacute;moire de workerd relev&eacute;s hier en partie 01 restent par ailleurs le meilleur candidat deep-dive du stock.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#2f5474; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #1f3d57;">[deep-dive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">U-Boot SPL : <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">load_simple_fit()</span> copie avant de savoir combien (BRLY-2026-044)</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le n&deg;413 avait trait&eacute; les six failles de la v&eacute;rification de signature FIT publi&eacute;es par Binarly le 9 juillet, o&ugrave; le parsing pr&eacute;c&egrave;de la v&eacute;rification et o&ugrave; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">fdt_find_regions</span> se contente de tomber. La publication du 6 ao&ucirc;t monte d'un cran et change de fichier : dans <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">common/spl/spl_fit.c</span>, les propri&eacute;t&eacute;s <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">data-position</span>, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">data-offset</span> et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">data-size</span> des external data ne sont pas born&eacute;es. La destination <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">src_ptr</span> d&eacute;rive de <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">load</span>, qui est bien couvert par la signature de configuration et que l'attaquant ne peut donc pas d&eacute;placer &mdash; sauf que la <em>longueur</em> de la copie, elle, n'est couverte par rien. Binarly cote 6.8 en AV:P, donc acc&egrave;s physique, et revendique explicitement une ex&eacute;cution de code pr&eacute;-authentification dans le contexte du bootloader. Corrig&eacute; upstream par le commit 8f71d71, qui valide offsets et tailles et passe en arithm&eacute;tique overflow-safe avant que la v&eacute;rification de signature n'intervienne.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.binarly.io/blog/signature-verification-bypass-in-u-boot-spl" style="color:#2f5474; text-decoration:underline;">binarly.io&#8203;/blog/signature-verification-bypass-in-u-boot-spl</a> <span style="color:#7d7a73;">&middot; 6 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Langflow CVE-2026-9198 : deux endpoints, un SUPERUSER et un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">exec()</span></td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> L'endpoint <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">/api/v1/auto_login</span> d&eacute;livre un token SUPERUSER &agrave; n'importe quel appelant r&eacute;seau ; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">/api/v1/validate/code</span> ex&eacute;cute ensuite du Python. IBM cote 9.8 et pr&eacute;cise o&ugrave; se produit l'ex&eacute;cution : &agrave; la d&eacute;finition de la fonction, via des d&eacute;corateurs et des annotations &eacute;valu&eacute;s pendant la validation &mdash; le code n'a jamais besoin d'&ecirc;tre appel&eacute;. Versions 1.0.0 &agrave; 1.10.0, corrig&eacute; en 1.10.1, bulletin du 2 juillet, entr&eacute;e KEV le 4 ao&ucirc;t. &Agrave; rapprocher du n&deg;415 : la campagne autonome de knaithe document&eacute;e par Unit 42 butait sur des instances Langflow o&ugrave; l'authentification &eacute;tait activ&eacute;e, et concluait d'elle-m&ecirc;me <em>stuck : forms have auth enabled</em>. Ce bug-ci retire l'obstacle, sur le m&ecirc;me produit, quatre mois apr&egrave;s la CVE qui avait servi &agrave; l'agent.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.ibm.com/support/pages/node/7278927" style="color:#2f5474; text-decoration:underline;">ibm.com&#8203;/support/pages/node/7278927</a> <span style="color:#7d7a73;">&middot; 2 juillet 2026, KEV le 4 ao&ucirc;t</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">ConfigManBearPig 2.0 : SCCM r&eacute;&eacute;crit en Python, 19 des 31 techniques Misconfiguration Manager</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Chris Thompson fait passer l'outil de PowerShell &agrave; Python sur la base d'OpenHound, avec stockage DuckDB local pour ne pas saturer la m&eacute;moire sur un parc r&eacute;el, ex&eacute;cution parall&egrave;le multi-cibles (10 threads par d&eacute;faut), compatibilit&eacute; Linux et identification des CVE &agrave; partir du build SCCM observ&eacute;. Couverture annonc&eacute;e : 9/9 sur la cat&eacute;gorie Takeover, 6/7 sur la reconnaissance, 2/2 sur l'ex&eacute;cution, et seulement 1/8 sur les credentials &mdash; la r&eacute;partition dit assez bien &agrave; quoi l'outil sert et &agrave; quoi il ne sert pas. La plupart des techniques ne demandent qu'un compte de domaine standard. Les auteurs sont nets sur le reste : aucune discr&eacute;tion sur la machine d'ex&eacute;cution, fichiers sur disque et connexions r&eacute;seau en nombre, avec des modes LDAP/DNS seuls ou un passage par SOCKS comme att&eacute;nuation.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://specterops.io/blog/2026/08/03/configmanbearpig-2-0/" style="color:#2f5474; text-decoration:underline;">specterops.io&#8203;/blog/2026/08/03/configmanbearpig-2-0/</a> <span style="color:#7d7a73;">&middot; 3 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Mythic 4 en b&ecirc;ta publique : scopes de token, containers de chat, et des ruptures partout</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Cody Thomas annonce des scopes explicites en lecture et en &eacute;criture par ressource Mythic (callbacks, tasks, responses, files, credentials, payloads, eventing, chat), et c'est la vraie nouvelle : c'est ce qui permet de brancher un mod&egrave;le sur une op&eacute;ration sans lui donner l'op&eacute;ration enti&egrave;re. Le container de chat est un service enfichable qui annonce les mod&egrave;les qu'il supporte, re&ccedil;oit prompts et contexte, et renvoie le flux dans Mythic. C&ocirc;t&eacute; d&eacute;veloppeur d'agent, l'annonce parle de ruptures pour <em>presque toutes</em> les int&eacute;grations : pr&eacute;fixe d'API retir&eacute;, contexte d'autorisation des services modifi&eacute;, biblioth&egrave;ques de containers v4 obligatoires pour les agents, les profils C2 et les payload types. B&ecirc;ta publique annonc&eacute;e pour plusieurs mois : &agrave; tester ailleurs qu'en op&eacute;ration.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://specterops.io/blog/2026/08/04/mythic-4-public-beta/" style="color:#2f5474; text-decoration:underline;">specterops.io&#8203;/blog/2026/08/04/mythic-4-public-beta/</a> <span style="color:#7d7a73;">&middot; 4 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Living off the coding agent : tunnels et LaunchAgents sous un parent sign&eacute;</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Elastic documente un poste macOS de d&eacute;veloppeur suivi du 20 au 23 juillet, o&ugrave; le processus parent est Claude Code lanc&eacute; avec <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">--allow-dangerously-skip-permissions</span>, o&ugrave; les enfants imm&eacute;diats sont des <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">zsh</span> et non des binaires appel&eacute;s directement, et o&ugrave; la suite est un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">cloudflared tunnel --url http://localhost:<port></span> puis une persistance LaunchAgent pos&eacute;e via <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">PlistBuddy</span> et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">launchctl bootstrap</span> dans le contexte <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">gui/</span>, avec <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">StartInterval 60</span> pour maintenir le tunnel. L'int&eacute;r&ecirc;t pour nous n'est pas la technique, qui est banale, mais la phrase des auteurs : <em>no single production rule owns the full sequence</em>. Un parent sign&eacute; par un &eacute;diteur reconnu, des destinations dual-use (lhr.life, trycloudflare.com, ngrok) et une t&eacute;l&eacute;m&eacute;trie de forme identique &agrave; un workflow de dev l&eacute;gitime &mdash; c'est exactement le profil qu'un op&eacute;rateur cherche &agrave; emprunter.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.elastic.co/security-labs/coding-agent-launchagent-tunnel-detection" style="color:#2f5474; text-decoration:underline;">elastic.co&#8203;/security-labs/coding-agent-launchagent-tunnel-detection</a> <span style="color:#7d7a73;">&middot; 7 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">npm <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">min-release-age</span> : surveiller la disparition du garde-fou plut&ocirc;t que le paquet</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le param&egrave;tre <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">min-release-age</span> interdit d'installer une version publi&eacute;e depuis moins de N jours. C'est la seule contre-mesure qui co&ucirc;te r&eacute;ellement quelque chose &agrave; une compromission de mainteneur, puisqu'elle s'attaque &agrave; la fen&ecirc;tre et non &agrave; la signature. Wieger van der Meulen note que le point faible n'est pas le pipeline CI mais le poste de dev, o&ugrave; la ligne peut dispara&icirc;tre d'un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.npmrc</span> sans laisser de trace &mdash; il n'y a aucun log &agrave; tailer. L'int&eacute;gration CEL d&eacute;crite prend un snapshot complet des <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.npmrc</span> toutes les 6 heures, hache le contenu, filtre les tokens d'authentification c&ocirc;t&eacute; agent et marque <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">cooldown.absent = true</span> quand le param&egrave;tre dispara&icirc;t entre deux passes. Limite assum&eacute;e par l'auteur : la latence de d&eacute;tection est celle du cycle de 6 heures, et il faut la variante emit-on-change pour alerter &agrave; l'&eacute;v&eacute;nement. &Agrave; lire avec la partie 04 : c'est exactement le contr&ocirc;le qui aurait mordu sur ChocoPoC, et il n'existe pas c&ocirc;t&eacute; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">pip</span>.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.elastic.co/security-labs/npm-cooldown-removal-detection-elastic-agent" style="color:#2f5474; text-decoration:underline;">elastic.co&#8203;/security-labs/npm-cooldown-removal-detection-elastic-agent</a> <span style="color:#7d7a73;">&middot; 7 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#5c5a55; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #43413d;">[archive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Pwn2Own Ireland 2026 : une cat&eacute;gorie AI Coding Agents</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Annonce du 21 juillet, mais elle m&eacute;rite d'&ecirc;tre relue apr&egrave;s les deux items Elastic ci-dessus. Cork, du 6 au 9 octobre, sept cat&eacute;gories, inscription close le 1er octobre &agrave; 17h00 IST, plafond de 80 entr&eacute;es et seuil d'entr&eacute;e &agrave; 15 000 dollars de bounties ZDI cumul&eacute;s &mdash; ou l'une des dix places discr&eacute;tionnaires. Les deux nouveaut&eacute;s sont Wellness, pour les dispositifs de sant&eacute;, et AI Coding Agents. Mettre un agent de code sous prime &agrave; Pwn2Own, c'est acter que la surface est un produit comme un autre, et c'est le meilleur pr&eacute;dicteur public de ce qui sera publi&eacute; au quatri&egrave;me trimestre.</td></tr>
+  <tr><td style="padding:6px 0 18px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.zerodayinitiative.com/blog/2026/7/21/pwn2own-ireland-2026-new-targets-and-categories" style="color:#2f5474; text-decoration:underline;">zerodayinitiative.com&#8203;/blog/2026/7/21/pwn2own-ireland-2026-new-targets-and-categories</a> <span style="color:#7d7a73;">&middot; 21 juillet 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 01</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[1]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-06</span> &nbsp;&middot;&nbsp; Anton Ivanov, Binarly &mdash; <a href="https://www.binarly.io/blog/signature-verification-bypass-in-u-boot-spl" style="color:#2f5474;">Hidden beneFITs: Bypassing Signature Verification in U-Boot SPL</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[2]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-06</span> &nbsp;&middot;&nbsp; Binarly REsearch &mdash; <a href="https://www.binarly.io/advisories/brly-2026-044" style="color:#2f5474;">BRLY-2026-044 : out-of-bounds write during FIT image loading (load_simple_fit)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[3]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-02</span> &nbsp;&middot;&nbsp; IBM &mdash; <a href="https://www.ibm.com/support/pages/node/7278927" style="color:#2f5474;">Security Bulletin: Unauthenticated Remote Code Execution via Auto-Login Bypass and Code Validation (CVE-2026-9198)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[4]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-07</span> &nbsp;&middot;&nbsp; CISA &mdash; <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474;">Known Exploited Vulnerabilities Catalog, version 2026.08.07</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[5]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-03</span> &nbsp;&middot;&nbsp; Chris Thompson, SpecterOps &mdash; <a href="https://specterops.io/blog/2026/08/03/configmanbearpig-2-0/" style="color:#2f5474;">ConfigManBearPig 2.0 - Things Are Getting Cereal</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[6]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-04</span> &nbsp;&middot;&nbsp; Cody Thomas, SpecterOps &mdash; <a href="https://specterops.io/blog/2026/08/04/mythic-4-public-beta/" style="color:#2f5474;">Mythic 4 Public Beta: More Than a New Coat of Paint</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[7]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-07</span> &nbsp;&middot;&nbsp; Mika Ayenson et Jia Yu Chan, Elastic Security Labs &mdash; <a href="https://www.elastic.co/security-labs/coding-agent-launchagent-tunnel-detection" style="color:#2f5474;">Living off the coding agent: Two tales of tunnels and LaunchAgents</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[8]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-07</span> &nbsp;&middot;&nbsp; Wieger van der Meulen, Elastic Security Labs &mdash; <a href="https://www.elastic.co/security-labs/npm-cooldown-removal-detection-elastic-agent" style="color:#2f5474;">The security signal log tailing can't see: tracking npm cooldown removals with Elastic Agent</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[9]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-21</span> &nbsp;&middot;&nbsp; Zero Day Initiative &mdash; <a href="https://www.zerodayinitiative.com/blog/2026/7/21/pwn2own-ireland-2026-new-targets-and-categories" style="color:#2f5474;">Pwn2Own Ireland 2026 - New Targets and Categories</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[10]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-04</span> &nbsp;&middot;&nbsp; Unit 42 (rappel du n&deg;415) &mdash; <a href="https://unit42.paloaltonetworks.com/autonomous-ai-cyber-attack-campaign/" style="color:#2f5474;">Autonomous AI cyber attack campaign (acteur knaithe, Langflow CVE-2026-0770)</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-2" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 02 &nbsp;&middot;&nbsp; Deep-dive</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">OVSwrap : le filet de s&eacute;curit&eacute; qui portait la charge</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Une assignation de 2013, un plafond retir&eacute; en 2025, et un chemin vers root d'une fiabilit&eacute; que les exploits de corruption m&eacute;moire n'ont pas.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:0 0 10px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700;">Plan</td>
+  </tr>
+  <tr>
+    <td>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">1</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Comment le datapath Open vSwitch construit son flux d'actions Netlink, et o&ugrave; se trouve l'assignation fautive.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">2</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Pourquoi un commit de mars 2025 a rendu exploitable un bug &eacute;crit en 2013.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">3</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Le conntrack comme amplificateur : de quelques octets &agrave; 164, et de 400 actions &agrave; 65 612 octets.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">4</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Les trois primitives : fuite de pointeur, lecture arbitraire par <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">tun_dst</span> forg&eacute;, d&eacute;cr&eacute;ment par <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">dst_release()</span>.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">5</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Du d&eacute;cr&eacute;ment &agrave; l'UID 0, et pourquoi l'auteur parle de fiabilit&eacute; de logic bug.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">6</td></tr></table></td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Pr&eacute;requis r&eacute;els, modes d'&eacute;chec, et ce que le correctif dit du reste du noyau.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Asim Manizada a signal&eacute; CVE-2026-64531 au 19 juin 2026, le correctif a &eacute;t&eacute; merg&eacute; en stable le 24 juillet, et la publication est tomb&eacute;e le 28 juillet &agrave; 6h00 UTC, coordonn&eacute;e avec linux-distros [11]. La presse a repris l'affaire d&eacute;but ao&ucirc;t sous le nom OVSwrap, avec une erreur de fait qu'on corrigera plus bas. Ce qui rend ce travail int&eacute;ressant n'est pas le bug lui-m&ecirc;me, qui tient en une ligne, mais la fa&ccedil;on dont il est devenu atteignable : personne n'a introduit de r&eacute;gression, personne n'a &eacute;crit de code fautif en 2025. Quelqu'un a simplement retir&eacute; une limite qui, sans que ce soit son r&ocirc;le, emp&ecirc;chait un autre bug de se manifester.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le datapath Open vSwitch traduit les actions de flow re&ccedil;ues de l'espace utilisateur en une repr&eacute;sentation interne, une <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">struct sw_flow_actions</span> qui est un buffer contigu d'attributs Netlink. Les actions imbriqu&eacute;es &mdash; un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">CLONE</span> qui enveloppe une s&eacute;rie de sous-actions, typiquement &mdash; se construisent en deux temps : <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">add_nested_action_start()</span> r&eacute;serve un en-t&ecirc;te &agrave; l'offset <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">st_offset</span> et retient cette position, les enfants sont ajout&eacute;s au fil de l'eau, puis <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">add_nested_action_end()</span> revient &eacute;crire la longueur r&eacute;elle dans l'en-t&ecirc;te r&eacute;serv&eacute;.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">net/openvswitch - l'assignation fautive, et le correctif</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">/* avant : la longueur calculee sur 32 bits est ecrite
+ * dans nla_len, qui fait 16 bits. Aucun controle. */
+a-&gt;nla_len = sfa-&gt;actions_len - st_offset;
+
+/* 65 612 octets stockes sur 16 bits -&gt; 0x004c = 76 */
+
+/* apres : le correctif refuse l'attribut et deroule
+ * proprement ce qui a deja ete alloue (tun_dst, conntrack). */
+if (attr_len &gt; U16_MAX)
+        return -EMSGSIZE;</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Le flux d'actions total peut l&eacute;gitimement d&eacute;passer 64 KiB ; un attribut imbriqu&eacute; pris isol&eacute;ment, non. C'est cette limite-l&agrave; qui n'&eacute;tait pas v&eacute;rifi&eacute;e.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  L'assignation a treize ans. Pendant treize ans, elle n'a rien cass&eacute;, pour une raison qui n'a jamais &eacute;t&eacute; un choix de s&eacute;curit&eacute; : un plafond de 32 KiB s'appliquait au flux d'actions g&eacute;n&eacute;r&eacute;, donc un attribut imbriqu&eacute; ne pouvait pas approcher les 65 536 octets n&eacute;cessaires pour faire d&eacute;border le champ. Ce plafond a &eacute;t&eacute; retir&eacute; en mars 2025. Le retrait &eacute;tait probablement l&eacute;gitime &mdash; les flux d'actions r&eacute;els grossissent &mdash; et il n'a &eacute;t&eacute; relu par personne comme une modification de s&eacute;curit&eacute;, parce que ce n'en &eacute;tait pas une. C'est la m&eacute;canique la plus courante et la plus difficile &agrave; rep&eacute;rer en revue : une contrainte pos&eacute;e pour une raison A se r&eacute;v&egrave;le, des ann&eacute;es plus tard, &ecirc;tre la seule chose qui emp&ecirc;chait B.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Reste &agrave; atteindre 65 536 octets depuis l'espace utilisateur, et c'est l&agrave; que le conntrack sert d'amplificateur. Une action <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">CT</span> tient en quelques octets c&ocirc;t&eacute; demandeur ; quand OVS la recopie en interne, le noyau construit une <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">struct ovs_conntrack_info</span> garnie, ce qui &mdash; l'auteur le mesure sur x86-64 &mdash; fait passer l'action &agrave; 164 octets. Environ 400 actions CT g&eacute;n&eacute;r&eacute;es suffisent alors pour totaliser &agrave; peu pr&egrave;s 65 612 octets. Stock&eacute;e sur 16 bits, cette longueur devient 76. Le parser, en relisant le flux, croit donc l'attribut imbriqu&eacute; termin&eacute; au bout de 76 octets et reprend sa lecture au milieu des structures conntrack g&eacute;n&eacute;r&eacute;es.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le d&eacute;tail qui transforme un d&eacute;bordement de compteur en primitive, c'est que les octets sur lesquels le parser atterrit ne sont pas quelconques. Les labels conntrack et les champs de nom de timeout sont de la configuration fournie par l'appelant : l'attaquant les remplit avec des en-t&ecirc;tes d'actions OVS forg&eacute;s et leurs payloads. Apr&egrave;s le wrap, le parser lit donc des actions parfaitement bien form&eacute;es, et il les traite comme telles. Il n'y a aucune corruption au sens habituel &mdash; pas de free anticip&eacute;, pas d'&eacute;crasement de m&eacute;tadonn&eacute;es d'allocateur. Le noyau ex&eacute;cute exactement ce qu'il lit, dans une r&eacute;gion o&ugrave; l'attaquant a &eacute;crit ce qu'il voulait lire.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Fuite de pointeur.</strong> La premi&egrave;re action forg&eacute;e d&eacute;pos&eacute;e au point d'atterrissage est un faux <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">OUTPUT</span> d&eacute;clarant un payload de 512 octets. Ce payload s'&eacute;tend sur les actions CT g&eacute;n&eacute;r&eacute;es &agrave; sa suite, dont certaines ont &eacute;t&eacute; configur&eacute;es pour utiliser le helper conntrack FTP &mdash; et contiennent donc, dans leurs structures internes, de vrais pointeurs vers ce helper. Quand l'espace utilisateur demande un dump du flow, OVS s&eacute;rialise consciencieusement les 512 octets d&eacute;clar&eacute;s et renvoie le tout, pointeur du helper FTP compris. De l&agrave;, en suivant la cha&icirc;ne de pointeurs, on r&eacute;cup&egrave;re la base du noyau : l'ASLR tombe.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Lecture arbitraire.</strong> La deuxi&egrave;me primitive utilise une action <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">SET</span> de tunnel avec un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">tun_dst</span> forg&eacute;. Lors de la s&eacute;rialisation, OVS relit les champs de m&eacute;tadonn&eacute;es de tunnel &mdash; TOS, TTL, port, adresse IPv4 &mdash; &agrave; des offsets fixes depuis <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">tun_dst</span> et les renvoie &agrave; l'espace utilisateur. Il suffit donc de poser <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">tun_dst = adresse_cible - offset_du_champ</span> pour que le champ vis&eacute; recouvre l'octet &agrave; lire. Le d&eacute;bit est modeste, quelques octets par dump, mais c'est une lecture arbitraire r&eacute;p&eacute;table, obtenue en faisant faire au noyau son travail normal sur une structure qui n'existe pas.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>D&eacute;cr&eacute;ment.</strong> La troisi&egrave;me est la plus &eacute;l&eacute;gante et la plus limit&eacute;e. &Agrave; la suppression d'un flow, OVS appelle <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">dst_release()</span> sur le <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">tun_dst</span>, ce qui d&eacute;cr&eacute;mente le compteur de r&eacute;f&eacute;rences situ&eacute; &agrave; un offset fixe dans la structure. M&ecirc;me arithm&eacute;tique que pour la lecture : <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">tun_dst = mot_cible - offset_du_refcount</span>, et chaque suppression de flow retire 1 au mot choisi. Une primitive d'&eacute;criture qui ne sait faire que <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">*p -= 1</span>, &agrave; l'adresse voulue, autant de fois qu'on veut.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Cela suffit. Le PoC localise <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">init_pid_ns</span>, remonte au <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">task_struct</span> du processus, y lit le pointeur vers ses credentials, puis d&eacute;cr&eacute;mente <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">fsuid</span> et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">fsgid</span> jusqu'&agrave; z&eacute;ro &mdash; sur les noyaux plus anciens, ce sont les mots de capabilities qui sont vis&eacute;s. Le processus &eacute;crit ensuite dans <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">/etc/sudoers.d</span> en tant qu'UID 0, et le shell root suit. Rien de tout cela n'est nouveau ; c'est le chemin canonique une fois qu'on tient un d&eacute;cr&eacute;ment arbitraire, et c'est pr&eacute;cis&eacute;ment ce qui rend la primitive suffisante.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="22%" style="width:22%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Primitive</td>
+    <td width="31%" style="width:31%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">M&eacute;canisme</td>
+    <td width="25%" style="width:25%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Ce que l'attaquant fournit</td>
+    <td width="22%" style="width:22%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Contrainte</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Wrap</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">nla_len 16 bits re&ccedil;oit 65 612</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">~400 actions CT (164 o. chacune)</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Noyau sans le plafond 32 KiB</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Octets forg&eacute;s</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Le parser reprend &agrave; l'offset 76</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Labels et noms de timeout conntrack</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Alignement sur la zone g&eacute;n&eacute;r&eacute;e</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Fuite</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Faux OUTPUT de 512 o. s&eacute;rialis&eacute; au dump</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Actions CT avec helper FTP</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Helper FTP charg&eacute;</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Lecture</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Champs de tunnel relus depuis tun_dst</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">tun_dst = cible - offset</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Quelques octets par dump</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">&Eacute;criture</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">dst_release() d&eacute;cr&eacute;mente le refcount</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">tun_dst = mot - offset refcount</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">D&eacute;cr&eacute;ment de 1 uniquement</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Aucune &eacute;tape ne d&eacute;pend de l'&eacute;tat de l'allocateur. C'est la propri&eacute;t&eacute; centrale de cet exploit.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Et c'est le vrai sujet.</strong> L'auteur revendique une fiabilit&eacute; <em>de niveau logic bug</em>, obtenue &mdash; je le cite &mdash; sans aucun grooming de tas ou d'allocateur. La raison est structurelle : le wrap atterrit de fa&ccedil;on d&eacute;terministe &agrave; un offset pr&eacute;visible &agrave; l'int&eacute;rieur du m&ecirc;me flux d'actions que l'attaquant vient de fournir. Il n'y a pas de course &agrave; gagner, pas de spray &agrave; r&eacute;ussir, pas de disposition de tas &agrave; esp&eacute;rer. Les seules valeurs d&eacute;pendant du syst&egrave;me &mdash; offsets de symboles, positions de champs dans les structures &mdash; sont statiques pour un build de noyau donn&eacute; et se d&eacute;rivent d'un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">System.map</span>, de <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">kallsyms</span> ou du BTF. Le PoC embarque des enregistrements pr&eacute;-calcul&eacute;s pour environ 800 builds x86-64 et tente une d&eacute;rivation &agrave; la vol&eacute;e pour les autres [12].
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Cette diff&eacute;rence de nature m&eacute;rite qu'on s'y arr&ecirc;te, parce qu'elle change la valeur d&eacute;fensive d'un exploit local. Un exploit de corruption m&eacute;moire classique se paie en tentatives : il &eacute;choue, il fait tomber la machine, il laisse des traces, et cette ind&eacute;termination est une forme de protection involontaire pour le d&eacute;fenseur. Un exploit qui traverse sans grooming, avec des offsets tabul&eacute;s pour la distribution en face, ne laisse pas cette marge. Sur la surface concern&eacute;e, la question n'est plus <em>est-ce qu'il va y arriver</em> mais <em>est-ce que le noyau est corrig&eacute;</em>.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Pr&eacute;requis et modes d'&eacute;chec.</strong> C'est ici que la reprise de presse a faut&eacute;, et il faut &ecirc;tre pr&eacute;cis. Il faut <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">CAP_NET_ADMIN</span> dans le namespace r&eacute;seau vis&eacute; &mdash; ce qui, sur toute distribution o&ugrave; les user namespaces non privil&eacute;gi&eacute;s sont actifs, s'obtient par un simple <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">unshare -Urn</span> et ne constitue donc aucun obstacle. Mais ce n'est pas la m&ecirc;me chose que <em>aucune capability requise</em>, comme l'ont &eacute;crit plusieurs reprises. La distinction est op&eacute;rationnelle : d&eacute;sactiver les user namespaces non privil&eacute;gi&eacute;s est une att&eacute;nuation r&eacute;elle, et c'est d'ailleurs l'une des trois que l'auteur recommande, avec la mise &agrave; jour du noyau et le blacklistage du module <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">openvswitch</span> quand il ne sert pas. En revanche il n'est pas n&eacute;cessaire qu'<span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">ovs-vswitchd</span> tourne, ni qu'un bridge OVS existe : le bug est dans le datapath noyau, pas dans le d&eacute;mon.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Les autres contraintes sont r&eacute;elles mais faibles. Le support conntrack d'OVS avec le helper FTP est n&eacute;cessaire, l'architecture doit &ecirc;tre x86-64 pour les enregistrements embarqu&eacute;s, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">sudo</span> doit &ecirc;tre install&eacute; pour l'&eacute;tape finale, et le README r&eacute;clame un minimum de 2 GiB de RAM et un compte non privil&eacute;gi&eacute; disposant d'une entr&eacute;e <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">passwd</span> [12]. AppArmor et SELinux n'ont bloqu&eacute; aucune &eacute;tape de l'exploitation elle-m&ecirc;me ; en revanche, la politique AppArmor sur les user namespaces non privil&eacute;gi&eacute;s bloque l'<span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">unshare</span> direct sur certaines versions d'Ubuntu, ce que le PoC contourne via <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">aa-exec</span>. L'auteur annonce une cinquantaine de distributions test&eacute;es, et la liste des non affect&eacute;es est instructive : Amazon Linux 2, Debian 11, Ubuntu 18.04 et 20.04 &mdash; c'est-&agrave;-dire les noyaux ant&eacute;rieurs au changement de mars 2025, qui sont ici plus s&ucirc;rs que les r&eacute;cents.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f7ecd6; border:2px dashed #8a5a12;">
+  <tr>
+    <td style="padding:12px 16px 6px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:#6b4409;">&#9888;&#65039; Hypoth&egrave;se non test&eacute;e</td>
+  </tr>
+  <tr>
+    <td style="padding:0 16px 14px 16px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#3b2c11;">Deux points &agrave; ne pas surinterpr&eacute;ter. Le premier : le garde eBPF fourni avec le PoC est pr&eacute;sent&eacute; comme une att&eacute;nuation d'urgence, mais le write-up ne documente pas ses points d'accrochage &mdash; il renvoie au README du d&eacute;p&ocirc;t. Nous ne l'avons pas ex&eacute;cut&eacute; et nous ne pouvons pas dire ce qu'il couvre exactement ni ce qu'il co&ucirc;te ; &agrave; &eacute;valuer en lab avant tout d&eacute;ploiement. Le second : le PoC est explicitement destructif, il corrompt l'&eacute;tat du noyau, et un red&eacute;marrage ne restaure pas l'ensemble &mdash; l'auteur demande une VM jetable. Toute reproduction hors machine sacrifiable est une mauvaise id&eacute;e, et ce n'est pas une formule de prudence, c'est &eacute;crit dans le d&eacute;p&ocirc;t.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Ce qu'il faut retenir du correctif.</strong> Il tient en deux lignes &mdash; refuser l'attribut au-del&agrave; de <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">U16_MAX</span> &mdash; plus la partie qu'on remarque moins : d&eacute;rouler proprement ce qui a d&eacute;j&agrave; &eacute;t&eacute; allou&eacute;, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">tun_dst</span> et objets conntrack compris, quand la v&eacute;rification &eacute;choue. C'est la moiti&eacute; du travail r&eacute;el, et c'est celle qui produit les bugs suivants quand elle est b&acirc;cl&eacute;e. Versions corrig&eacute;es : 5.15.212, 6.1.178, 6.6.145, 6.12.97, 6.18.40 et 7.1.5.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La le&ccedil;on transposable n'est pas <em>v&eacute;rifiez vos casts</em>, que tout le monde sait d&eacute;j&agrave;. Elle est qu'un plafond retir&eacute; pour des raisons de fonctionnalit&eacute; doit &ecirc;tre examin&eacute; pour ce qu'il retenait accessoirement. Le patch de mars 2025 &eacute;tait correct au regard de son intention ; il a supprim&eacute; une borne dont personne ne savait qu'elle prot&eacute;geait une assignation &eacute;crite douze ans plus t&ocirc;t, dans un autre fichier, par quelqu'un d'autre. Ce sont exactement les r&eacute;visions que les revues de code laissent passer, parce que rien dans le diff ne parle de s&eacute;curit&eacute;.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 02</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[11]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-28</span> &nbsp;&middot;&nbsp; Asim Viladi Oglu Manizada &mdash; <a href="https://heyitsas.im/posts/ovswrap/" style="color:#2f5474;">OVSwrap: another Linux local root vulnerability (CVE-2026-64531)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[12]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-28</span> &nbsp;&middot;&nbsp; Asim Manizada &mdash; <a href="https://github.com/manizada/OVSwrap" style="color:#2f5474;">manizada/OVSwrap - PoC et garde eBPF (README : pr&eacute;requis, port&eacute;e, avertissement)</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-3" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 03 &nbsp;&middot;&nbsp; Deep-dive</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">WSUS : la signature qu'un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.txt</span> suffit &agrave; sauter</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Relais NTLM vers SUSDB, injection d'updates par proc&eacute;dures stock&eacute;es, et une v&eacute;rification de signature qui s'arr&ecirc;te au nom du fichier.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:0 0 10px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700;">La cha&icirc;ne, telle que SpecterOps la publie</td>
+  </tr>
+  <tr>
+    <td>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">1</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Coercition du compte machine du serveur WSUS pour le faire s'authentifier (PetitPotam).</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">2</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Relais NTLM vers l'instance MSSQL qui h&eacute;berge SUSDB : la session SQL s'ouvre en tant que compte machine WSUS.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">3</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Import d'un update et de ses fragments XML via <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spImportUpdate</span> et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spSaveXMLFragment</span>.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">4</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Cr&eacute;ation d'un groupe de cibles d&eacute;di&eacute; et ajout de la machine vis&eacute;e (<span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spCreateTargetGroup</span>, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spGetComputerTargetByName</span>, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spAddComputerToTargetGroup</span>).</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">5</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">D&eacute;claration de l'URL de payload avec <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spSetBatchURL</span> ; le t&eacute;l&eacute;chargement se fera en BITS, HEAD puis GET, serveur devant supporter Range.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">6</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Nommage du payload en <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.txt</span> pour que <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">VerifyFile</span> saute la v&eacute;rification de certificat.</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">7</td></tr></table></td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">D&eacute;ploiement avec <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spDeployUpdate</span>, puis attente de l'intervalle de d&eacute;tection d&eacute;fini par GPO.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Beyviel David a publi&eacute; le 5 ao&ucirc;t une recherche en deux parties sur WSUS [13][14]. Le sujet n'est pas neuf &mdash; le serveur de mise &agrave; jour est une cible de r&ecirc;ve depuis toujours, puisqu'il installe du code sur tout le parc avec les privil&egrave;ges SYSTEM &mdash; mais les deux parties apportent chacune quelque chose qui manquait : un chemin d'acc&egrave;s qui ne demande pas d'&ecirc;tre d&eacute;j&agrave; administrateur de WSUS, et une raison pr&eacute;cise pour laquelle la signature de code ne bloque pas le r&eacute;sultat.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le pr&eacute;requis est une configuration de plus en plus r&eacute;pandue : WSUS adoss&eacute; &agrave; une instance MSSQL externe plut&ocirc;t qu'&agrave; la Windows Internal Database. Dans ce montage, le compte machine du serveur WSUS poss&egrave;de le droit <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">EXECUTE</span> sur les proc&eacute;dures stock&eacute;es de SUSDB, et rien d'autre &mdash; ni <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">SELECT</span>, ni <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">UPDATE</span>, ni <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">DELETE</span> sur les tables. C'est un mod&egrave;le de moindre privil&egrave;ge correctement pens&eacute;, et c'est aussi tout le probl&egrave;me : les proc&eacute;dures stock&eacute;es constituent l'API du produit, et cette API sait faire, &agrave; elle seule, importer un update, le rattacher &agrave; un groupe et le d&eacute;ployer. Le privil&egrave;ge n'a pas besoin d'&ecirc;tre &eacute;lev&eacute;, il est d&eacute;j&agrave; suffisant. Le contr&ocirc;le sur lequel repose la s&eacute;curit&eacute; de l'ensemble n'est donc pas le jeu de permissions SQL, c'est l'hypoth&egrave;se que personne d'autre ne peut parler au serveur SQL <em>en tant que</em> compte machine WSUS.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Cette hypoth&egrave;se est exactement celle que la coercition NTLM d&eacute;molit depuis des ann&eacute;es. On force le serveur WSUS &agrave; s'authentifier vers une machine contr&ocirc;l&eacute;e, on relaie l'authentification vers l'instance MSSQL, et on se retrouve avec une session SQL ouverte sous l'identit&eacute; du compte machine &mdash; avec ses <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">EXECUTE</span>. Rien de nouveau dans la primitive ; ce qui est nouveau, c'est la cible du relais. Le relais NTLM vers MSSQL est un chemin ancien et peu surveill&eacute;, parce qu'on l'associe &agrave; l'exfiltration de donn&eacute;es, pas &agrave; la distribution de binaires sign&eacute;s SYSTEM sur un parc entier.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Vient ensuite la partie qui demande de comprendre le format. Un update WSUS n'est pas un fichier, c'est un ensemble de fragments XML enregistr&eacute;s en base : <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">UpdateIdentity</span>, qui d&eacute;termine si l'update est d&eacute;ployable, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">LocalizedProperties</span> pour ce que verra l'administrateur, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">ExtendedProperties</span> pour la taille, le hash et le comportement d'installation. David passe par un <em>bundled update</em>, un conteneur, pr&eacute;cis&eacute;ment pour ne pas avoir &agrave; satisfaire l'arbre de pr&eacute;requis qu'un update simple tra&icirc;ne derri&egrave;re lui : le conteneur porte la relation, l'enfant porte l'ex&eacute;cutable et ses arguments. Le handler qui compte est <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">CommandLineInstallation</span>.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">Fragment UpdateXml import&eacute; en base (extrait de la partie 1)</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">&lt;upd:Update xmlns:upd="http://schemas.microsoft.com/msus/2002/12/Update"&gt;
+  &lt;upd:UpdateIdentity UpdateID="a7751c4d-eab5-45ef-8cd7-2fae2fea1252"
+                      RevisionNumber="1"/&gt;
+  &lt;upd:Properties UpdateType="Software"
+                  ExplicitlyDeployable="true"
+                  Handler="CommandLineInstallation"/&gt;
+  &lt;upd:HandlerSpecificData&gt;
+    &lt;cmd:InstallCommand Program="Specter.exe" Arguments=""/&gt;
+  &lt;/upd:HandlerSpecificData&gt;
+&lt;/upd:Update&gt;</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">ExplicitlyDeployable="true" est la propri&eacute;t&eacute; qui rend l'objet d&eacute;ployable ; le handler CommandLineInstallation est ce qui transforme un update en ex&eacute;cution de programme.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le d&eacute;coupage en fragments explique pourquoi la cha&icirc;ne passe par autant d'appels successifs plut&ocirc;t que par une insertion unique, et il vaut la peine d'&ecirc;tre compris parce qu'il d&eacute;termine ce qu'un d&eacute;fenseur peut surveiller. <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spImportUpdate</span> prend l'UpdateXml et cr&eacute;e l'objet ; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spSaveXMLFragment</span> enregistre s&eacute;par&eacute;ment chacun des trois fragments, dont <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">ExtendedProperties</span> qui porte la taille et le hash attendus du fichier ; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spSetBatchURL</span> associe l'URL de t&eacute;l&eacute;chargement au fichier de l'update, et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">spGetFileLocations</span> permet de v&eacute;rifier que le payload est bien enregistr&eacute; l&agrave; o&ugrave; le serveur ira le chercher. Le hash d&eacute;clar&eacute; dans <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">ExtendedProperties</span> est fourni par celui qui importe l'update : il garantit l'int&eacute;grit&eacute; du transfert, pas la provenance du binaire. C'est la v&eacute;rification de signature qui devait porter la provenance, et c'est elle qui s'arr&ecirc;te au nom du fichier.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Un d&eacute;tail m&eacute;rite d'&ecirc;tre relev&eacute; parce qu'il d&eacute;termine la vitesse de la cha&icirc;ne : David note que les updates marqu&eacute;s avec le GUID de cat&eacute;gorie Critical, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">E6CF1350-C01B-414D-A61F-263D14D133B4</span>, peuvent &ecirc;tre approuv&eacute;s automatiquement par les r&egrave;gles WSUS par d&eacute;faut. Les approbations automatiques existent pour que les correctifs critiques n'attendent pas un humain. C'est une d&eacute;cision de disponibilit&eacute; parfaitement d&eacute;fendable, et elle supprime le dernier point o&ugrave; quelqu'un aurait pu regarder l'objet avant qu'il ne parte.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">D&eacute;ploiement vers le groupe de cibles cr&eacute;&eacute; pour l'occasion</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">EXEC spDeployUpdate
+  @updateID      = 'ecb78a8f-5e2c-4b28-a20e-8ad6d99afae7',
+  @targetGroupID = 'a306cf19-2e4f-43e4-a3ee-77554e6afcf6',
+  @isAssigned    = 1</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Un groupe d&eacute;di&eacute; plut&ocirc;t qu'un d&eacute;ploiement global : le ciblage limite le bruit et, accessoirement, le rayon d'action.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  &Agrave; ce stade, la partie 1 s'arr&ecirc;te sur un obstacle honn&ecirc;tement annonc&eacute; : WSUS t&eacute;l&eacute;charge le payload et v&eacute;rifie sa signature. Le t&eacute;l&eacute;chargement passe par BITS &mdash; un HEAD puis un GET, le serveur devant supporter l'en-t&ecirc;te Range &mdash; et la validation a lieu dans <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">Microsoft.UpdateServices.ContentSyncAgent.dll</span>, une assembly .NET dont la fonction <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">VerifyFile</span> appelle <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">CheckCertificateSignature</span> pour confronter le binaire aux certificats Microsoft de confiance. C'est le contr&ocirc;le qui fait que la cha&icirc;ne devrait s'arr&ecirc;ter l&agrave;.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La partie 2 explique pourquoi elle ne s'arr&ecirc;te pas. En d&eacute;sassemblant l'assembly, David trouve que <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">VerifyFile</span> positionne un bool&eacute;en &agrave; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">false</span> lorsque le nom de fichier se termine par <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.txt</span> ou <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.esd</span>, et que lorsque ce bool&eacute;en est faux, l'appel &agrave; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">CheckCertificateSignature</span> est <em>enti&egrave;rement saut&eacute;</em>. Il nomme son binaire non sign&eacute; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">Ghost.txt</span>, le d&eacute;ploie, et re&ccedil;oit ses callbacks. Il n'y a pas de contournement cryptographique ici, pas de collision, pas de certificat vol&eacute; : le code demande au nom du fichier s'il doit v&eacute;rifier la signature, et le nom du fichier r&eacute;pond non.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  L'exception a une origine plausible &mdash; un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.esd</span> est un conteneur de contenu Windows Update, un <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.txt</span> un fichier de m&eacute;tadonn&eacute;es, ni l'un ni l'autre n'&eacute;tant des ex&eacute;cutables qu'on s'attendrait &agrave; voir sign&eacute;s. La logique n'est pas absurde, elle est simplement invers&eacute;e : elle d&eacute;cide de la n&eacute;cessit&eacute; d'une v&eacute;rification &agrave; partir d'une propri&eacute;t&eacute; que l'appelant contr&ocirc;le, au lieu de la d&eacute;cider &agrave; partir de ce que le fichier va devenir. Le handler d'installation, lui, ex&eacute;cute <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">Program=</span> sans se soucier de l'extension. Deux composants, deux id&eacute;es diff&eacute;rentes de ce qu'est le type d'un fichier, et l'&eacute;cart entre les deux est la vuln&eacute;rabilit&eacute;.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="23%" style="width:23%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">&Eacute;tape</td>
+    <td width="27%" style="width:27%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Ce qui est suppos&eacute;</td>
+    <td width="27%" style="width:27%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Ce qui tient r&eacute;ellement</td>
+    <td width="23%" style="width:23%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Contr&ocirc;le qui casse la cha&icirc;ne</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Session SQL</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Seul WSUS parle &agrave; SUSDB en tant que compte machine</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Le compte machine est coercible et relayable</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">EPA + signature SMB/LDAP, canaux sign&eacute;s c&ocirc;t&eacute; SQL</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Permissions SUSDB</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">EXECUTE seul est un moindre privil&egrave;ge</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Les proc&eacute;dures stock&eacute;es suffisent au d&eacute;ploiement</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Surveillance de spImportUpdate / spDeployUpdate</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Approbation</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Un humain relit avant d&eacute;ploiement</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">La cat&eacute;gorie Critical peut &ecirc;tre auto-approuv&eacute;e</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Revue des r&egrave;gles d'auto-approbation</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Signature du payload</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Tout binaire d&eacute;ploy&eacute; est sign&eacute; Microsoft</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">VerifyFile saute le contr&ocirc;le sur .txt / .esd</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Alerte sur ces extensions dans la cha&icirc;ne de contenu</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Quatre hypoth&egrave;ses, aucune fausse isol&eacute;ment. C'est leur composition qui produit l'ex&eacute;cution SYSTEM sur les machines choisies.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Limites et arbitrages.</strong> La cha&icirc;ne n'est pas universelle et les auteurs ne le pr&eacute;tendent pas. Elle exige une base MSSQL externe : un WSUS rest&eacute; sur WID n'expose pas la m&ecirc;me surface de relais, puisqu'il n'y a pas de serveur SQL distant &agrave; atteindre. Elle exige un chemin de coercition praticable, donc un environnement o&ugrave; la signature SMB et l'Extended Protection for Authentication ne sont pas g&eacute;n&eacute;ralis&eacute;es &mdash; ce qui reste le cas courant, mais ce qui est aussi la premi&egrave;re chose que corrige une rem&eacute;diation NTLM s&eacute;rieuse. Elle n'est pas discr&egrave;te : l'import &eacute;crit des lignes en base, cr&eacute;e un groupe de cibles visible dans la console, et le payload appara&icirc;t dans le contenu WSUS. Enfin, la persistance n'est pas donn&eacute;e : David observe des callbacks qui tiennent quelques heures avant que le processus ne sorte, avec red&eacute;ploiement automatique ensuite &mdash; ce qui est un comportement bruyant et r&eacute;p&eacute;titif, pas un implant.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f7ecd6; border:2px dashed #8a5a12;">
+  <tr>
+    <td style="padding:12px 16px 6px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:#6b4409;">&#9888;&#65039; Hypoth&egrave;se non test&eacute;e</td>
+  </tr>
+  <tr>
+    <td style="padding:0 16px 14px 16px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#3b2c11;">Le comportement de <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">VerifyFile</span> sur <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.txt</span> et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.esd</span> est rapport&eacute; &agrave; partir du d&eacute;sassemblage de <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">Microsoft.UpdateServices.ContentSyncAgent.dll</span> par les auteurs, et il est corrobor&eacute; par leur PoC. Nous ne l'avons pas v&eacute;rifi&eacute; nous-m&ecirc;mes, et l'article ne pr&eacute;cise ni la version exacte de l'assembly ni les versions de WSUS concern&eacute;es. Avant de le traiter comme un fait de configuration, v&eacute;rifiez-le sur votre propre build. De m&ecirc;me, aucun identifiant CVE ni bulletin Microsoft n'accompagne la publication &agrave; ce jour : rien n'indique que ce comportement soit consid&eacute;r&eacute; comme un d&eacute;faut &agrave; corriger plut&ocirc;t que comme un fonctionnement attendu.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Ce qui rend cette recherche plus qu'une curiosit&eacute;</strong>, c'est le calendrier de Microsoft. WSUS est officiellement <em>no longer actively developed</em> depuis Windows Server 2025, avec la formule qui accompagne toutes les d&eacute;pr&eacute;ciations : toutes les capacit&eacute;s et tous les contenus existants restent disponibles [15]. Dans le m&ecirc;me tableau, la Windows Internal Database est elle aussi d&eacute;pr&eacute;ci&eacute;e, et la recommandation est explicite &mdash; utiliser une version gratuite ou compl&egrave;te de SQL Server pour les r&ocirc;les qui en d&eacute;pendent, WSUS compris, WID devant &ecirc;tre retir&eacute;e dans une version future de Windows.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Autrement dit : Microsoft pousse les administrateurs WSUS depuis WID vers une instance SQL Server externe, c'est-&agrave;-dire vers la configuration exacte que cette cha&icirc;ne exige, sur un composant dont il a par ailleurs annonc&eacute; qu'il ne recevrait plus de travail de fond. Un produit d&eacute;pr&eacute;ci&eacute; mais maintenu en production continue de recevoir des correctifs de s&eacute;curit&eacute; selon son cycle de vie ; il ne re&ccedil;oit pas de refonte de mod&egrave;le de confiance. Le d&eacute;calage entre les deux est l&agrave; o&ugrave; ce genre de recherche vivra pendant les cinq prochaines ann&eacute;es &mdash; et pas seulement sur WSUS.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  C&ocirc;t&eacute; d&eacute;fense, les auteurs restent sobres et ont raison de l'&ecirc;tre : Extended Protection for Authentication, restriction de l'acc&egrave;s r&eacute;seau au serveur SQL, et surveillance de l'ex&eacute;cution des proc&eacute;dures stock&eacute;es concern&eacute;es ainsi que des extensions <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.txt</span> et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">.esd</span> dans la cha&icirc;ne de contenu. La premi&egrave;re mesure est la seule qui casse la cha&icirc;ne &agrave; la racine ; les deux autres constatent qu'elle a &eacute;t&eacute; emprunt&eacute;e. Pour un op&eacute;rateur, la lecture inverse est imm&eacute;diate : le signal le plus fiable c&ocirc;t&eacute; d&eacute;fenseur est le nom du fichier, ce qui veut dire que le co&ucirc;t de d&eacute;tection est nul et que la fen&ecirc;tre se referme d&egrave;s que quelqu'un &eacute;crit la r&egrave;gle.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 03</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[13]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Beyviel David, SpecterOps &mdash; <a href="https://specterops.io/blog/2026/08/05/turning-enterprise-update-servers-into-backdoor-factories-part-1/" style="color:#2f5474;">Turning Enterprise Update Servers Into Backdoor Factories (0_o) - Part 1</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[14]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Beyviel David, SpecterOps &mdash; <a href="https://specterops.io/blog/2026/08/05/turning-enterprise-update-servers-into-backdoor-factories-part-2/" style="color:#2f5474;">Turning Enterprise Update Servers Into Backdoor Factories (0_o) - Part 2</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[15]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-03-19</span> &nbsp;&middot;&nbsp; Microsoft Learn &mdash; <a href="https://learn.microsoft.com/en-us/windows-server/get-started/removed-deprecated-features-windows-server-2025" style="color:#2f5474;">Features Removed or No Longer Developed in Windows Server (WSUS, Windows Internal Database)</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-4" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 04 &nbsp;&middot;&nbsp; Autopsie d'attaque</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Autopsie ChocoPoC : la cible, c'&eacute;tait nous</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Sept d&eacute;p&ocirc;ts de faux PoC, quatre paquets PyPI, et une campagne dont le seul &eacute;l&eacute;ment original est le choix des victimes.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Sekoia a publi&eacute; le 5 ao&ucirc;t l'analyse d'une campagne qui court depuis fin 2025 et qui vise une population tr&egrave;s pr&eacute;cise : les chercheurs en vuln&eacute;rabilit&eacute;s, les pentesters et les mainteneurs d'outils de s&eacute;curit&eacute; [16]. Le m&eacute;canisme est trivial &mdash; de faux d&eacute;p&ocirc;ts GitHub proposant des exploits pour des vuln&eacute;rabilit&eacute;s tr&egrave;s m&eacute;diatis&eacute;es, dont le <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">requirements.txt</span> tire des paquets PyPI malveillants. C'est le ciblage qui m&eacute;rite une autopsie, parce qu'il inverse la relation habituelle : la victime n'est pas un utilisateur cr&eacute;dule, c'est quelqu'un dont le m&eacute;tier est d'ex&eacute;cuter du code hostile, sur une machine qui contient les credentials et les rapports de ses clients.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:0 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">1</td></tr></table></td>
+    <td valign="top" style="padding:0 0 14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">18 nov. 2025 &nbsp;&middot;&nbsp; MISE EN PLACE</span><br>Publication du premier des sept d&eacute;p&ocirc;ts pi&eacute;g&eacute;s recens&eacute;s. Le sch&eacute;ma est fix&eacute; d&egrave;s le d&eacute;but et ne changera plus : un d&eacute;p&ocirc;t GitHub cr&eacute;&eacute; quelques semaines plus t&ocirc;t, un code d'exploit visible essentiellement b&eacute;nin, et la charge d&eacute;port&eacute;e dans les d&eacute;pendances transitives d&eacute;clar&eacute;es par <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">requirements.txt</span>. Les paquets appel&eacute;s &mdash; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">frint</span>, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">skytext</span>, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">slogsec</span>, <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">logcrypt.cryptography</span> &mdash; sont des extensions natives dont le nom, isol&eacute; d'une ligne de d&eacute;pendances, ne dit rien. L'installation se fait au <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">pip install</span>, donc avant que la moindre ligne d'exploit ne soit lue.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">2</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">fin 2025 &nbsp;&middot;&nbsp; PREMI&EGRAVE;RE VAGUE</span><br>Les d&eacute;p&ocirc;ts couvrent des vuln&eacute;rabilit&eacute;s choisies dans l'actualit&eacute; imm&eacute;diate : path traversal FortiWeb (CVE-2025-64446), React2Shell (CVE-2025-55182), MongoBleed (CVE-2025-14847). Le crit&egrave;re de s&eacute;lection est visible en creux : ce sont des failles dont un consultant a besoin <em>cette semaine-l&agrave;</em>, pour un client qui demande si son parc est touch&eacute;. L'urgence est le vecteur, et Sekoia le formule sans d&eacute;tour &mdash; l'urgence met &agrave; mal les bonnes habitudes.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">3</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">25 mars 2026 &nbsp;&middot;&nbsp; CORR&EACUTE;LATION</span><br>Le jour de la divulgation du RCE critique Langflow, le paquet <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">slogsec</span> enregistre un pic de t&eacute;l&eacute;chargements. Sekoia rel&egrave;ve d'autres corr&eacute;lations du m&ecirc;me type entre l'actualit&eacute; d'une vuln&eacute;rabilit&eacute; et un sursaut sur <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">frint</span> et <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">skytext</span>. C'est un raisonnement de corr&eacute;lation, pas une preuve d'infection, et le rapport le pr&eacute;sente comme tel.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">4</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">avril 2026 &nbsp;&middot;&nbsp; ROTATION</span><br>Nouvelle vague, nouveaux comptes GitHub et PyPI, tactiques identiques. La rotation est ce qui a permis &agrave; la campagne de durer huit mois sans &ecirc;tre trait&eacute;e comme un ensemble : chaque d&eacute;p&ocirc;t, pris seul, ressemble &agrave; un incident isol&eacute; et se fait retirer comme tel. Les dates de cr&eacute;ation des comptes Mapbox utilis&eacute;s par l'infrastructure se regroupent autour de fin 2025 et d'avril 2026, ce qui dessine deux campagnes plut&ocirc;t qu'un flux continu.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">5</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">24 juin 2026 &nbsp;&middot;&nbsp; DERNIER D&EACUTE;P&OCIRC;T</span><br>Septi&egrave;me et dernier d&eacute;p&ocirc;t observ&eacute;, six mois apr&egrave;s le premier. Les vuln&eacute;rabilit&eacute;s servant d'app&acirc;t ont suivi l'actualit&eacute; tout du long : contournement d'authentification PAN-OS (CVE-2026-0257), injection de commandes Ivanti Sentry (CVE-2026-10520), contournement d'authentification sur les VPN Check Point (CVE-2026-50751), RCE SP Page Builder pour Joomla (CVE-2026-48908).</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">6</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">25 juin 2026 &nbsp;&middot;&nbsp; D&EACUTE;TECTION</span><br>Une issue GitHub ouverte aupr&egrave;s de YesWeHack signale qu'un PoC semble infect&eacute;. Ce n'est ni un antivirus, ni un scanner de cha&icirc;ne d'approvisionnement, ni une sandbox : c'est quelqu'un qui a lu une ligne de d&eacute;pendances et trouv&eacute; qu'elle n'avait rien &agrave; faire l&agrave;. Huit mois apr&egrave;s le premier d&eacute;p&ocirc;t.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">7</td></tr></table></td>
+    <td valign="top" style="padding:14px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">5 ao&ucirc;t 2026 &nbsp;&middot;&nbsp; PUBLICATION</span><br>Sekoia publie l'analyse consolid&eacute;e : sept d&eacute;p&ocirc;ts, quatre paquets, et pour le seul <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">skytext</span> environ 2 400 t&eacute;l&eacute;chargements, en majorit&eacute; sur des syst&egrave;mes Linux. Le rapport attribue l'ensemble &agrave; un acteur unique.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Le jugement technique, d'abord.</strong> Il n'y a rien d'original dans cette campagne, et il faut le dire clairement pour ne pas la sur&eacute;valuer : pas d'exploit, pas de zero-day, pas de technique d'&eacute;vasion m&eacute;moire. Le code lui-m&ecirc;me est franchement m&eacute;diocre &mdash; Sekoia rel&egrave;ve des appels de fonction mal orthographi&eacute;s et des tests portant sur des variables non d&eacute;finies, signes d'un d&eacute;veloppement manuel et peu soign&eacute;, ainsi qu'un nommage de variables et de fonctions en espagnol. Ce n'est pas une op&eacute;ration d'&Eacute;tat. C'est une op&eacute;ration opportuniste, mont&eacute;e par quelqu'un qui a compris quelque chose que beaucoup d'op&eacute;rations mieux outill&eacute;es n'ont pas compris.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Ce qui est r&eacute;ellement intelligent</strong> tient en deux choix. Le premier : ne pas mettre la charge dans le code que la victime va lire. Un chercheur qui t&eacute;l&eacute;charge un PoC le parcourt &mdash; c'est le r&eacute;flexe de base, et il fonctionne. Il parcourt beaucoup plus rarement le contenu des quatre paquets tir&eacute;s par <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">requirements.txt</span>, et pratiquement jamais leurs d&eacute;pendances transitives. Le code visible reste b&eacute;nin, la malveillance vit un niveau plus bas, l&agrave; o&ugrave; la revue ne descend pas.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le second choix est meilleur encore : l'ex&eacute;cution est conditionnelle. Le code ne se d&eacute;clenche que si <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">exploit_poc.py</span>, ou l'une de ses variantes, figure dans la liste des modules charg&eacute;s. Une sandbox g&eacute;n&eacute;rique qui d&eacute;tone le paquet ne verra donc rien &mdash; elle n'ex&eacute;cute pas de PoC, elle ex&eacute;cute un paquet. Il faut &ecirc;tre en train de faire pr&eacute;cis&eacute;ment le geste que fait la cible pour que la charge se manifeste. C'est du ciblage impl&eacute;ment&eacute; comme une garde d'ex&eacute;cution, et cela explique une partie du reste : les binaires natifs affichaient z&eacute;ro d&eacute;tection sur VirusTotal.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="25%" style="width:25%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">CVE servant d'app&acirc;t</td>
+    <td width="27%" style="width:27%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Produit</td>
+    <td width="22%" style="width:22%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Ajout au KEV</td>
+    <td width="26%" style="width:26%; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Fen&ecirc;tre de la campagne</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">CVE-2025-64446</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Fortinet FortiWeb</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">14 nov. 2025</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">1er d&eacute;p&ocirc;t : 18 nov. 2025</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">CVE-2025-55182</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Meta React Server Components</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">5 d&eacute;c. 2025</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">premi&egrave;re vague</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">CVE-2025-14847</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">MongoDB Server</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">29 d&eacute;c. 2025</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">premi&egrave;re vague</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">CVE-2026-0257</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Palo Alto Networks PAN-OS</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">29 mai 2026</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">seconde vague</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">CVE-2026-10520</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Ivanti Sentry</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">11 juin 2026</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">seconde vague</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">CVE-2026-50751</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Check Point Security Gateway</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">8 juin 2026</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">seconde vague</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">CVE-2026-48908</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">JoomShaper SP Page Builder</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">7 juil. 2026</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">apr&egrave;s le dernier d&eacute;p&ocirc;t</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">V&eacute;rification faite contre le catalogue KEV version 2026.08.07 [17] : les sept vuln&eacute;rabilit&eacute;s servant d'app&acirc;t y figurent toutes. Le premier d&eacute;p&ocirc;t suit de quatre jours l'entr&eacute;e KEV de FortiWeb.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Ce tableau est le point que nous voulions &eacute;tablir nous-m&ecirc;mes, parce qu'il pr&eacute;cise le mod&egrave;le. L'acteur ne choisit pas des vuln&eacute;rabilit&eacute;s graves : il choisit des vuln&eacute;rabilit&eacute;s <strong>sous &eacute;ch&eacute;ance</strong>. Une entr&eacute;e au KEV cr&eacute;e une obligation dat&eacute;e pour les agences f&eacute;d&eacute;rales am&eacute;ricaines et, par capillarit&eacute;, une demande urgente chez tous les clients qui suivent le catalogue. Elle produit donc, de fa&ccedil;on pr&eacute;visible et publique, une population de professionnels qui cherchent un PoC dans les jours qui suivent. Le KEV n'est pas seulement une liste de correctifs &agrave; appliquer : c'est aussi, pour qui le lit &agrave; l'envers, un calendrier de campagnes de social engineering avec les dates fournies.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>Le maillon faible.</strong> Il n'est pas c&ocirc;t&eacute; victime, il est c&ocirc;t&eacute; attaquant, et c'est la r&eacute;utilisation. Sekoia relie les deux vagues par le m&ecirc;me identifiant de feature Mapbox, la m&ecirc;me garde d'environnement bas&eacute;e sur un hash et les m&ecirc;mes variables d'environnement anti-r&eacute;cursion. Autrement dit : la rotation des comptes GitHub et PyPI, qui a parfaitement fonctionn&eacute; pendant huit mois contre les signaux de r&eacute;putation, n'a servi &agrave; rien face &agrave; trois constantes laiss&eacute;es dans le code. Un op&eacute;rateur qui change d'identit&eacute; mais pas d'outillage ne change pas d'identit&eacute;.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  <strong>O&ugrave; cela aurait d&ucirc; &ecirc;tre arr&ecirc;t&eacute;.</strong> Pas &agrave; l'antivirus &mdash; z&eacute;ro d&eacute;tection, et c'&eacute;tait pr&eacute;visible pour un dropper natif compil&eacute; pour l'occasion. Pas &agrave; la sandbox &mdash; la garde d'ex&eacute;cution la neutralise par construction. Pas &agrave; la revue de code &mdash; elle porte sur ce qui est visible, et rien de visible n'est malveillant. Pas &agrave; la r&eacute;putation de compte &mdash; des comptes cr&eacute;&eacute;s quelques semaines &agrave; l'avance franchissent tous les seuils d'&acirc;ge usuels. Les quatre contr&ocirc;les habituels &eacute;chouent chacun pour une raison diff&eacute;rente, ce qui est le signe qu'ils &eacute;chouent contre la <em>forme</em> de l'attaque et non par malchance.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le contr&ocirc;le qui aurait mordu est celui dont il est question en partie 01 [8] : le d&eacute;lai de publication. Un paquet publi&eacute; il y a trois jours, tir&eacute; par un d&eacute;p&ocirc;t cr&eacute;&eacute; il y a trois semaines, pour un exploit divulgu&eacute; la semaine derni&egrave;re &mdash; c'est le profil exact, et c'est aussi exactement ce que <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">min-release-age</span> refuse d'installer c&ocirc;t&eacute; npm. Rien de tel n'est appliqu&eacute; par d&eacute;faut c&ocirc;t&eacute; <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">pip</span>, et personne ne l'active sur la machine qui sert &agrave; tester des PoC, puisque c'est la machine o&ugrave; l'on installe des choses fra&icirc;ches par d&eacute;finition. Le poste de test est le poste le moins prot&eacute;g&eacute; et celui qui contient le plus : c'est le vrai constat de cette campagne, et il n'a rien de technique.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f7ecd6; border:2px dashed #8a5a12;">
+  <tr>
+    <td style="padding:12px 16px 6px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:#6b4409;">&#9888;&#65039; Hypoth&egrave;se non test&eacute;e</td>
+  </tr>
+  <tr>
+    <td style="padding:0 16px 14px 16px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#3b2c11;">Ce qui est &eacute;tabli et ce qui ne l'est pas. <strong>&Eacute;tabli</strong> : sept d&eacute;p&ocirc;ts identifi&eacute;s avec leurs IoC, des &eacute;chantillons natifs avec leurs empreintes SHA-256, environ 2 400 t&eacute;l&eacute;chargements sur <span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:14px; background-color:#eeece6; padding:1px 4px;">skytext</span>, les dates de cr&eacute;ation des comptes Mapbox obtenues par analyse des tokens, et le nommage hispanophone du code. <strong>Inf&eacute;r&eacute;</strong> : l'attribution &agrave; un acteur unique repose sur la r&eacute;utilisation de motifs, pas sur une preuve d'infrastructure partag&eacute;e ; le taux de compromission r&eacute;el n'est pas connu, un compteur de t&eacute;l&eacute;chargements ne mesurant pas des infections ; la corr&eacute;lation entre pics de t&eacute;l&eacute;chargement et actualit&eacute; des vuln&eacute;rabilit&eacute;s est pr&eacute;sent&eacute;e par Sekoia comme une hypoth&egrave;se. Enfin, les adresses de committers renvoient &agrave; des &eacute;tudiants indon&eacute;siens et turcs pr&eacute;sum&eacute;s et les auteurs des paquets PyPI &agrave; des adresses Gmail retrouv&eacute;es dans des bases de fuites : le rapport en d&eacute;duit une compromission par infostealer, ce qui est plausible et non d&eacute;montr&eacute;. Un lecteur qui reprend ces &eacute;l&eacute;ments doit les reprendre avec cette &eacute;tiquette.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Une derni&egrave;re remarque, qui est la raison pour laquelle cette campagne m&eacute;rite une partie 04 alors qu'elle ne contient aucune technique nouvelle. Notre profession consomme quotidiennement du code hostile fourni par des inconnus, et elle l'a normalis&eacute; au point de ne plus le voir. Le PoC est le seul artefact de la cha&icirc;ne logicielle que l'on t&eacute;l&eacute;charge <em>en sachant</em> qu'il est dangereux, et cette conscience du danger fonctionne comme une anesth&eacute;sie : puisque le danger est le sujet, il cesse d'&ecirc;tre une alerte. Sept d&eacute;p&ocirc;ts sur huit mois, deux mille quatre cents t&eacute;l&eacute;chargements pour un seul paquet, et la d&eacute;tection est venue d'un humain qui a lu une ligne de d&eacute;pendances.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 04</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[16]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Pierre Le Bourhis, Quentin Bourgue et l'&eacute;quipe TDR, Sekoia &mdash; <a href="https://www.sekoia.com/blog/dont-eat-the-chocopocs-how-vulnerability-researchers-were-repeatedly-targeted-by-trojanised-exploits" style="color:#2f5474;">Don't eat the ChocoPoCs! How vulnerability researchers were repeatedly targeted by trojanised exploits</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[17]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-07</span> &nbsp;&middot;&nbsp; CISA &mdash; <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474;">Known Exploited Vulnerabilities Catalog, version 2026.08.07 (v&eacute;rification des sept CVE d'app&acirc;t)</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:22px 30px 26px 30px; background-color:#1e1d1b; border-top:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">G&eacute;n&eacute;r&eacute; le 2026-08-10 &agrave; 01:20 UTC &nbsp;&middot;&nbsp; pipeline v1.0</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">Fen&ecirc;tre couverte&nbsp;: 2026-08-03 06:00 &rarr; 2026-08-10 06:00 UTC &nbsp;&middot;&nbsp; 43 sources scann&eacute;es, 17 retenues</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; padding-bottom:10px;"><a href="https://rzdhop.github.io/Newsletter" style="color:#c9b79a; text-decoration:underline;">rzdhop.github.io/Newsletter</a> &nbsp;&middot;&nbsp; <span style="color:#8f8b82;">&eacute;ditions n&deg;1 &agrave; 417</span></td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:10px; padding-bottom:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Fond clair assum&eacute;&nbsp;: aucune variante sombre n&rsquo;est fournie. Diffusion&nbsp;: 1 destinataire(s).</td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#8f8b82;">Bulletin d&rsquo;analyse technique en s&eacute;curit&eacute; offensive. Chaque sujet porte sur des travaux publics et cit&eacute;s&nbsp;: le bulletin commente la recherche existante et n&rsquo;en produit pas. Destin&eacute; &agrave; un lectorat professionnel, pour usage en laboratoire ou dans le cadre d&rsquo;engagements autoris&eacute;s.</td></tr>
+  </table>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>
