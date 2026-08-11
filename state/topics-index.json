@@ -29,7 +29,8 @@
   "mobile",
   "identity",
   "supply-chain",
-  "exploitation"
+  "exploitation",
+  "platform"
  ],
  "subjects": [
   {
@@ -271,6 +272,47 @@
    "summary": "Sekoia (TDR) : campagne du 18 novembre 2025 au 24 juin 2026, sept depots GitHub proposant des exploits pour des CVE mediatisees, charge deportee dans les dependances transitives du requirements.txt (paquets PyPI frint, skytext, slogsec, logcrypt.cryptography), ~2 400 telechargements pour skytext, 0 detection VirusTotal. Deux choix efficaces : le code visible reste benin, et l'execution est conditionnee a la presence de exploit_poc.py dans les modules charges, ce qui neutralise la detonation en sandbox generique. Verification faite ici contre le KEV 2026.08.07 : les sept CVE d'appat (2025-64446, 2025-55182, 2025-14847, 2026-0257, 2026-10520, 2026-50751, 2026-48908) y figurent toutes - l'acteur choisit des vulnerabilites sous echeance, pas des vulnerabilites graves, et le premier depot suit de quatre jours l'entree KEV de FortiWeb. Maillon faible cote attaquant : meme identifiant de feature Mapbox, meme garde d'environnement par hash, memes variables anti-recursion malgre la rotation des comptes. Detection finale par un humain (issue GitHub a YesWeHack, 25 juin). Attribution a un acteur unique = inference.",
    "sources": [
     "https://www.sekoia.com/blog/dont-eat-the-chocopocs-how-vulnerability-researchers-were-repeatedly-targeted-by-trojanised-exploits",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+   ]
+  },
+  {
+   "id": "crlf-powered-desync-nginx-uri",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 2,
+   "domain": "web",
+   "title": "CRLF-powered desync : le controle applique une fois, trop tot",
+   "summary": "Une variable decodee ($uri, $document_uri) dans un proxy_pass Nginx fait ressortir en amont des CRLF que le front-end venait de decoder, la documentation precisant qu'avec une variable l'URI est transmis « as is » sans renormalisation. L'escalade va de l'injection d'en-tete au request splitting puis au response queue poisoning, avec la particularite que la charge tient dans un chemin d'URL et se declenche donc depuis le navigateur de la victime, sans socket controlee par l'attaquant.",
+   "sources": [
+    "https://portswigger.net/research/crlf-powered-desync-attacks",
+    "https://nginx.org/en/docs/http/ngx_http_proxy_module.html"
+   ]
+  },
+  {
+   "id": "zapscape-kvm-shadow-mmu-uaf-cve-2026-64561",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 3,
+   "domain": "kernel",
+   "title": "Zapscape : le root que KVM invalide apres avoir decide qu'il etait frais",
+   "summary": "Dans le chemin de page fault de la shadow MMU de KVM/x86, is_page_fault_stale() etait evalue avant make_mmu_pages_available(), donc rien ne revalidait le root si le recyclage de quota venait de l'invalider ; kvm_mmu_child_role() recopiait alors le bit role.invalid dans l'enfant, insere malgre tout dans active_mmu_pages. Le meme kvm_mmu_page se retrouve chaine sur active_mmu_pages et invalid_list, sa liberation laisse un maillon pendant, et __list_del() offre deux ecritures de pointeur arbitraires a un guest L1 privilegie ; CONFIG_LIST_HARDENED degrade l'exploitation en DoS.",
+   "sources": [
+    "https://github.com/V4bel/Zapscape/blob/main/assets/write-up.md",
+    "https://thehackernews.com/2026/08/new-zapscape-kvm-flaw-could-let.html"
+   ]
+  },
+  {
+   "id": "trueconf-head-mare-phantomcore-installer",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 4,
+   "domain": "threat-intel",
+   "title": "Autopsie TrueConf / Head Mare : sept semaines entre le correctif et l'intrusion",
+   "summary": "Head Mare a exploite en juillet 2026 deux vulnerabilites TrueConf Server (KLCERT-26-057 puis -058, sans CVE) sur le port TCP 4307 ouvert par defaut, alors que les versions 5.3.9 / 5.4.9 / 5.5.5 corrigeaient le probleme depuis le 18 juin ; l'avis du vendeur ne nommait ni CVE ni chercheur ni exploitation. L'etape decisive est l'abus du serveur comme canal de distribution : les installeurs du client TrueConf sont remplaces par des paquets non signes numeriquement portant PhantomCore, avec C2 sur OneDrive, dump LSASS, tunnel SSH inverse et effacement des journaux ViPNet.",
+   "sources": [
+    "https://trueconf.com/blog/update/trueconf-server-security-updates-june-2026",
+    "https://www.bleepingcomputer.com/news/security/hackers-breach-trueconf-to-trojanize-client-installers-with-backdoors/",
+    "https://thehackernews.com/2026/08/head-mare-exploits-trueconf-flaws-to.html",
     "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
    ]
   }
@@ -528,6 +570,126 @@
    "summary": "Partie 01 (archive, annonce du 21 juillet). Cork, 6-9 octobre 2026, sept categories, inscription close le 1er octobre a 17h00 IST, 80 entrees maximum, seuil de 15 000 USD de bounties ZDI cumules ou l'une des dix places discretionnaires. AI Infrastructure reconduite apres Berlin. Interet : le calendrier des categories est le meilleur predicteur public de ce qui sera publie au T4.",
    "sources": [
     "https://www.zerodayinitiative.com/blog/2026/7/21/pwn2own-ireland-2026-new-targets-and-categories"
+   ]
+  },
+  {
+   "id": "apple-pcc-darwin-init-traversal-cve-2026-20685",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "platform",
+   "title": "Private Cloud Compute : path traversal dans darwin-init (CVE-2026-20685)",
+   "summary": "Partie 01. extract(to:) concatene le nom d'entree d'archive sans validation, quatre remontees atteignent /var/db/ sur le volume inscriptible qui survit au reboot ; l'attestation PCC couvre les cryptexes mais pas les fichiers de configuration de ce volume, et pccvre attestation verify ne distingue pas deux bundles identiques dont l'un porte les entrees de traversal. CVSS 6.5, 150 000 dollars, recherche menee uniquement dans la Virtual Research Environment.",
+   "sources": [
+    "https://blog.sentry.security/beyond-prompt-injection-hacking-apples-private-cloud-compute/"
+   ]
+  },
+  {
+   "id": "portswigger-http-terminator-ai-desync",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "web",
+   "title": "HTTP Terminator : 30 000 vecteurs de desync generes depuis 138 RFC",
+   "summary": "Partie 01. Systeme autonome generant des hypotheses de desync depuis des fragments de RFC et les testant a grande echelle ; sorties nommees Shared-Parser Confusion, status-line injection, range cache poisoning, dangling byte. 0-day CVE-2026-63078 sur Apache Traffic Server via DELETE + Content-Location + charge TRACE ; les auteurs signalent l'echec du systeme sur l'exploitation RQP.",
+   "sources": [
+    "https://portswigger.net/research/can-ai-do-novel-security-research"
+   ]
+  },
+  {
+   "id": "css-webmail-exfiltration-keylogger",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "web",
+   "title": "CSS : keylogger dans Outlook et exfiltration de token sans requete sortante",
+   "summary": "Partie 01. Ecart entre ce que le sanitizer croit sur et ce que le navigateur rend : selecteurs d'attribut en oracle caractere par caractere, oracle de hauteur de police sur @keyframes quand la CSP bloque les ressources externes, mutation de caracteres echappes relus via le CSSOM chez Fastmail, contournement du proxy d'images Gmail via image-set(var(...)). Fastmail, ProtonMail, Gmail, Outlook, Yahoo, AOL et Atlas nommes.",
+   "sources": [
+    "https://portswigger.net/research/css-the-bomb-inside-your-inbox"
+   ]
+  },
+  {
+   "id": "aeternum-polygon-blockchain-c2",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "threat-intel",
+   "title": "Aeternum : C2 sur Polygon via getDomain / updateDomain",
+   "summary": "Partie 01, en rappel de l'autopsie CHAINDROP de l'edition 416. Loader C++ qui lit l'adresse de C2 dans le storage d'un contrat immuable via les selecteurs 0xb68d1809 (getDomain) et 0xb249cd2d (updateDomain), interroges sur des endpoints RPC publics : rien a saisir, rien a sinkholer, une transaction pour republier. 29 000 detections au 4 juin 2026 ; Unit 42 n'a pas retrouve les adresses de contrat d'un des echantillons.",
+   "sources": [
+    "https://unit42.paloaltonetworks.com/aeternum-blockchain-c2-analysis/"
+   ]
+  },
+  {
+   "id": "connective-signing-extension-eid-rce",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "web",
+   "title": "Connective Signing Extension : parametre library, DLL relative, RCE hors sandbox",
+   "summary": "Partie 01. Le native host de l'extension de signature eID accepte une commande GET_READERS dont le parametre library tolere un chemin relatif, chargeant une DLL arbitraire hors du sandbox Chrome au privilege de l'utilisateur ; s'y ajoutent l'absence de validation d'origine sur les tokens d'activation et de PIN et un AES-128 a IV code en dur. Deploiement revendique chez huit des dix plus grandes banques belges et plus de soixante administrations, correctif complet le 1er juin 2026.",
+   "sources": [
+    "https://amibeingpwned.com/blog/8-in-10-banks-in-belgium"
+   ]
+  },
+  {
+   "id": "evilfonttool-glyph-remapping",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "tooling",
+   "title": "EvilFontTool : remapping de glyphes, rendu visuel contre codepoints",
+   "summary": "Partie 01. Outil publie qui fabrique des polices dont le rendu visible diverge volontairement des caracteres sous-jacents, de sorte que terminal, presse-papier et filtres automatises lisent autre chose que le lecteur humain. Usages annonces : pastejacking, contournement de filtres de CV, injection de documents dans un workflow interne ; detection en imposant une police systeme.",
+   "sources": [
+    "https://doctoreww.github.io/EvilFontTool/"
+   ]
+  },
+  {
+   "id": "apache-cxf-jwtrequestcodefilter-cve-2026-63687",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "web",
+   "title": "Apache CXF : JwtRequestCodeFilter ecrase code_challenge et nonce (CVE-2026-63687)",
+   "summary": "Partie 01, un des douze avis CXF publies le meme jour sur oss-security. Le filtre recopie toutes les claims d'un request JWT signe dans la map de parametres d'autorisation sans exclure les parametres sensibles, ce qui permet a un client detenant un credential de signature valide de substituer code_challenge, code_challenge_method, nonce et state, annulant l'integrite PKCE et l'anti-replay OIDC. Corrige en 4.2.3, 4.1.8 et 3.6.12.",
+   "sources": [
+    "https://seclists.org/oss-sec/2026/q3/476"
+   ]
+  },
+  {
+   "id": "hunt-io-ukrainian-camera-operator-toolkit",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "threat-intel",
+   "title": "Repertoire ouvert : l'atelier d'un operateur visant les cameras ukrainiennes",
+   "summary": "Partie 01. Un repertoire ouvert chez un hebergeur russe sanctionne a expose 120 fichiers d'outillage : une application FastAPI combinant le scanner open-source Ingram et du brute-force sur 3 811 couples d'identifiants, exploitant uniquement des CVE anciennes (Hikvision 2017-7921 et 2021-36260, Dahua 2021-33044/33045, D-Link 2020-25078, TP-Link 2024-53375 chainee a 2024-57049). Le credential guessing restait le chemin principal ; Hunt.io precise n'avoir trouve aucun signe d'exploitation reussie sur les quinze pays scannes.",
+   "sources": [
+    "https://hunt.io/blog/russian-speaking-operator-ukrainian-camera-toolkit"
+   ]
+  },
+  {
+   "id": "cryptojs-wordarray-random-mwc-entropy",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "crypto",
+   "title": "CryptoJS : MWC maison dans WordArray.random(), 2^39 au lieu de 128 bits",
+   "summary": "Partie 01. CryptoJS.lib.WordArray.random() implementait une variation maison du generateur Multiply-With-Carry de Marsaglia, non cryptographique, ramenant une graine annoncee a 128 ou 256 bits a environ 2^39 et 2^47 possibilites ; introduit en juin 2014, corrige en 4.0.0 (fevrier 2020). Le fork ferrumnet/bip39 avait substitue CryptoJS en pur JavaScript pour React Native et n'a plus recu de commit apres novembre 2019, si bien que le correctif amont n'a jamais atteint les wallets concernes.",
+   "sources": [
+    "https://illbloom.org/articles/cryptojs-vulnerability/"
+   ]
+  },
+  {
+   "id": "ncentral-cve-2026-18556-kev-callback",
+   "issue": 418,
+   "date": "2026-08-11",
+   "part": 1,
+   "domain": "web",
+   "title": "Rappel N-central : CVE-2026-18556 au KEV, un jour apres CVE-2026-18577",
+   "summary": "Partie 01, rappel explicite du sujet traite en Partie 04 de l'edition 415. Le catalogue KEV porte deux entrees consecutives pour N-central sur la meme classe de contournement d'authentification (« Alternate Path or Channel »), ajoutees les 3 et 4 aout avec echeances BOD 26-04 aux 6 et 7 aout. Deux CVE distinctes a un jour d'intervalle sur la meme famille indiquent un chemin d'authentification rafistole plutot que redessine.",
+   "sources": [
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
    ]
   }
  ]
