@@ -6,6 +6,13 @@
 # artefact worth versioning, not the intermediate.
 content.json
 
+# Per-part fragments written by the drafting session and consumed by
+# assemble.py. Same rationale as content.json: run-local intermediate, not
+# project state. Kept out of git deliberately - the recovery path for a dead
+# session is `scripts/publish.sh work/` on the live filesystem, which does not
+# need these versioned.
+work/
+
 __pycache__/
 *.pyc
 .DS_Store
