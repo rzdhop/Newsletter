@@ -1,6 +1,7 @@
 # Erebos-Zero — coverage filter
 
-Source of truth: <https://github.com/rzdhop/Erebos-Zero> (public, 98 commits).
+Source of truth: <https://github.com/rzdhop/Erebos-Zero> (public, 99 commits).
+Dernière réconciliation : 2026-08-12 (issue 419).
 
 **What this file is for.** It is a deduplication filter, and nothing else. The
 reader has already built the techniques listed below, so an issue that explains
@@ -28,12 +29,15 @@ prior work or as context for something else. It is never the subject.
 | Technique | Note |
 |---|---|
 | EarlyBird APC injection | thread queuing before execution |
-| Process injector, 4 escalating levels | custom `GetProcAddress` (manual EAT/PEB parsing), XORed constants, indirect syscall, basic anti-VM, basic anti-debug |
+| Process injector, 5 escalating levels | lvl 0–3 as before (custom `GetProcAddress` via EAT/PEB, XORed constants, indirect syscall, anti-VM, anti-debug); **lvl 4 adds rogue certificate signing** against signature-based detection |
 | Basic DLL injection | standard remote thread loading |
-| sRDI — shellcode Reflective DLL injection | converting DLLs to PIC |
-| Function stomping injection | overwriting legitimate function bodies |
-| Mapping injection | shared sections, no `WriteProcessMemory` |
-| Thread hijacking | redirecting RIP/EIP contexts |
+| sRDI — shellcode Reflective DLL injection | self and shellcode variants |
+| Function stomping injection | local, remote and static variants |
+| Mapping injection | local and remote; shared sections, no `WriteProcessMemory` |
+| Thread hijacking | local, EarlyBird thread hijack, running-process variants |
+| Early Cascade injection | added since the previous reconciliation |
+| PE loader | memory-resident PE mapping |
+| BOF loader | Beacon Object File execution |
 
 ### Misc
 | Technique | Note |
@@ -42,6 +46,9 @@ prior work or as context for something else. It is never the subject.
 | Process argument spoofing | masking CLI in ProcMon |
 | IAT hiding | import hashing via DJB2 |
 | Registry stager | fileless shellcode storage |
+| Execution flow obfuscation — sleep masking (Ekko) | **added since the previous reconciliation** |
+| PE parser | structure walking |
+| `NtQuerySystemInformation` enumeration tricks | process/module discovery |
 
 ### Bypass — EDR
 | Technique | Note |
@@ -52,6 +59,9 @@ prior work or as context for something else. It is never the subject.
 | Hell's Gate | dynamic EAT SSN extraction |
 | Dynamic SSN retrieval | sorting `Zw*` functions |
 | VEH AMSI bypass | hardware-breakpoint interception |
+| Stack spoofing | return-address **and call-stack** variants, incl. integration into the injection flow |
+| EarlyBird APC + Halo's Gate + indirect syscalls | combined chain |
+| Masterwizard | PoC implant |
 
 ### Bypass — KASLR
 | Technique | Note |
@@ -64,6 +74,7 @@ prior work or as context for something else. It is never the subject.
 |---|---|
 | V.1 (legacy) | basic modular beaconing |
 | V.2 (advanced) | StealthCall unified stack/syscall engine, call-stack spoofing, memory-resident PE loader |
+| V.3 (work in progress) | IOCP-based async architecture |
 
 ### Stagers
 | Technique | Note |
