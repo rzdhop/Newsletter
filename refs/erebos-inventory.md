@@ -1,7 +1,8 @@
 # Erebos-Zero — coverage filter
 
 Source of truth: <https://github.com/rzdhop/Erebos-Zero> (public, 99 commits).
-Dernière réconciliation : 2026-08-12 (issue 419).
+Dernière réconciliation : 2026-08-13 (issue 420) — README inchangé depuis la
+veille : 99 commits, mêmes modules.
 
 **What this file is for.** It is a deduplication filter, and nothing else. The
 reader has already built the techniques listed below, so an issue that explains
