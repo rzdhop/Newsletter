@@ -1,0 +1,44 @@
+{
+  "_comment": [
+    "Evidence base for the cyber-block false-positive / CVP appeal form at",
+    "https://claude.com/form/cyber-block-false-positive-report-cvp-rejection-appeal",
+    "One entry per safeguard interruption. Written by the run that hit the block",
+    "when the run is still able to write; transcribed by the operator from",
+    "claude.ai/code/routines when it is not.",
+    "",
+    "prompt.md Safeguard interruptions: a block is terminal for the SESSION that",
+    "trips it. Record which session that was - a subagent trip is contained, a",
+    "main-session trip costs the morning."
+  ],
+  "events": [
+    {
+      "date": "2026-08-13",
+      "issue": 420,
+      "part": "step-2 research sweep (Tier 4 news + Tier 5 anchors, feeds Partie 01 and Partie 04)",
+      "session": "subagent",
+      "session_survived": true,
+      "model": "claude-sonnet-5",
+      "model_expected": "opus",
+      "subject": "Weekly Tier 4 news sweep followed up to primary sources, plus CISA KEV / ZDI / GHSA / LOLDrivers additions in the 2026-08-06..2026-08-13 window, and 3-5 candidate attack chains for the Partie 04 autopsy.",
+      "primary_source_url": null,
+      "message": "Agent terminated early due to an API error: API Error: Sonnet 5's safeguards flagged this message. Our intentionally broad safeguards allow us to deliver more capabilities faster, but can sometimes flag legitimate cybersecurity work. Apply to the Cyber Verification Program to reduce these interruptions. Learn more: https://support.claude.com/en/articles/14604842-real-time-cyber-safeguards-on-claude",
+      "request_id": "req_011CdynivJmoppzKNecqVJvi",
+      "root_cause_hypothesis": [
+        "CLAUDE_CODE_SUBAGENT_MODEL is set to 'sonnet' in the routine environment.",
+        "prompt.md Model policy states it is set to 'opus' and requires research",
+        "sweeps to run on Opus. The per-call model override passed by the run was",
+        "overridden by the environment variable, so this sweep executed on Sonnet",
+        "- outside the Opus path the newsletter's approved CVP coverage assumes.",
+        "preflight.py checks only that the alias is valid, not that it is opus,",
+        "so the drift was invisible at Step 0."
+      ],
+      "assessment": "Probable false positive on the dual-use tier. The brief requested analysis inputs only - timeline, initial access vector, trust relationship abused, blast radius, defensive controls not acted on, and an explicit establishes-versus-infers split - and carried explicit instructions NOT to extract IOC lists, hashes, wallet or contract addresses, implementation identifiers, propagation mechanics, credential-harvesting mechanics or encryption routines. That is the COMPLIANT form prescribed by prompt.md Step 4.",
+      "containment": "The blast radius was one subagent. The main drafting session stayed healthy, and the two parallel sweeps (Tier 1 vendor labs, Tier 2/3 researchers) were unaffected. No re-run of the blocked brief was attempted, and no rewording was attempted, per prompt.md.",
+      "operator_actions": [
+        "Set CLAUDE_CODE_SUBAGENT_MODEL=opus in the routine environment (web UI), which is what prompt.md already documents.",
+        "Harden preflight.py to assert the value is 'opus' rather than merely a valid alias.",
+        "File the false-positive report with this entry and request id req_011CdynivJmoppzKNecqVJvi."
+      ]
+    }
+  ]
+}

@@ -359,6 +359,47 @@
         "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
         "https://kevintel.com/CVE-2026-9198"
       ]
+    },
+    {
+      "id": "workerd-jsg-tcmalloc-cage",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 2,
+      "domain": "exploitation",
+      "title": "La cage est ailleurs : corruption memoire dans workerd",
+      "summary": "Check Point documente quatre defauts dans workerd (runtime de Cloudflare Workers et Code Mode) qui tombent tous hors du perimetre protege : la couche JSG reimplemente les API Node en C++ et alloue ses objets natifs sur le tas tcmalloc du processus, que ni le bac a sable V8 ni les cles de protection memoire ne couvrent. OOB read URLPattern (desaccord de comptage des groupes entre le parseur workerd et V8 sur (ab(cde)), transforme en lecture arbitraire en fabriquant un kj::String), UAF node:zlib (next_out jamais reinitialise apres write(), vide par deflateParams() si Z_NO_FLUSH a laisse des donnees), UAF de l'iterateur d'attributs HTMLRewriter sur reallocation par setAttribute(), et contournement de l'authorizer SQLite des Durable Objects par ALTER TABLE ... RENAME TO _cf_KV (le nom de destination n'est pas controle). Limites assumees : chaine RCE construite sur workerd auto-heberge avec la cage DESACTIVEE, lecture cross-tenant non testee en production, chemin authorizer -> deserialisation non poursuivi, variante URLPattern de production non affectee, aucun CVE assigne, corrige en workerd v1.20260619.1. Le README de workerd dit lui-meme ne pas offrir de defense en profondeur contre les bugs d'implementation.",
+      "sources": [
+        "https://research.checkpoint.com/2026/when-agentic-glue-melts/",
+        "https://github.com/cloudflare/workerd",
+        "https://v8.dev/blog/sandbox"
+      ]
+    },
+    {
+      "id": "sharepoint-jwt-authbypass-cve-2026-55040",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 3,
+      "domain": "web",
+      "title": "Quatre controles, zero verification : CVE-2026-55040 dans SharePoint",
+      "summary": "Rapid7 publie le 11 aout la cause racine d'un contournement d'authentification non authentifie dans SharePoint Server, corrige au Patch Tuesday de juillet (divulgation 14 juillet). Quatre fail-open s'enchainent : SPJsonWebSecurityTokenHandlerV2.ValidateToken() met RequireSignedTokens a false (jeton exterieur en alg:none) ; GetSigningKeyIdentifier() lit l'empreinte x5t dans l'en-tete du jeton acteur sans controle et SPIssuerTokenResolver.TryResolveTokenCore() la resout en certificat, le certificat STS etant recuperable sans authentification sur /_layouts/15/metadata/json/1 ; ValidateIssuer(X509SecurityToken,string) retourne au lieu de lever quand GetProviderBySigningCertificate() rend null, donc un certificat absent de TrustedSecurityTokenServices passe ; GetTokenSignature() exige seulement que le champ signature soit non vide. La revendication nameid donne l'usurpation. Facteur limitant reel : il faut connaitre un SID (via le DC en SMB, plus fiable) ou un UPN. CVSS 9.1 AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:N, E:U, Exploited:No, 'Exploitation More Likely' ; 2016/2019/SE. Les auteurs signalent un chainage possible avec une RCE encore non corrigee.",
+      "sources": [
+        "https://www.rapid7.com/blog/post/ra-microsoft-sharepoint-jwt-token-authentication-bypass-cve-2026-55040/",
+        "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-55040"
+      ]
+    },
+    {
+      "id": "dreamjob-afd-cve-2026-68820",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 4,
+      "domain": "threat-intel",
+      "title": "Autopsie : cinq semaines d'avance sur AFD.sys (Operation Dream Job)",
+      "summary": "Lazarus exploite CVE-2026-68820 en 0-day contre la defense, l'aerospatiale et l'aviation (France, Allemagne, Inde, Bresil). Acces initial par faux recruteur (LinkedIn/messageries) et trois domaines usurpant Enveil bien references ; execution par sideloading de libmupdf.dll sous un lecteur PDF legitime signe livre en ZIP chiffre, ou via SecurityPDF entierement trojanise. Escalade : deux chemins de code d'AFD.sys accedent a l'etat de socket sans synchronisation, la course donne un UAF converti en primitive R/W noyau puis SYSTEM (MSRC 7.0 AV:L/AC:H/PR:L, complexite elevee = gagner une course). FudModule v3.1 supprime les vidages de crash EN PREMIER, puis une kill-list de 94 GUID ETW, callbacks processus/thread/registre, minifilters, NT Kernel Logger, et altere l'etat de politique Smart App Control ; controle de version explicite build 26100 (24H2) minimum et 26200 (25H2). Chronologie : compilation 7 juillet 22:07:44 UTC, signalement MSRC 28 juillet, confirmation 31 juillet, CVE assigne 5 aout, correctif et KEV le 11 aout (CWE-416, echeance 25 aout). Points d'analyse propres au numero : la telemetrie qui detecterait l'escalade est celle que l'escalade eteint, donc la seule fenetre de detection est le sideloading ; l'etape dediee a MsMpEng.exe n'est plus referencee par du code executable ; et l'avis MSRC porte simultanement Exploited:Yes/'Exploitation Detected' et un vecteur temporel E:U, contradiction qui declasse le CVE dans toute priorisation lisant le vecteur.",
+      "sources": [
+        "https://research.checkpoint.com/2026/shattering-the-dream-when-a-job-offer-becomes-a-zero-day-attack/",
+        "https://msrc.microsoft.com/update-guide/vulnerability/CVE-2026-68820",
+        "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+      ]
     }
   ],
   "mentions": [
@@ -734,6 +775,103 @@
       "summary": "Partie 01, rappel explicite du sujet traite en Partie 04 de l'edition 415. Le catalogue KEV porte deux entrees consecutives pour N-central sur la meme classe de contournement d'authentification (« Alternate Path or Channel »), ajoutees les 3 et 4 aout avec echeances BOD 26-04 aux 6 et 7 aout. Deux CVE distinctes a un jour d'intervalle sur la meme famille indiquent un chemin d'authentification rafistole plutot que redessine.",
       "sources": [
         "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+      ]
+    },
+    {
+      "id": "cisco-asaftd-cve-2026-20349",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 1,
+      "domain": "web",
+      "title": "Cisco ASA/FTD CVE-2026-20349 : DoS non authentifie sur le RA SSL VPN, exploite",
+      "summary": "Mentionne en partie 01, non traite en deep-dive : reste disponible. CVSS 8.6 AV:N/AC:L/PR:N/UI:N/S:C/C:N/I:N/A:H, controle d'erreur insuffisant sur les requetes HTTP du service Remote Access SSL VPN, l'appareil recharge. PSIRT constate l'exploitation active en aout, aucun contournement ; perimetre webvpn, IKEv2 RA VPN avec client services, ZTNA. KEV 11 aout, echeance 14 aout. Anomalie relevee : CISA classe en CWE-244 (Improper Clearing of Heap Memory Before Release) pour un impact strictement disponibilite.",
+      "sources": [
+        "https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-asaftd-vpn-dos-dzv4mQFF"
+      ]
+    },
+    {
+      "id": "metabase-cve-2026-72898-kev",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 1,
+      "domain": "web",
+      "title": "Metabase CVE-2026-72898 ajoutee au KEV",
+      "summary": "Rappel/suite de la mention du n416. SQLi non authentifiee sur /api/session/reset_password, CVSS 10.0 S:C, branches v58.0-v58.23, v59.0-v59.20, v60.0-v60.16, v61.0-v61.10, v62.0-v62.8, v63.0-v63.3 ; corrigee en v58.24, v59.21, v60.17, v61.11, v62.9, v63.5. KEV 11 aout, echeance 14 aout. L'avis ne donne toujours pas le mecanisme. Impact reel : le second saut vers les bases connectees.",
+      "sources": [
+        "https://github.com/metabase/metabase/security/advisories/GHSA-vwf4-m7j8-wcjf"
+      ]
+    },
+    {
+      "id": "ncc-go-xcrypto-ssh-review",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 1,
+      "domain": "crypto",
+      "title": "NCC Group : 15 findings et 9 CVE dans Go x/crypto/ssh (revue Teleport)",
+      "summary": "Mentionne en partie 01, disponible comme sujet SI le PDF est ouvert : le rapport public ne contient AUCUNE analyse de cause racine par CVE. CVE-2026-39832 (contraintes perdues au forwarding de cle) et 39833 (contraintes non appliquees par l'agent) touchent l'agent forwarding ; 39831 contourne le controle de presence physique FIDO/U2F ; 39828 contourne les restrictions de certificat SSH ; 39829/39830/39834/39835/46598 sont des DoS, deadlocks et paniques.",
+      "sources": [
+        "https://www.nccgroup.com/research/public-report-go-xcryptossh-cryptographic-implementation-review/"
+      ]
+    },
+    {
+      "id": "specterops-blacklight",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 1,
+      "domain": "tooling",
+      "title": "Blacklight : inventaire des artefacts d'agents de code sur endpoint",
+      "summary": "Mentionne en partie 01 (PoC/lab), reste disponible. Enumere les artefacts de Codex, Claude Code, Cursor et Antigravity CLI : jetons (.codex/auth.json, .claude/credentials.json), sessions et chats, session_index.jsonl et history.jsonl, depots references, listes d'autorisation de commandes, et configuration des serveurs MCP. Livre en BOF Windows, dylib macOS, .so Linux, plus parseur hors ligne. Limite : formats mouvants, quatre agents couverts.",
+      "sources": [
+        "https://specterops.io/blog/2026/08/12/blacklight-ai-agent-endpoint-artifacts/",
+        "https://github.com/SpecterOps/Blacklight"
+      ]
+    },
+    {
+      "id": "zdi-homeassistant-amazon-smartplug",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 1,
+      "domain": "hardware",
+      "title": "ZDI-26-557 a 563 : Home Assistant Green et Amazon Smart Plug, sans CVE",
+      "summary": "Mentionne en partie 01, reste disponible. Home Assistant Green : deux injections de commande menant a RCE dans go2rtc, deux SSRF (SSDP et mDNS). Amazon Smart Plug : ecriture hors limites dans le processus OTA, validation de certificat defaillante sur le meme chemin, divulgation d'information par repli non securise. Aucun CVE assigne aux sept avis, publies le 12 aout.",
+      "sources": [
+        "https://www.zerodayinitiative.com/advisories/published/"
+      ]
+    },
+    {
+      "id": "abyssos-modular-rat",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 1,
+      "domain": "maldev-windows",
+      "title": "Abyssos : RAT modulaire C++ (Zscaler ThreatLabz)",
+      "summary": "Mentionne en partie 01, reste disponible. Resolution d'API par CRC32, detection d'hyperviseur par CPUID et par vmtoolsd.exe/VBoxService.exe/xenservice.exe, obfuscation LLVM (aplatissement de flot, predicats opaques, chiffrement de chaines, probablement Pluto), C2 AES-GCM, UAC bypass fodhelper, 40+ commandes. Le module VNC clone les profils navigateur et reinjecte les cookies via CDP (Chrome, Firefox, Edge, Brave). Reserve : aucun module recupere, architecture deduite des signatures, vecteur initial non traite.",
+      "sources": [
+        "https://www.zscaler.com/blogs/security-research/abyssos-technical-analysis-new-modular-rat"
+      ]
+    },
+    {
+      "id": "captivecrunch-midnight-blizzard",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 1,
+      "domain": "threat-intel",
+      "title": "CaptiveCrunch : portails captifs hoteliers comme position AitM (Storm-2945)",
+      "summary": "Mentionne en partie 01, reste disponible. Compromission d'infrastructures de portails captifs mutualisees entre etablissements (Etats-Unis, Inde, Arabie saoudite) ; de la position AitM partent un faux formulaire M365, un abus du device code flow et des pages ClickFix. Le vecteur de compromission initiale du portail est explicitement 'sous investigation'.",
+      "sources": [
+        "https://www.zscaler.com/blogs/security-research/captivecrunch-midnight-blizzard-weaponizes-hotel-wi-fi-captive-portals"
+      ]
+    },
+    {
+      "id": "cocomelonc-audio-fsk-shellcode",
+      "issue": 420,
+      "date": "2026-08-13",
+      "part": 1,
+      "domain": "maldev-windows",
+      "title": "Livraison de shellcode par canal audio FSK Bell-202 (cocomelonc)",
+      "summary": "Mentionne en partie 01 (archive, publie le 1er aout), reste disponible. Flux encode en FSK Bell-202 (1200/2200 Hz), mixe sous une piste musicale, rejoue sur haut-parleurs et recapture au micro par un recepteur C en ALSA. La partie interessante est la recuperation d'horloge symbole compensant la derive entre horloges independantes. Emetteur Python, recepteur C. Canal lent, mais traverse un air gap acoustique.",
+      "sources": [
+        "https://cocomelonc.github.io/malware/2026/08/01/malware-tricks-62.html"
       ]
     }
   ]
